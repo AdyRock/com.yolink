@@ -1,0 +1,14 @@
+{
+  "extends": "athom/homey-app",
+	"rules":
+	{
+		"node/no-extraneous-require": "off",
+		"indent": ["error", "tab"],
+		"brace-style":  ["error", "allman"],
+		"function-paren-newline": ["error", "consistent"],
+		"linebreak-style": ["error", "windows"],
+		"no-tabs": ["error", { "allowIndentationTabs": true }],
+		"object-curly-newline": ["error", { "consistent": true }],
+		"max-len": ["error", { "code": 300 }]
+	}
+}
