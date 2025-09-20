@@ -1,0 +1,14 @@
+{
+	"name": {
+		"en": "Door Sensor"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_contact",
+		"alarm_door_fault"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}

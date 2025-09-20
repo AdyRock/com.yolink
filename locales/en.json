@@ -1,1 +1,16 @@
-{}
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Select UAID",
+			"intro": "Select the UAID (User Account ID) you want to use. This is obtained from the YoLink app.",
+			"uaid": "UAID",
+			"next": "Continue"
+		},
+		"enter_secret": {
+			"title": "Enter Secret",
+			"intro": "Enter the secret key for the selected UAID. This is obtained from the YoLink app.",
+			"secret": "Secret Key",
+			"next": "Continue"
+		}
+	}
+}
