@@ -12,7 +12,7 @@ const
 // const fetch = require('node-fetch'); // Only needed for Node.js < 18
 
 const yoLinkApi = {
-	cloudUrl: 'https://api.yosmart.com/open/yolink/',
+	cloudUrl: 'https://api-eu.yosmart.com/open/yolink/',
 	localUrl: 'http://IP:1080/open/yolink/',
 	apiUrl: 'v2/api',
 };

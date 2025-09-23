@@ -1,0 +1,12 @@
+{
+  "name": {
+    "en": "Hub"
+  },
+  "class": "bridge",
+  "capabilities": [
+	"info"
+  ],
+	"$extends": [
+		"cloudDriver"
+	]
+}

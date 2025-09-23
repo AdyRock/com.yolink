@@ -11,6 +11,7 @@ module.exports = class MyDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
+		this.homey.setInterval(() => this.updateState(), 15 * 1000);
 		this.log('MyDevice has been initialized');
 	}
 
@@ -58,20 +59,29 @@ module.exports = class MyDevice extends Homey.Device
 	{
 		const data = await this.getData();
 		const state = await this.driver.getState(data);
-		if (!state || !state.state || !state.state.operational_state)
+		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
 			this.setUnavailable('Offline');
 			return;
 		}
 		this.setAvailable();
 
-		this.setCapabilityValue('alarm_contact', state.state.contact === 'open');
-		this.setCapabilityValue('alarm_door_fault', state.state.operational_state === 'error');
+		this.setCapabilityValue('alarm_contact', state.data.state.state === 'open');
+
+		// If the door is open and the time now is greater than the openRemindDelay + the stateChangedAt time, then set the alarm_door_fault to true
+		if ((state.data.state.state === 'open') && (Date.now() > (state.data.state.stateChangedAt + (state.data.state.openRemindDelay * 1000))))
+		{
+			this.setCapabilityValue('alarm_door_fault', true);
+		}
+		else
+		{
+			this.setCapabilityValue('alarm_door_fault', false);
+		}
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
-		if (state.state.battery)
+		if (state.data.state.battery)
 		{
-			const batteryLevel = parseInt(state.state.battery, 10) / 4;
+			const batteryLevel = parseInt(state.data.state.battery, 10) / 4;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
 	}
