@@ -1,12 +1,12 @@
 {
 	"name": {
-		"en": "Door Sensor"
+		"en": "Temperature and Humidity"
 	},
 	"class": "sensor",
 	"capabilities": [
 		"measure_battery",
-		"alarm_contact",
-		"alarm_door_fault"
+		"measure_humidity",
+		"measure_temperature"
 	],
 	"energy": {
 		"batteries": [

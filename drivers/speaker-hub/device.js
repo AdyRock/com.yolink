@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 
-module.exports = class MyDevice extends Homey.Device
+module.exports = class SpeakerHubDevice extends Homey.Device
 {
 
 	/**
@@ -11,7 +11,7 @@ module.exports = class MyDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
-		this.log('MyDevice has been initialized');
+		this.log('SpeakerHubDevice has been initialized');
 	}
 
 	/**
@@ -20,7 +20,7 @@ module.exports = class MyDevice extends Homey.Device
 	async onAdded()
 	{
 		this.updateState();
-		this.log('MyDevice has been added');
+		this.log('SpeakerHubDevice has been added');
 	}
 
 	/**
@@ -33,7 +33,7 @@ module.exports = class MyDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.log('MyDevice settings where changed');
+		this.log('SpeakerHubDevice settings where changed');
 	}
 
 	/**
@@ -43,7 +43,7 @@ module.exports = class MyDevice extends Homey.Device
 	 */
 	async onRenamed(name)
 	{
-		this.log('MyDevice was renamed');
+		this.log('SpeakerHubDevice was renamed');
 	}
 
 	/**
@@ -51,7 +51,7 @@ module.exports = class MyDevice extends Homey.Device
 	 */
 	async onDeleted()
 	{
-		this.log('MyDevice has been deleted');
+		this.log('SpeakerHubDevice has been deleted');
 	}
 
 	async updateState()

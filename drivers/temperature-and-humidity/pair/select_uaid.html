@@ -1,0 +1,81 @@
+</br>
+<p class="homey-subtitle" data-i18n="pair.select_uaid.intro"></p>
+
+<style>
+	.hy-view {
+		position: relative;
+	}
+
+	#uaid {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.submit-bottom {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		/* Optional: add padding if you want space from the bottom */
+		padding-bottom: 16px;
+	}
+
+	.homey-button-primary-full {
+		width: 100%;
+		max-width: 300px;
+		text-align: center;
+		margin: 0 auto;
+		height: 40px;
+		line-height: 40px;
+		display: block;
+		/* Optional: vertical centering for multi-line text */
+		line-height: normal;
+	}
+</style>
+
+<form class="homey-form" id="form_uaid" name="form" onsubmit="return getForm()" action="javascript:void(0);" method="post"
+	style="text-align:left;">
+	<label class="homey-form-label" for="uaid" data-i18n="pair.select_uaid.uaid"></label>
+	<input class="homey-form-select" name="uaid" id="uaid" list="uaid-list" autocomplete="off" />
+	<datalist id="uaid-list"></datalist>
+	<div class="submit-bottom" id="submit-bottom">
+		<input class="homey-button-primary-full" type="submit" id="submit" value="Next" />
+	</div>
+</form>
+
+<script type="text/javascript">
+	Homey.setTitle(__('pair.select_uaid.title'));
+
+	Homey.emit('select_uaid_setup', {},
+		function (err, result)
+		{
+			if (result)
+			{
+				if (result.length > 0)
+				{
+					// Fill the datalist options
+					let datalist = document.getElementById('uaid-list');
+					datalist.innerHTML = '';
+					result.forEach((uaid) =>
+					{
+						let option = document.createElement('option');
+						option.value = uaid;
+						datalist.appendChild(option);
+					});
+				}
+			}
+		}
+	);
+
+	function getForm()
+	{
+		Homey.emit('select_uaid',
+			{
+				uaid: document.forms["form_uaid"]["uaid"].value,
+			});
+	}
+
+</script>

@@ -9,6 +9,8 @@ const
 		SimpleClass,
 	} = require('homey');
 
+const mqtt = require('./mqtt');
+
 // const fetch = require('node-fetch'); // Only needed for Node.js < 18
 
 const yoLinkApi = {
@@ -41,16 +43,47 @@ module.exports = class YoLinkAPI extends SimpleClass
 		let entry = this.UAIDList.find((item) => item.UAID === UAID);
 		if (entry && entry.expires_at && entry.expires_at < Date.now())
 		{
-			// Token has expired so get a new one using the refresh token
-			const newTokenData = await this.obtainAccessTokenWithRefreshToken(entry.UAID, entry.refresh_token);
-			this.app.log(`Access token for UAID ${UAID} has expired`);
+			// If already fetching a token, wait for it to complete
+			if (this.fetchingToken)
+			{
+				await this.fetchingToken;
+			}
+			else
+			{
+				// Set a promise to indicate that we are fetching a token
+				let resolveToken;
+				this.fetchingToken = new Promise((resolve) =>
+				{
+					resolveToken = resolve;
+				});
 
-			// Update the entry in the UAIDList
-			entry.access_token = newTokenData.access_token;
-			entry.refresh_token = newTokenData.refresh_token;
-			entry.expires_at = Date.now() + (newTokenData.expires_in * 1000);
-			this.app.log(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}`);
-			this.app.homey.settings.set('UAIDList', this.UAIDList);
+				try
+				{
+					this.app.log(`Access token for UAID ${UAID} has expired`);
+
+					// Token has expired so get a new one using the refresh token
+					const newTokenData = await this.obtainAccessTokenWithRefreshToken(entry.UAID, entry.refresh_token);
+
+					// Update the entry in the UAIDList
+					entry.access_token = newTokenData.access_token;
+					entry.refresh_token = newTokenData.refresh_token;
+					entry.expires_at = Date.now() + (newTokenData.expires_in * 1000);
+					this.app.log(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}`);
+					this.app.homey.settings.set('UAIDList', this.UAIDList);
+
+					resolveToken();
+				}
+				catch (error)
+				{
+					resolveToken(); // Resolve even on error to prevent hanging
+					throw error;
+				}
+				finally
+				{
+					// Clear the fetchingToken promise
+					this.fetchingToken = null;
+				}
+			}
 		}
 		else if (!entry && SecretKey)
 		{
@@ -68,6 +101,26 @@ module.exports = class YoLinkAPI extends SimpleClass
 			};
 			this.UAIDList.push(entry);
 			this.app.homey.settings.set('UAIDList', this.UAIDList);
+		}
+
+		if (entry && !this.MQTTClient)
+		{
+			try
+			{
+				// Setup the MQTT client
+				const brokerConfig = {
+					UAID,
+					url: 'mqtt://api-eu.yosmart.com',
+					port: 8003,
+					username: entry.access_token,
+					password: '',
+				};
+				this.MQTTClient = this.setupMQTTClient(brokerConfig);
+			}
+			catch (err)
+			{
+				this.app.log(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`);
+			}
 		}
 
 		return entry ? entry.access_token : null;
@@ -230,5 +283,101 @@ module.exports = class YoLinkAPI extends SimpleClass
 		};
 
 		return this.request(`/devices/${deviceId}/control`, 'POST', body, headers);
+	}
+
+	async getHomeInfo(UAID)
+	{
+		const accessToken = await this.getAccessTokenForUAID(UAID);
+		if (!accessToken)
+		{
+			this.app.log(`Failed to obtain access token for UAID ${UAID}`);
+			return null;
+		}
+
+		const headers = {
+			Authorization: `Bearer ${accessToken}`,
+		};
+
+		const body = {
+			method: 'Home.getGeneralInfo',
+			time: Math.floor(Date.now() / 1000),
+		};
+
+		return this.request('POST', body, headers);
+	}
+
+	setupMQTTClient(brokerConfig)
+	{
+		try
+		{
+			// Connect to the MQTT server and subscribe to the state change topic
+			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}`, 1);
+			const MQTTclient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}`, username: brokerConfig.username, password: brokerConfig.password });
+
+			MQTTclient.on('connect', async () =>
+			{
+				this.app.updateLog(`setupMQTTClient.onConnect: connected to ${brokerConfig.url}:${brokerConfig.port} as ${brokerConfig.UAID}`);
+
+				// Subscribe to the yl-home/HomeID/+/report topic to receive device reports
+				const homeID = await this.getHomeInfo(brokerConfig.UAID);
+				const topic = `yl-home/${homeID.data.id}/+/report`;
+				MQTTclient.subscribe(topic, { qos: 0 }, (err) =>
+				{
+					if (err)
+					{
+						this.app.updateLog(`setupMQTTClient.subscribe error: ${this.app.varToString(err)}`, 0);
+					}
+				});
+			});
+
+			MQTTclient.on('error', (err) =>
+			{
+				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)}`, 0);
+			});
+
+			MQTTclient.on('message', async (topic, message) =>
+			{
+				// message is in Buffer
+				try
+				{
+					let mqttMessage = '';
+					const mqttString = message.toString();
+					try
+					{
+						mqttMessage = JSON.parse(mqttString);
+					}
+					catch (err)
+					{
+						mqttMessage = mqttString;
+					}
+
+					this.app.updateLog(`MQTTclient.on message: ${topic}, ${this.app.varToString(mqttMessage)}`);
+
+					const drivers = this.app.homey.drivers.getDrivers();
+					for (const driver of Object.values(drivers))
+					{
+						const devices = driver.getDevices();
+						for (const device of Object.values(devices))
+						{
+							if (device.processMQTTMessage)
+							{
+								device.processMQTTMessage(mqttMessage).catch(device.error);
+							}
+						}
+					}
+				}
+				catch (err)
+				{
+					this.app.updateLog(`MQTT Client error: ${topic}: ${err.message}`, 0);
+				}
+			});
+
+			return MQTTclient;
+		}
+		catch (err)
+		{
+			this.app.updateLog(`setupMQTTClient error: ${err.message}`, 0);
+			return null;
+		}
 	}
 };

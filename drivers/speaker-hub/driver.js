@@ -2,7 +2,7 @@
 
 const yoLinkDriver = require('../yoLinkDriver');
 
-module.exports = class MyDriver extends yoLinkDriver
+module.exports = class SpeakerHubDriver extends yoLinkDriver
 {
 	/**
 	 * onInit is called when the driver is initialized.
@@ -10,7 +10,7 @@ module.exports = class MyDriver extends yoLinkDriver
 	async onInit()
 	{
 		this.deviceType = 'SpeakerHub';
-		this.log('MyDriver has been initialized');
+		this.log('SpeakerHubDriver has been initialized');
 	}
 
 };
