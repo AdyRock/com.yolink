@@ -11,7 +11,7 @@ module.exports = class THDriver extends yoLinkDriver
 	async onInit()
 	{
 		this.deviceType = 'THSensor';
-		this.log('THDriver has been initialized');
+		this.homey.app.updateLog('THDriver has been initialized');
 	}
 
 };

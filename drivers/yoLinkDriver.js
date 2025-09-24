@@ -90,6 +90,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 					parentDeviceId: device.parentDeviceId,
 					UAID,
 					type: device.type,
+					serviceZone: device.serviceZone,
 				},
 			}));
 		});
@@ -115,6 +116,6 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 	async getState(data)
 	{
-		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken);
+		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, data.serviceZone);
 	}
 };

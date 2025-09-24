@@ -1,0 +1,365 @@
+<!doctype html>
+<html>
+
+<head>
+	<link rel="stylesheet" type="text/css" href="lwsa.css">
+	<link rel="stylesheet" type="text/css" href="busy_indicator.css" />
+	<link rel="stylesheet" type="text/css" href="extraStyles.css">
+	<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+
+	<style type="text/css">
+		.fog_div {
+			display: none;
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			height: 100%;
+			width: 100%;
+			z-index: 100;
+			background-color: rgba(30, 30, 30, 0.5);
+		}
+
+		#busybox.show {
+			display: block;
+		}
+	</style>
+
+	<!-- The '/homey.js' script must be included in your settings view to work -->
+	<script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+	<script type="text/javascript" src="busy_indicator.js"></script>
+</head>
+
+<body>
+	<!-- Busy indicator -->
+	<div id="busybox" class="fog_div">
+		<div></div>
+	</div>
+
+	<!-- Tab links -->
+	<div class="tab">
+		<button class="tablinks" onclick="setPage(event, 'detected')" id="defaultOpen">Detected</button>
+		<button class="tablinks" onclick="setPage(event, 'log')">Log</button>
+	</div>
+
+	<!-- detected-->
+	<div id="detected" class="tabcontent">
+		<fieldset>
+			<p>
+				<button id="getDeviceLog" class="homey-button-small" data-i18n="settings.getDevices"></button>
+				<button id="clearDeviceLog" class="homey-button-small" data-i18n="settings.clear"></button>
+				<button id="sendDeviceLog" class="homey-button-small" data-i18n="settings.send"></button>
+			</p>
+			<div class="field row">
+				<textarea id="detectedDevices" class="homey-form-textarea" wrap="off"></textarea>
+			</div>
+		</fieldset>
+	</div>
+
+	<!-- LOG PAGE -->
+	<div id="log" class="tabcontent">
+		<fieldset class="homey-form-fieldset">
+			<label class="homey-form-checkbox">
+				<input class="homey-form-checkbox-input" id="enableLog" type="checkbox" value="auto" />
+				<span class="homey-form-checkbox-checkmark"></span>
+				<span class="homey-form-checkbox-text"><span data-i18n="settings.enableLog"></span></span>
+				<div class="tooltip"><i class="fi fi-rr-info"></i>
+					<span class="tooltiptext" data-i18n="settings.enableLLogExplanation"></span>
+				</div>
+			</label>
+			<div class="field row">
+				<label class="homey-form-label" for="email"><span data-i18n="settings.email"></span>
+					<div class="tooltip"><i class="fi fi-rr-info"></i>
+						<span class="tooltiptext" data-i18n="settings.emailExplanation"></span>
+					</div>
+				</label>
+				<input class="homey-form-input" id="email" type="text" value />
+				<label class="homey-form-label" for="description"><span data-i18n="settings.description"></span>
+					<div class="tooltip"><i class="fi fi-rr-info"></i>
+						<span class="tooltiptext" data-i18n="settings.descriptionExplanation"></span>
+					</div>
+				</label>
+				<input class="homey-form-input" id="description" type="text" value />
+				<p></p>
+			</div>
+			<p>
+				<button id="clearInfoLog" class="homey-button-small" data-i18n="settings.clear"></button>
+				<button id="sendInfoLog" class="homey-button-small" data-i18n="settings.send"></button>
+			</p>
+			<div class="field row">
+				<textarea id="infoLog" class="homey-form-textarea" wrap="off"></textarea>
+			</div>
+		</fieldset>
+	</div>
+
+	<script type="text/javascript">
+		// Create the busy indicator
+		var busyi;
+		busyi = new busy_indicator(document.getElementById("busybox"), document.querySelector("#busybox div"));
+
+		var detectedDevicesElement = document.getElementById('detectedDevices');
+		var infoLogElement = document.getElementById('infoLog');
+		var logEnabledElement = document.getElementById('enableLog');
+		var clearInfoLogElement = document.getElementById('clearInfoLog');
+		var sendInfoLogElement = document.getElementById('sendInfoLog');
+
+		var getDeviceLogElement = document.getElementById('getDeviceLog');
+		var clearDeviceLogElement = document.getElementById('clearDeviceLog');
+		var sendDeviceLogElement = document.getElementById('sendDeviceLog');
+		var emailElement = document.getElementById('email');
+		var descriptionElement = document.getElementById('description');
+
+		// a method named 'onHomeyReady' must be present in your code
+		function onHomeyReady(Homey)
+		{
+			// Tell Homey we're ready to be displayed
+			Homey.ready();
+
+			document.getElementById("defaultOpen").click();
+
+			Homey.api('GET', '/getInfoLog/',
+				{
+					notify: true
+				}, function (err, result)
+			{
+				if (err)
+				{
+					Homey.alert(err);
+				}
+				else
+				{
+					infoLogElement.value = result;
+				}
+			});
+
+			Homey.on('com.yolink.logupdated', function (data)
+			{
+				infoLogElement.value = data.log;
+			});
+
+			Homey.get('logEnabled', function (err, logEnabled)
+			{
+				if (err) return Homey.alert(err);
+				logEnabledElement.checked = logEnabled;
+			});
+
+			logEnabledElement.addEventListener('change', function (e)
+			{
+				Homey.set('logEnabled', logEnabledElement.checked, function (err)
+				{
+					if (err) return Homey.alert(err);
+				});
+			});
+
+			getDeviceLogElement.addEventListener('click', function (e)
+			{
+				waitCursor(true);
+				Homey.api('GET', '/getDeviceLog/',
+					{
+						hubDevices: true
+					}, function (err, result)
+				{
+					if (err)
+					{
+						Homey.alert(err);
+					}
+					else
+					{
+						detectedDevicesElement.value = result;
+					}
+					waitCursor(false);
+				});
+			});
+
+			clearDeviceLogElement.addEventListener('click', function (e)
+			{
+				Homey.set('deviceLog', "", function (err)
+				{
+					if (err) return Homey.alert(err);
+				});
+				detectedDevicesElement.value = "";
+			});
+
+			sendDeviceLogElement.addEventListener('click', function (e)
+			{
+				if (detectedDevicesElement.value.length < 15)
+				{
+					return Homey.alert(Homey.__("settings.descriptionExplanation"));
+				}
+				Homey.confirm(Homey.__("settings.sendLogConfirm"), null, function (e, ok)
+				{
+					if (ok)
+					{
+						waitCursor(true);
+						Homey.api('POST', '/SendDeviceLog/',
+							{
+								notify: true,
+								email: emailElement.value,
+								description: descriptionElement.value,
+							}, function (err, result)
+						{
+							if (err)
+							{
+								Homey.alert(err);
+							}
+							else
+							{
+								Homey.alert("Log sent successfully");
+							}
+							waitCursor(false);
+						});
+					}
+				});
+			});
+
+			sendInfoLogElement.addEventListener('click', function (e)
+			{
+				if (infoLogElement.value.length < 15)
+				{
+					return Homey.alert("No Data to send");
+				}
+
+				Homey.confirm("Send the information log contents to the developer?", null, function (e, ok)
+				{
+					if (ok)
+					{
+						waitCursor(true);
+						Homey.api('POST', '/sendInfoLog/',
+							{
+								notify: true,
+								email: emailElement.value,
+								description: descriptionElement.value,
+							}, function (err, result)
+						{
+							if (err)
+							{
+								Homey.alert(err);
+							}
+							else
+							{
+								Homey.alert("Log sent successfully");
+							}
+							waitCursor(false);
+						});
+					}
+				});
+			});
+
+			clearInfoLogElement.addEventListener('click', function (e)
+			{
+				Homey.api('POST', '/clearLog/',
+					{
+						notify: true
+					}, function (err, result)
+				{
+					if (err)
+					{
+						return Homey.alert(err);
+					}
+					else
+					{
+						infoLogElement.value = "";
+					}
+				});
+			});
+
+
+			logEnabledElement.addEventListener('click', function (e)
+			{
+				Homey.set('logEnabled', logEnabledElement.checked);
+			});
+
+			var tooltips = document.querySelectorAll(".tooltip");
+			tooltips.forEach(function (tooltip, index)
+			{
+				// Set a mouse over function for each tooltop element
+				tooltip.addEventListener("mouseover", position_tooltip); // On hover, launch the function below
+			})
+		}
+
+		function setPage(evt, tabPage)
+		{
+			var i, tabcontent, tablinks;
+
+			// Get all elements with class="tabcontent" and hide them
+			tabcontent = document.getElementsByClassName("tabcontent");
+			for (i = 0; i < tabcontent.length; i++)
+			{
+				tabcontent[i].style.display = "none";
+			}
+
+			// Get all elements with class="tablinks" and remove the class "active"
+			tablinks = document.getElementsByClassName("tablinks");
+			for (i = 0; i < tablinks.length; i++)
+			{
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+
+			// Show the current tab, and add an "active" class to the button that opened the tab
+			document.getElementById(tabPage).style.display = "block";
+			evt.currentTarget.className += " active";
+
+			if (tabPage == 'log')
+			{
+				// Refresh the log data
+				Homey.get('logEnabled', function (err, logEnabled)
+				{
+					if (err) return Homey.alert(err);
+					logEnabledElement.checked = logEnabled;
+				});
+
+				// Make the log text area fill the page
+				infoLogElement.setAttribute('cols', infoLogElement.parentElement.clientWidth / 8);
+				infoLogElement.style.height = (window.innerHeight - infoLogElement.offsetTop - 60) + 'px';
+			}
+			else if (tabPage == 'detected')
+			{
+				// Make the detected devices text area fill the page
+				detectedDevicesElement.setAttribute('cols', detectedDevicesElement.parentElement.clientWidth / 8);
+				detectedDevicesElement.style.height = (window.innerHeight - detectedDevicesElement.offsetTop - 60) + 'px';
+			}
+		}
+		function position_tooltip()
+		{
+			// Get .tooltiptext sibling
+			var tooltip = this.parentNode.querySelector(".tooltiptext");
+
+			// Get tooltip coordinates and size
+			var tooltip_rect = tooltip.getBoundingClientRect();
+
+			// Corrections if out of window
+			var maxRight = window.innerWidth - 50;
+			var tipRight = tooltip_rect.x + tooltip_rect.width;
+
+			if (tipRight > maxRight)
+			{
+				tipX = maxRight - tipRight;
+
+				// Apply corrected position
+				if (tooltip.style.left === "")
+				{
+					tooltip.style.left = tipX + 'px';
+				}
+				else
+				{
+					tooltip.style.left -= tipX + 'px';
+				}
+			}
+		}
+
+
+		function waitCursor(On)
+		{
+			if (On)
+			{
+				busyi.show();
+			}
+			else
+			{
+				busyi.hide();
+			}
+		}
+	</script>
+
+</body>
+
+</html>

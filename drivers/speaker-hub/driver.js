@@ -10,7 +10,7 @@ module.exports = class SpeakerHubDriver extends yoLinkDriver
 	async onInit()
 	{
 		this.deviceType = 'SpeakerHub';
-		this.log('SpeakerHubDriver has been initialized');
+		this.homey.app.updateLog('SpeakerHubDriver has been initialized');
 	}
 
 };

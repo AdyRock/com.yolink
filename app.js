@@ -21,7 +21,11 @@ module.exports = class MyApp extends Homey.App
 		this.yoLinkAPI = new YoLinkAPI(this);
 		this.homeyID = await this.homey.cloud.getHomeyId();
 
-		this.log('MyApp has been initialized');
+		this.homey.settings.on('set', async (setting) =>
+		{
+		});
+
+		this.updateLog('MyApp has been initialized');
 	}
 
 	// Convert a variable of any type (almost) to a string
@@ -162,7 +166,7 @@ module.exports = class MyApp extends Homey.App
 					{
 						from: `"Homey User" <${Homey.env.MAIL_USER}>`, // sender address
 						to: Homey.env.MAIL_RECIPIENT, // list of receivers
-						subject: `Button + log (${Homey.manifest.version})`, // Subject line
+						subject: `YoLink log (${Homey.manifest.version})`, // Subject line
 						text: `${email}\n${description}\n\n${this.diagLog}`, // plain text body
 					},
 				);
@@ -182,6 +186,23 @@ module.exports = class MyApp extends Homey.App
 		}
 
 		throw new Error(this.homey.__('settings.logSendFailed') + error.message);
+	}
+
+	async getDeviceList()
+	{
+		let deviceList = [];
+		const uaidList = await this.yoLinkAPI.getUAIDList();
+		if (uaidList && uaidList.length > 0)
+		{
+			// get the device list for all UAIDs
+			for (const uaid of uaidList)
+			{
+				// Append the devices to the list
+				const newDevices = await this.yoLinkAPI.getDeviceList(uaid);
+				deviceList = deviceList.concat(newDevices);
+			}
+		}
+		return this.varToString(deviceList);
 	}
 
 };

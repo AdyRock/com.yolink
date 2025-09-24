@@ -1,0 +1,112 @@
+.horizontalcontainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.horizontalgroup {
+    flex: 1;
+    /* Each group takes equal space */
+    padding: 10px;
+    margin-top: 15px;
+    /* Add some padding for spacing */
+    border: 1px solid lightblue;
+    /* Add a border for visualization */
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    color: #2f4fef;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    display: none;
+    width: 75vw;
+    background-color: rgb(249, 248, 236);
+    color: #121010;
+    text-align: left;
+    padding: 5px 5px;
+    border-radius: 10px;
+    box-shadow: 10px 10px 5px lightblue;
+    position: absolute;
+    top: 100%;
+    left: -100%;
+    z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    display: inherit;
+}
+
+.fixedTop {
+    position: fixed;
+    top: 0;
+    left: 0px;
+    width: 94%;
+    z-index: 200;
+    /* set z-index to 200 to position on top */
+    background-color: white;
+    /* set background color to white */
+    margin-left: 14px;
+    padding-top: 5px;
+}
+
+.bottomFixButtonComponent {
+    position: fixed;
+    bottom: 5px;
+    padding-top: 0px;
+    width: 94%;
+    height: 50px;
+    display: flex;
+    justify-content: space-around;
+    z-index: 200;
+    /* set z-index to 2 to position on top */
+}
+
+.main {
+    margin-top: 65px;
+    /* Add a top margin to avoid content overlay */
+}
+
+details {
+    user-select: none;
+}
+
+details>summary span.icon {
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s;
+    margin-left: auto;
+}
+
+details[open] summary span.icon {
+    transform: rotate(180deg);
+}
+
+summary {
+    display: flex;
+    cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Make the summary section sticky */
+.summary-sticky {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    /* You can change the background color as needed */
+    z-index: 100;
+    /* Adjust the z-index if necessary to ensure it appears above other elements */
+    border-bottom: 1px solid lightgray;
+    /* Add a border for separation */
+}

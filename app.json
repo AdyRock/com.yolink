@@ -7,6 +7,7 @@
   "platforms": [
     "local"
   ],
+  "brandColor": "#444444",
   "name": {
     "en": "YoLink"
   },
@@ -16,6 +17,13 @@
   "category": [
     "appliances"
   ],
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "adyrock"
+      }
+    }
+  },
   "permissions": [],
   "images": {
     "small": "/assets/images/small.png",
@@ -25,6 +33,49 @@
   "author": {
     "name": "RockSoft Solutions",
     "email": "ady@rockalls.uk"
+  },
+  "bugs": {
+    "url": "https://github.com/AdyRock/com.yolink/issues"
+  },
+  "homepage": "https://shop.yosmart.com/",
+  "support": "https://github.com/AdyRock/com.yolink/issues",
+  "homeyCommunityTopicId": 89931,
+  "api": {
+    "getDeviceLog": {
+      "method": "get",
+      "path": "/getDeviceLog",
+      "public": false
+    },
+    "getInfoLog": {
+      "method": "get",
+      "path": "/getInfoLog",
+      "public": false
+    },
+    "clearLog": {
+      "method": "post",
+      "path": "/clearLog",
+      "public": false
+    },
+    "SendDeviceLog": {
+      "method": "post",
+      "path": "/SendDeviceLog",
+      "public": false
+    },
+    "sendInfoLog": {
+      "method": "post",
+      "path": "/sendInfoLog",
+      "public": false
+    }
+  },
+  "tags": {
+    "en": [
+      "Door / Window Sensor",
+      "Temperature and Humidity Sensor"
+    ],
+    "nl": [
+      "Deur / Raam Sensor",
+      "Temperatuur- en Vochtigheidssensor"
+    ]
   },
   "drivers": [
     {

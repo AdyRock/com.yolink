@@ -1,3 +1,5 @@
+/* eslint-disable no-tabs */
+
 'use strict';
 
 /** *******************************************************************************
@@ -14,21 +16,24 @@ const mqtt = require('./mqtt');
 // const fetch = require('node-fetch'); // Only needed for Node.js < 18
 
 const yoLinkApi = {
-	cloudUrl: 'https://api-eu.yosmart.com/open/yolink/',
+	cloudUrl_us: 'https://api.yosmart.com/open/yolink/',
+	cloudUrl_eu: 'https://api-eu.yosmart.com/open/yolink/',
+	mqttUrl_us: 'mqtt://api.yosmart.com',
+	mqttUrl_eu: 'mqtt://api-eu.yosmart.com',
 	localUrl: 'http://IP:1080/open/yolink/',
 	apiUrl: 'v2/api',
 };
 
 module.exports = class YoLinkAPI extends SimpleClass
 {
-	constructor(app, localIP = null)
+	constructor(app)
 	{
 		super();
 		this.app = app;
-		this.baseUrl = localIP ? yoLinkApi.localUrl.replace('IP', localIP) : yoLinkApi.cloudUrl;
 
 		// this.UAIDList is used to store the list of objects {UAID: <UAID>, access_token: <accessToken>, refresh_token: <refreshToken>, expires_at: <expires_at>}
 		this.UAIDList = this.app.homey.settings.get('UAIDList') || [];
+		this.MQTTList = []; // List of {UAID, serviceZone, MQTTClient}
 	}
 
 	async getUAIDList()
@@ -59,7 +64,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 				try
 				{
-					this.app.log(`Access token for UAID ${UAID} has expired`);
+					this.app.updateLog(`Access token for UAID ${UAID} has expired`);
 
 					// Token has expired so get a new one using the refresh token
 					const newTokenData = await this.obtainAccessTokenWithRefreshToken(entry.UAID, entry.refresh_token);
@@ -68,7 +73,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 					entry.access_token = newTokenData.access_token;
 					entry.refresh_token = newTokenData.refresh_token;
 					entry.expires_at = Date.now() + (newTokenData.expires_in * 1000);
-					this.app.log(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}`);
+					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}`);
 					this.app.homey.settings.set('UAIDList', this.UAIDList);
 
 					resolveToken();
@@ -88,9 +93,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 		else if (!entry && SecretKey)
 		{
 			// No entry found for this UAID, so obtain a new access token using the secret key
-			this.app.log(`No entry found for UAID ${UAID}`);
+			this.app.updateLog(`No entry found for UAID ${UAID}`);
 			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey);
-			this.app.log(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
+			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
 
 			// Add the new entry to the UAIDList
 			entry = {
@@ -103,33 +108,32 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.homey.settings.set('UAIDList', this.UAIDList);
 		}
 
-		if (entry && !this.MQTTClient)
-		{
-			try
-			{
-				// Setup the MQTT client
-				const brokerConfig = {
-					UAID,
-					url: 'mqtt://api-eu.yosmart.com',
-					port: 8003,
-					username: entry.access_token,
-					password: '',
-				};
-				this.MQTTClient = this.setupMQTTClient(brokerConfig);
-			}
-			catch (err)
-			{
-				this.app.log(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`);
-			}
-		}
+		// if (entry && !this.MQTTClient)
+		// {
+		// 	try
+		// 	{
+		// 		// Setup the MQTT client
+		// 		const brokerConfig = {
+		// 			UAID,
+		// 			url: 'mqtt://api-eu.yosmart.com',
+		// 			port: 8003,
+		// 			username: entry.access_token,
+		// 			password: '',
+		// 		};
+		// 		this.MQTTClient = this.setupMQTTClient(brokerConfig);
+		// 	}
+		// 	catch (err)
+		// 	{
+		// 		this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
+		// 	}
+		// }
 
 		return entry ? entry.access_token : null;
 	}
 
-	async request(method = 'GET', body = null, headers = {})
+	async request(method = 'GET', url, body = null, headers = {})
 	{
-		const url = `${this.baseUrl}${yoLinkApi.apiUrl}`;
-		this.app.log(`API request: ${method} ${url} ${JSON.stringify(body)}`);
+		this.app.updateLog(`API request: ${method} ${url} ${JSON.stringify(body)}`);
 		const options = {
 			method,
 			headers: {
@@ -141,7 +145,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		const response = await fetch(url, options);
 		const data = await response.json();
-		this.app.log(`API response: ${JSON.stringify(data)}`);
+		this.app.updateLog(`API response: ${JSON.stringify(data)}`);
 		return data;
 	}
 
@@ -159,8 +163,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			body,
 		};
 
-		const response = await fetch(`${yoLinkApi.cloudUrl}token`, init);
-		this.app.log(`response status is ${response.status}`);
+		const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+		this.app.updateLog(`response status is ${response.status}`);
 		const mediaType = response.headers.get('content-type');
 		let data;
 		if (mediaType.includes('json'))
@@ -171,7 +175,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			data = await response.text();
 		}
-		this.app.log(data);
+		this.app.updateLog(data);
 		return data;
 	}
 
@@ -188,8 +192,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			body,
 		};
 
-		const response = await fetch(`${yoLinkApi.cloudUrl}token`, init);
-		this.app.log(`response status is ${response.status}`);
+		const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+		this.app.updateLog(`response status is ${response.status}`);
 		const mediaType = response.headers.get('content-type');
 		let data;
 		if (mediaType.includes('json'))
@@ -200,7 +204,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			data = await response.text();
 		}
-		this.app.log(data);
+		this.app.updateLog(data);
 		return data;
 	}
 
@@ -210,7 +214,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		const accessToken = await this.getAccessTokenForUAID(UAID, SecretKey);
 		if (!accessToken)
 		{
-			this.app.log(`Failed to obtain access token for UAID ${UAID}`);
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
 			return null;
 		}
 
@@ -223,11 +227,12 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		const response = await this.request('POST', body, headers);
+		const response = await this.request('POST', `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`, body, headers);
 		if (response && response.desc === 'Success')
 		{
 			if (response && response.data && response.data.devices && response.data.devices.length > 0)
 			{
+				this.lastDeviceList = response.data.devices;
 				return response.data.devices;
 			}
 
@@ -235,19 +240,28 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		else if (response)
 		{
-			this.app.log(`Failed to obtain device list for UAID ${UAID}: ${response.desc}`);
+			this.app.updateLog(`Failed to obtain device list for UAID ${UAID}: ${response.desc}`);
 			throw new Error(`Failed to obtain device list for UAID ${UAID}: ${response.desc}`);
 		}
 
 		throw new Error(`Failed to obtain device list for UAID ${UAID}`);
 	}
 
-	async getDeviceStatus(UAID, type, deviceId, deviceToken)
+	getZoneURL(serviceZone)
+	{
+		if (serviceZone === 'eu_uk')
+		{
+			return `${yoLinkApi.cloudUrl_eu}${yoLinkApi.apiUrl}`;
+		}
+		return `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`;
+	}
+
+	async getDeviceStatus(UAID, type, deviceId, deviceToken, serviceZone)
 	{
 		const accessToken = await this.getAccessTokenForUAID(UAID);
 		if (!accessToken)
 		{
-			this.app.log(`Failed to obtain access token for UAID ${UAID}`);
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
 			return null;
 		}
 
@@ -263,15 +277,53 @@ module.exports = class YoLinkAPI extends SimpleClass
 			params: {},
 		};
 
-		return this.request('POST', body, headers);
+		const url = this.getZoneURL(serviceZone);
+
+		// Ensure an MQTT client is setup for this UAID and serviceZone
+		const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZone === serviceZone));
+		if (!entry)
+		{
+			try
+			{
+				// Setup the MQTT client
+				let mqttURL;
+				if (serviceZone === 'eu_uk')
+				{
+					mqttURL = yoLinkApi.mqttUrl_eu;
+				}
+				else
+				{
+					mqttURL = yoLinkApi.mqttUrl_us;
+				}
+
+				const brokerConfig = {
+					UAID,
+					url: mqttURL,
+					port: 8003,
+					username: accessToken,
+					password: '',
+				};
+				const MQTTClient = this.setupMQTTClient(brokerConfig);
+				if (MQTTClient)
+				{
+					this.MQTTList.push({ UAID, serviceZone, MQTTClient });
+				}
+			}
+			catch (err)
+			{
+				this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
+			}
+		}
+
+		return this.request('POST', url, body, headers);
 	}
 
-	async controlDevice(UAID, deviceId, command)
+	async controlDevice(UAID, deviceId, deviceToken, serviceZone, command, params = {})
 	{
 		const accessToken = await this.getAccessTokenForUAID(UAID);
 		if (!accessToken)
 		{
-			this.app.log(`Failed to obtain access token for UAID ${UAID}`);
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
 			return null;
 		}
 
@@ -279,10 +331,15 @@ module.exports = class YoLinkAPI extends SimpleClass
 			Authorization: `Bearer ${accessToken}`,
 		};
 		const body = {
-			command,
+			method: command,
+			time: Math.floor(Date.now() / 1000),
+			targetDevice: deviceId,
+			token: deviceToken,
+			params,
 		};
 
-		return this.request(`/devices/${deviceId}/control`, 'POST', body, headers);
+		const url = this.getZoneURL(serviceZone);
+		return this.request('POST', url, body, headers);
 	}
 
 	async getHomeInfo(UAID)
@@ -290,7 +347,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		const accessToken = await this.getAccessTokenForUAID(UAID);
 		if (!accessToken)
 		{
-			this.app.log(`Failed to obtain access token for UAID ${UAID}`);
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
 			return null;
 		}
 
@@ -303,7 +360,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		return this.request('POST', body, headers);
+		return this.request('POST', `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`, body, headers);
 	}
 
 	setupMQTTClient(brokerConfig)
@@ -361,7 +418,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 						{
 							if (device.processMQTTMessage)
 							{
-								device.processMQTTMessage(mqttMessage).catch(device.error);
+								await device.processMQTTMessage(mqttMessage).catch(device.error);
 							}
 						}
 					}

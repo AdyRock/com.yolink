@@ -11,7 +11,7 @@ module.exports = class THDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
-		this.log('THDevice has been initialized');
+		this.homey.app.updateLog('THDevice has been initialized');
 	}
 
 	/**
@@ -19,7 +19,7 @@ module.exports = class THDevice extends Homey.Device
 	 */
 	async onAdded()
 	{
-		this.log('THDevice has been added');
+		this.homey.app.updateLog('THDevice has been added');
 	}
 
 	/**
@@ -32,7 +32,7 @@ module.exports = class THDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.log('THDevice settings where changed');
+		this.homey.app.updateLog('THDevice settings where changed');
 	}
 
 	/**
@@ -42,7 +42,7 @@ module.exports = class THDevice extends Homey.Device
 	 */
 	async onRenamed(name)
 	{
-		this.log('THDevice was renamed');
+		this.homey.app.updateLog('THDevice was renamed');
 	}
 
 	/**
@@ -50,7 +50,7 @@ module.exports = class THDevice extends Homey.Device
 	 */
 	async onDeleted()
 	{
-		this.log('THDevice has been deleted');
+		this.homey.app.updateLog('THDevice has been deleted');
 	}
 
 	async updateState()

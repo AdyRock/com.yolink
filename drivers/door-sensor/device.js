@@ -11,7 +11,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
-		this.log('MDoorSensorDevice has been initialized');
+		this.homey.app.updateLog('MDoorSensorDevice has been initialized');
 	}
 
 	/**
@@ -20,7 +20,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
 	async onAdded()
 	{
 		this.updateState();
-		this.log('MDoorSensorDevice has been added');
+		this.homey.app.updateLog('MDoorSensorDevice has been added');
 	}
 
 	/**
@@ -33,7 +33,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.log('MDoorSensorDevice settings where changed');
+		this.homey.app.updateLog('MDoorSensorDevice settings where changed');
 	}
 
 	/**
@@ -43,7 +43,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onRenamed(name)
 	{
-		this.log('MDoorSensorDevice was renamed');
+		this.homey.app.updateLog('MDoorSensorDevice was renamed');
 	}
 
 	/**
@@ -51,7 +51,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onDeleted()
 	{
-		this.log('MDoorSensorDevice has been deleted');
+		this.homey.app.updateLog('MDoorSensorDevice has been deleted');
 	}
 
 	async updateState()

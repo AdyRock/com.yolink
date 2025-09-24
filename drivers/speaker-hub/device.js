@@ -11,7 +11,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
-		this.log('SpeakerHubDevice has been initialized');
+		this.homey.app.updateLog('SpeakerHubDevice has been initialized');
 	}
 
 	/**
@@ -20,7 +20,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	async onAdded()
 	{
 		this.updateState();
-		this.log('SpeakerHubDevice has been added');
+		this.homey.app.updateLog('SpeakerHubDevice has been added');
 	}
 
 	/**
@@ -33,7 +33,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.log('SpeakerHubDevice settings where changed');
+		this.homey.app.updateLog('SpeakerHubDevice settings where changed');
 	}
 
 	/**
@@ -43,7 +43,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	 */
 	async onRenamed(name)
 	{
-		this.log('SpeakerHubDevice was renamed');
+		this.homey.app.updateLog('SpeakerHubDevice was renamed');
 	}
 
 	/**
@@ -51,7 +51,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	 */
 	async onDeleted()
 	{
-		this.log('SpeakerHubDevice has been deleted');
+		this.homey.app.updateLog('SpeakerHubDevice has been deleted');
 	}
 
 	async updateState()
