@@ -38,7 +38,7 @@
 	},
 	"homepage": "https://shop.yosmart.com/",
 	"support": "https://github.com/AdyRock/com.yolink/issues",
-	"homeyCommunityTopicId": 89931,
+	"homeyCommunityTopicId": 143373,
 	"api": {
 		"getDeviceLog": {
 			"method": "get",
