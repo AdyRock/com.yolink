@@ -1,5 +1,8 @@
 {
-  "1.0.0": {
+  "0.0.1": {
     "en": "First version!"
+  },
+  "0.0.2": {
+	"en": "Added Service Zone setting to all device drivers and updated Speaker Hub flow action to include service zone when sending command. Added insights titles to Door Sensor device driver. Changed 'Window / Door Sensor' as device name in Door Sensor driver. Added Flow action to play tones on Speaker Hub."
   }
 }
