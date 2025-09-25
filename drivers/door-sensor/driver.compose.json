@@ -1,6 +1,6 @@
 {
 	"name": {
-		"en": "Door Sensor"
+		"en": "Window / Door Sensor"
 	},
 	"class": "sensor",
 	"capabilities": [
@@ -8,6 +8,20 @@
 		"alarm_contact",
 		"alarm_door_fault"
 	],
+	"capabilitiesOptions": {
+		"alarm_contact": {
+			"title": "Open / Closed",
+			"titleTrue": "Open",
+			"titleFalse": "Closed",
+			"insightsTitleTrue": "Opened",
+			"insightsTitleFalse": "Closed"
+		},
+		"alarm_door_fault": {
+			"title": "Left Open",
+			"insightsTitleTrue": "Left Open",
+			"insightsTitleFalse": "Closed"
+		}
+	},
 	"energy": {
 		"batteries": [
 			"AAA",

@@ -90,7 +90,9 @@ module.exports = class yoLinkDriver extends Homey.Driver
 					parentDeviceId: device.parentDeviceId,
 					UAID,
 					type: device.type,
-					serviceZone: device.serviceZone,
+				},
+				settings: {
+					serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
 				},
 			}));
 		});
@@ -114,8 +116,8 @@ module.exports = class yoLinkDriver extends Homey.Driver
 		});
 	}
 
-	async getState(data)
+	async getState(data, settings)
 	{
-		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, data.serviceZone);
+		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, settings.serviceZone);
 	}
 };

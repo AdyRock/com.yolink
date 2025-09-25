@@ -1,0 +1,27 @@
+[
+	{
+		"id": "serviceZone",
+		"type": "dropdown",
+		"label": {
+			"en": "Service Zone"
+		},
+		"hint": {
+			"en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom"
+		},
+		"values": [
+			{
+				"id": "us",
+				"label": {
+					"en": "US (United States)"
+				}
+			},
+			{
+				"id": "eu_uk",
+				"label": {
+					"en": "EU/UK (Europe and United Kingdom)"
+				}
+			}
+		],
+		"value": "us"
+	}
+]

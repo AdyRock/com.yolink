@@ -57,7 +57,8 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	async updateState()
 	{
 		const data = await this.getData();
-		const state = await this.driver.getState(data);
+		const settings = await this.getSettings();
+		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.wifi || !state.data.wifi.ip)
 		{
 			if (state.desc)

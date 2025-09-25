@@ -1,0 +1,175 @@
+{
+	"actions": [
+		{
+			"id": "play_tone",
+			"title": {
+				"en": "Play a tone"
+			},
+			"titleFormatted": {
+				"en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]"
+			},
+			"args": [
+				{
+					"name": "tone",
+					"type": "dropdown",
+					"title": {
+						"en": "Tone"
+					},
+					"hint": {
+						"en": "Select the tone to play"
+					},
+					"values": [
+						{
+							"id": "Emergency",
+							"label": {
+								"en": "Emergency"
+							}
+						},
+						{
+							"id": "Alert",
+							"label": {
+								"en": "Alert"
+							}
+						},
+						{
+							"id": "Warn",
+							"label": {
+								"en": "Warn"
+							}
+						},
+						{
+							"id": "Tip",
+							"label": {
+								"en": "Tip"
+							}
+						}
+					]
+				},
+				{
+					"name": "volume",
+					"type": "number",
+					"min": 1,
+					"max": 16,
+					"step": 1,
+					"title": {
+						"en": "Volume"
+					},
+					"hint": {
+						"en": "Set the volume level (1-16)"
+					},
+					"value": 5
+				},
+				{
+					"name": "repeat",
+					"type": "dropdown",
+					"title": {
+						"en": "Repeat"
+					},
+					"hint": {
+						"en": "Set how many times to repeat the tone (1-10)"
+					},
+					"values": [
+						{
+							"id": "0",
+							"label": {
+								"en": "None"
+							}
+						},
+						{
+							"id": "1",
+							"label": {
+								"en": "Once"
+							}
+						},
+						{
+							"id": "2",
+							"label": {
+								"en": "Twice"
+							}
+						},
+						{
+							"id": "3",
+							"label": {
+								"en": "Thrice"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "play_message",
+			"title": {
+				"en": "Play a message"
+			},
+			"titleFormatted": {
+				"en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]"
+			},
+			"args": [
+				{
+					"name": "message",
+					"type": "text",
+					"title": {
+						"en": "Message"
+					},
+					"hint": {
+						"en": "Enter the message to play"
+					},
+					"placeholder": {
+						"en": "Hello, this is a test message"
+					}
+				},
+				{
+					"name": "volume",
+					"type": "number",
+					"min": 1,
+					"max": 16,
+					"step": 1,
+					"title": {
+						"en": "Volume"
+					},
+					"hint": {
+						"en": "Set the volume level (1-16)"
+					},
+					"value": 5
+				},
+				{
+					"name": "repeat",
+					"type": "dropdown",
+					"title": {
+						"en": "Repeat"
+					},
+					"hint": {
+						"en": "Set how many times to repeat the tone (1-10)"
+					},
+					"values": [
+						{
+							"id": "0",
+							"label": {
+								"en": "None"
+							}
+						},
+						{
+							"id": "1",
+							"label": {
+								"en": "Once"
+							}
+						},
+						{
+							"id": "2",
+							"label": {
+								"en": "Twice"
+							}
+						},
+						{
+							"id": "3",
+							"label": {
+								"en": "Thrice"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
