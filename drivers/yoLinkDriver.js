@@ -57,7 +57,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			secretKey = data.secret;
 			accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
 
-			if (!accessToken)
+			if (accessToken)
 			{
 				await session.nextView();
 				return true;

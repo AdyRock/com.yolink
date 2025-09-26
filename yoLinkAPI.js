@@ -95,6 +95,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 			// No entry found for this UAID, so obtain a new access token using the secret key
 			this.app.updateLog(`No entry found for UAID ${UAID}`);
 			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey);
+			if (newTokenData.state === 'error')
+			{
+				this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.desc}`, 0);
+				return null;
+			}
 			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
 
 			// Add the new entry to the UAIDList
