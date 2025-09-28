@@ -1,6 +1,5 @@
 'use strict';
 
-// const Homey = require('homey');
 const yoLinkDriver = require('../yoLinkDriver');
 
 module.exports = class DoorSensorDriver extends yoLinkDriver
@@ -11,7 +10,7 @@ module.exports = class DoorSensorDriver extends yoLinkDriver
 	async onInit()
 	{
 		this.deviceType = 'DoorSensor';
-		this.homey.app.updateLog('MyDriver has been initialized');
+		this.homey.app.updateLog('DoorSensorDriver has been initialized');
 	}
 
 };

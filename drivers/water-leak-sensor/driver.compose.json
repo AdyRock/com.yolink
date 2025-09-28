@@ -1,0 +1,20 @@
+{
+	"name": {
+		"en": "Water Leak Sensor"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_water",
+		"measure_temperature"
+	],
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

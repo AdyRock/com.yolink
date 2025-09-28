@@ -73,7 +73,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 					entry.access_token = newTokenData.access_token;
 					entry.refresh_token = newTokenData.refresh_token;
 					entry.expires_at = Date.now() + (newTokenData.expires_in * 1000);
-					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}`);
+					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}, ${entry.access_token}`);
 					this.app.homey.settings.set('UAIDList', this.UAIDList);
 
 					resolveToken();
@@ -213,7 +213,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return data;
 	}
 
-	async getDeviceList(UAID, SecretKey)
+	async getDeviceList(UAID, SecretKey, serviceZone)
 	{
 		// Get the access token for the UAID. The SecretKey is only needed if there is no valid access token yet
 		const accessToken = await this.getAccessTokenForUAID(UAID, SecretKey);
@@ -232,7 +232,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		const response = await this.request('POST', `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`, body, headers);
+		const response = await this.request('POST', this.getZoneURL(serviceZone), body, headers);
 		if (response && response.desc === 'Success')
 		{
 			if (response && response.data && response.data.devices && response.data.devices.length > 0)
@@ -284,6 +284,19 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		const url = this.getZoneURL(serviceZone);
 
+		// Wait if an MQTT client is being setup
+		while (this.settingUpMQTTClient)
+		{
+			await this.settingUpMQTTClient;
+		}
+
+		// Set a promise to indicate that we are fetching a token
+		let resolveToken;
+		this.settingUpMQTTClient = new Promise((resolve) =>
+		{
+			resolveToken = resolve;
+		});
+
 		// Ensure an MQTT client is setup for this UAID and serviceZone
 		const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZone === serviceZone));
 		if (!entry)
@@ -307,11 +320,12 @@ module.exports = class YoLinkAPI extends SimpleClass
 					port: 8003,
 					username: accessToken,
 					password: '',
+					serviceZone,
 				};
-				const MQTTClient = this.setupMQTTClient(brokerConfig);
-				if (MQTTClient)
+				const MQTTConnection = await this.setupMQTTClient(brokerConfig);
+				if (MQTTConnection)
 				{
-					this.MQTTList.push({ UAID, serviceZone, MQTTClient });
+					this.MQTTList.push(MQTTConnection);
 				}
 			}
 			catch (err)
@@ -319,6 +333,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 				this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
 			}
 		}
+		resolveToken();
+		this.settingUpMQTTClient = null;
 
 		return this.request('POST', url, body, headers);
 	}
@@ -368,36 +384,89 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return this.request('POST', `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`, body, headers);
 	}
 
-	setupMQTTClient(brokerConfig)
+	async postMQTTMessage(mqttMessage)
+	{
+		this.app.updateLog(`postMQTTMessage: ${this.app.varToString(mqttMessage)}`);
+
+		// Find the MQTT client for the UAID
+		const entry = this.MQTTList.find((item) => item.UAID === mqttMessage.UAID);
+		if (entry && entry.MQTTClient)
+		{
+			// wait for the MQTT client is ready
+			await entry.mqttReady;
+
+			// Publish the message to the yl-home/HomeID/deviceId/command topic
+			const topic = `yl-home/${entry.homeID}/**/request`;
+			entry.MQTTClient.publish(topic, JSON.stringify(mqttMessage.command), { qos: 0 }, (err) =>
+			{
+				if (err)
+				{
+					this.app.updateLog(`postMQTTMessage.publish error: ${this.app.varToString(err)}`, 0);
+				}
+				else
+				{
+					this.app.updateLog(`postMQTTMessage.publish: published to ${topic}`, 1);
+				}
+			});
+		}
+	}
+
+	async setupMQTTClient(brokerConfig)
 	{
 		try
 		{
-			// Connect to the MQTT server and subscribe to the state change topic
-			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}`, 1);
-			const MQTTclient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}`, username: brokerConfig.username, password: brokerConfig.password });
+			let readyToken;
+			const mqttReady = new Promise((resolve) =>
+			{
+				readyToken = resolve;
+			});
 
-			MQTTclient.on('connect', async () =>
+			// Connect to the MQTT server and subscribe to the state change topic
+			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}, ${brokerConfig.username}, ${brokerConfig.password}`, 1);
+			const homeID = await this.getHomeInfo(brokerConfig.UAID);
+			const MQTTClient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}`, username: brokerConfig.username, password: brokerConfig.password });
+
+			MQTTClient.on('connect', () =>
 			{
 				this.app.updateLog(`setupMQTTClient.onConnect: connected to ${brokerConfig.url}:${brokerConfig.port} as ${brokerConfig.UAID}`);
 
 				// Subscribe to the yl-home/HomeID/+/report topic to receive device reports
-				const homeID = await this.getHomeInfo(brokerConfig.UAID);
+				this.app.updateLog(`setupMQTTClient.onConnect: homeID is ${this.app.varToString(homeID)}`);
 				const topic = `yl-home/${homeID.data.id}/+/report`;
-				MQTTclient.subscribe(topic, { qos: 0 }, (err) =>
+				MQTTClient.subscribe(topic, { qos: 0 }, (err) =>
 				{
 					if (err)
 					{
 						this.app.updateLog(`setupMQTTClient.subscribe error: ${this.app.varToString(err)}`, 0);
 					}
+					else
+					{
+						this.app.updateLog(`setupMQTTClient.subscribe: subscribed to ${topic}`, 1);
+					}
+				});
+
+				const topicResponse = `yl-home/${homeID.data.id}/+/response`;
+				MQTTClient.subscribe(topicResponse, { qos: 0 }, (err) =>
+				{
+					if (err)
+					{
+						this.app.updateLog(`setupMQTTClient.subscribe error: ${this.app.varToString(err)}`, 0);
+					}
+					else
+					{
+						this.app.updateLog(`setupMQTTClient.subscribe: subscribed to ${topicResponse}`, 1);
+					}
+
+					readyToken();
 				});
 			});
 
-			MQTTclient.on('error', (err) =>
+			MQTTClient.on('error', (err) =>
 			{
 				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)}`, 0);
 			});
 
-			MQTTclient.on('message', async (topic, message) =>
+			MQTTClient.on('message', async (topic, message) =>
 			{
 				// message is in Buffer
 				try
@@ -434,7 +503,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				}
 			});
 
-			return MQTTclient;
+			return { UAID: brokerConfig.UAID, homeID: homeID.data.id, serviceZone: brokerConfig.serviceZone, mqttReady, MQTTClient };
 		}
 		catch (err)
 		{

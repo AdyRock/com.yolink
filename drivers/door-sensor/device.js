@@ -84,19 +84,35 @@ module.exports = class DoorSensorDevice extends Homey.Device
 			const batteryLevel = parseInt(state.data.state.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+
+		this.driver.updateMQTTState(data);
 	}
 
 	async processMQTTMessage(mqttMessage)
 	{
-		if (mqttMessage.deviceId !== this.getData().id)
+		let mqttData;
+		let deviceId;
+		// Check if the event field is present so we know what type of message this is
+		if (mqttMessage.event)
+		{
+			mqttData = mqttMessage.data;
+			deviceId = mqttMessage.deviceId;
+		}
+		else
+		{
+			mqttData = mqttMessage.data.state;
+			deviceId = mqttMessage.targetDevice;
+		}
+
+		if (deviceId !== this.getData().id)
 		{
 			return;
 		}
 
 		// Process the MQTT message
-		if (mqttMessage.event === 'DoorSensor.Alert')
+		if (mqttData.alertType)
 		{
-			if (mqttMessage.data.alertType === 'openRemind')
+			if (mqttData.alertType === 'openRemind')
 			{
 				this.setCapabilityValue('alarm_door_fault', true);
 			}
@@ -104,14 +120,14 @@ module.exports = class DoorSensorDevice extends Homey.Device
 			{
 				this.setCapabilityValue('alarm_door_fault', false);
 			}
+		}
 
-			this.setCapabilityValue('alarm_contact', mqttMessage.data.state === 'open');
+		this.setCapabilityValue('alarm_contact', mqttData.state === 'open');
 
-			if (mqttMessage.data.battery)
-			{
-				const batteryLevel = parseInt(mqttMessage.data.battery, 10) / 0.04;
-				this.setCapabilityValue('measure_battery', batteryLevel);
-			}
+		if (mqttData.battery)
+		{
+			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
+			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
 	}
 };

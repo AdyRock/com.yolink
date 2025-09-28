@@ -10,7 +10,7 @@ const Homey = require('homey');
 const YoLinkAPI = require('./yoLinkAPI');
 const nodemailer = require('./nodemailer');
 
-module.exports = class MyApp extends Homey.App
+module.exports = class YoLink extends Homey.App
 {
 
 	/**
@@ -25,7 +25,7 @@ module.exports = class MyApp extends Homey.App
 		{
 		});
 
-		this.updateLog('MyApp has been initialized');
+		this.updateLog('YoLink app has been initialized');
 	}
 
 	// Convert a variable of any type (almost) to a string
@@ -198,8 +198,20 @@ module.exports = class MyApp extends Homey.App
 			for (const uaid of uaidList)
 			{
 				// Append the devices to the list
-				const newDevices = await this.yoLinkAPI.getDeviceList(uaid);
-				deviceList = deviceList.concat(newDevices);
+				const newusDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'us');
+				deviceList = deviceList.concat(newusDevices);
+
+				// Get the list for the EU/UK zone as well but don't add duplicates
+				const neweuDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'eu');
+
+				// Filter out duplicates
+				for (const neweuDevice of neweuDevices)
+				{
+					if (!deviceList.find((device) => device.UID === neweuDevice.UID))
+					{
+						deviceList.push(neweuDevice);
+					}
+				}
 			}
 		}
 		return this.varToString(deviceList);

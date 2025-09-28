@@ -72,10 +72,24 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			{
 				throw new Error('No access token, cannot list devices');
 			}
-			const deviceList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken);
-			if (!deviceList)
+			const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
+			const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu');
+			const deviceList = deviceusList;
+			// Add the EU devices to the list if not already present
+			if (deviceeuList && deviceeuList.length > 0)
 			{
-				throw new Error('No devices found');
+				for (const deviceeu of deviceeuList)
+				{
+					if (!deviceusList.find((device) => device.UID === deviceeu.UID))
+					{
+						deviceList.push(deviceeu);
+					}
+				}
+			}
+
+			if (!deviceusList)
+			{
+				return [];
 			}
 
 			// Filter the list to just include devices of this type
@@ -105,10 +119,10 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 		session.setHandler('login', async (data) =>
 		{
-			UAID = data.UAID;
-			secretKey = data.secretKey;
-			const credentialsAreValid = await this.homey.app.newLogin_2(UAID, secretKey);
-
+			UAID = data.username;
+			secretKey = data.password;
+			const accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
+			const credentialsAreValid = (accessToken !== null);
 			// return true to continue adding the device if the login succeeded
 			// return false to indicate to the user the login attempt failed
 			// thrown errors will also be shown to the user
@@ -119,5 +133,23 @@ module.exports = class yoLinkDriver extends Homey.Driver
 	async getState(data, settings)
 	{
 		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, settings.serviceZone);
+	}
+
+	updateMQTTState(data)
+	{
+		const command = {
+			method: `${data.type}.getState`,
+			time: Math.floor(Date.now() / 1000),
+			targetDevice: data.id,
+			token: data.deviceToken,
+			params: {},
+		};
+
+		const mqttMessage = {
+			UAID: data.UAID,
+			command,
+		};
+
+		this.homey.app.yoLinkAPI.postMQTTMessage(mqttMessage);
 	}
 };
