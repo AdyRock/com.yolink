@@ -1,11 +1,19 @@
 {
-  "name": {
-    "en": "Speaker Hub"
-  },
-  "class": "bridge",
-  "capabilities": [
-	"info"
-  ],
+	"name": {
+		"en": "Speaker Hub",
+		"de": "Lautsprecher-Hub",
+		"fr": "Hub haut-parleur",
+		"it": "Hub per altoparlanti",
+		"es": "Concentrador de altavoces",
+		"sv": "Högtalarhub",
+		"da": "Højttalerhub",
+		"pl": "Hub głośnikowy",
+		"ko": "스피커 허브"
+	},
+	"class": "bridge",
+	"capabilities": [
+		"info"
+	],
 	"$extends": [
 		"cloudDriver"
 	]

@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Velg UAID",
+			"intro": "Velg UAID (Brukerkonto-ID) du vil bruke. Dette hentes fra YoLink-appen.",
+			"uaid": "UAID",
+			"next": "Fortsett"
+		},
+		"enter_secret": {
+			"title": "Skriv inn Hemmelighet",
+			"intro": "Skriv inn hemmelig nøkkel for valgt UAID. Dette hentes fra YoLink-appen.",
+			"secret": "Hemmelig Nøkkel",
+			"next": "Fortsett"
+		}
+	},
+	"settings": {
+		"settings": "Internett",
+		"detected": "Oppdaget",
+		"diagnosticsLog": "Diagnostikk Logg",
+		"clear": "Tøm Logg",
+		"send": "Send Logg",
+		"detectedDescription": "** Ikke del denne informasjonen offentlig **",
+		"enableLog": "Logg Aktivert",
+		"confirmSend": "Send logginnholdet til utvikleren?\n** Alle identifikatorer vil bli fjernet **",
+		"logSent": "Loggen har blitt sendt.",
+		"logSendFailed": "Kunne ikke sende etter 5 forsøk.\nFeilmeldingene er på slutten av loggen.",
+		"getDevices": "Hent Enheter",
+		"enableLLogExplanation": "Hvis aktivert, vil appen logge mye diagnostikkinformasjon.<br>Appen vil fortsatt logge feil selv om dette er deaktivert.",
+		"emailExplanation": "Hvis du vil at jeg skal svare på loggen din, vennligst skriv inn e-postadressen eller forum-id her så jeg vet hvordan jeg kan kontakte deg.",
+		"description": "Beskrivelse",
+		"descriptionExplanation": "Vennligst skriv inn en kort beskrivelse av problemet hvis du skal sende loggen.",
+		"email": "E-postadresse eller Forum-id",
+		"sendLogConfirm": "Send logginnholdet til utvikleren?"
+	}
+}

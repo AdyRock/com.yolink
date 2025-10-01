@@ -1,6 +1,14 @@
 {
 	"name": {
-		"en": "Water Leak Sensor"
+		"en": "Water Leak Sensor",
+		"de": "Wasserleck-Sensor",
+		"fr": "Capteur de fuite d'eau",
+		"it": "Sensore di perdita d'acqua",
+		"es": "Sensor de fuga de agua",
+		"sv": "Vattenläckagesensor",
+		"da": "Vandlækagesensor",
+		"pl": "Czujnik wycieku wody",
+		"ko": "수분 감지기"
 	},
 	"class": "sensor",
 	"capabilities": [

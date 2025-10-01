@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Wybierz UAID",
+			"intro": "Wybierz UAID (ID Konta Użytkownika), którego chcesz użyć. Można to uzyskać z aplikacji YoLink.",
+			"uaid": "UAID",
+			"next": "Kontynuuj"
+		},
+		"enter_secret": {
+			"title": "Wprowadź Sekret",
+			"intro": "Wprowadź tajny klucz dla wybranego UAID. Można to uzyskać z aplikacji YoLink.",
+			"secret": "Tajny Klucz",
+			"next": "Kontynuuj"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Wykryto",
+		"diagnosticsLog": "Dziennik Diagnostyczny",
+		"clear": "Wyczyść Dziennik",
+		"send": "Wyślij Dziennik",
+		"detectedDescription": "** Nie udostępniaj tych informacji publicznie **",
+		"enableLog": "Dziennik Włączony",
+		"confirmSend": "Wysłać zawartość dziennika do programisty?\n** Wszystkie identyfikatory zostaną usunięte **",
+		"logSent": "Dziennik został wysłany.",
+		"logSendFailed": "Nie udało się wysłać po 5 próbach.\nKomunikaty o błędach znajdują się na końcu dziennika.",
+		"getDevices": "Pobierz Urządzenia",
+		"enableLLogExplanation": "Jeśli włączone, aplikacja będzie rejestrować wiele informacji diagnostycznych.<br>Aplikacja nadal będzie rejestrować błędy, nawet jeśli ta opcja jest wyłączona.",
+		"emailExplanation": "Jeśli chcesz, żebym odpowiedział na Twój dziennik, wprowadź tutaj swój adres email lub id forum, żebym wiedział, jak się z Tobą skontaktować.",
+		"description": "Opis",
+		"descriptionExplanation": "Proszę wprowadzić krótki opis problemu, jeśli zamierzasz wysłać dziennik.",
+		"email": "Adres Email lub ID Forum",
+		"sendLogConfirm": "Wysłać zawartość dziennika do programisty?"
+	}
+}

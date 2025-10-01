@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "UAID Selecteren",
+			"intro": "Selecteer de UAID (Gebruikersaccount-ID) die u wilt gebruiken. Deze wordt verkregen uit de YoLink-app.",
+			"uaid": "UAID",
+			"next": "Doorgaan"
+		},
+		"enter_secret": {
+			"title": "Geheim Invoeren",
+			"intro": "Voer de geheime sleutel in voor de geselecteerde UAID. Deze wordt verkregen uit de YoLink-app.",
+			"secret": "Geheime Sleutel",
+			"next": "Doorgaan"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Gedetecteerd",
+		"diagnosticsLog": "Diagnose Logboek",
+		"clear": "Logboek Wissen",
+		"send": "Logboek Verzenden",
+		"detectedDescription": "** Deel deze informatie niet openbaar **",
+		"enableLog": "Logboek Ingeschakeld",
+		"confirmSend": "Logboekinhoud naar de ontwikkelaar verzenden?\n** Alle identificatoren worden verwijderd **",
+		"logSent": "Het logboek is verzonden.",
+		"logSendFailed": "Verzenden mislukt na 5 pogingen.\nDe foutmeldingen staan aan het einde van het logboek.",
+		"getDevices": "Apparaten Ophalen",
+		"enableLLogExplanation": "Indien ingeschakeld, zal de app veel diagnostische informatie loggen.<br>De app zal nog steeds fouten loggen zelfs als dit is uitgeschakeld.",
+		"emailExplanation": "Als u wilt dat ik reageer op uw logboek, voer dan uw e-mailadres of forum-id hier in zodat ik weet hoe ik contact met u kan opnemen.",
+		"description": "Beschrijving",
+		"descriptionExplanation": "Voer een korte beschrijving van het probleem in als u het logboek gaat verzenden.",
+		"email": "E-mailadres of Forum-ID",
+		"sendLogConfirm": "Logboekinhoud naar de ontwikkelaar verzenden?"
+	}
+}

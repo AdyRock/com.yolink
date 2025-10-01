@@ -3,44 +3,108 @@
 		{
 			"id": "play_tone",
 			"title": {
-				"en": "Play a tone"
+				"en": "Play a tone",
+				"de": "Ton abspielen",
+				"fr": "Jouer une tonalité",
+				"it": "Riproduci un tono",
+				"es": "Reproducir un tono",
+				"sv": "Spela en ton",
+				"da": "Afspil en tone",
+				"pl": "Odtwórz ton",
+				"ko": "음색 재생"
 			},
 			"titleFormatted": {
-				"en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]"
+				"en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]",
+				"de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]], Wiederholung [[repeat]]",
+				"fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]], répétition [[repeat]]",
+				"it": "Riproduci il tono [[tone]] al livello di volume [[volume]], ripetendo [[repeat]]",
+				"es": "Reproduce el tono [[tone]] al nivel de volumen [[volume]], repitiendo [[repeat]]",
+				"sv": "Spela tonen [[tone]] på volymnivå [[volume]], upprepa [[repeat]]",
+				"da": "Afspil tonen [[tone]] på lydstyrkeniveau [[volume]], gentagelse [[repeat]]",
+				"pl": "Odtwórz ton [[tone]] na poziomie głośności [[volume]], powtarzając [[repeat]]",
+				"ko": "[[tone]] 톤을 볼륨 레벨 [[volume]]로 재생, [[repeat]] 반복"
 			},
 			"args": [
 				{
 					"name": "tone",
 					"type": "dropdown",
 					"title": {
-						"en": "Tone"
+						"en": "Tone",
+						"de": "Ton",
+						"fr": "Tonalité",
+						"it": "Tono",
+						"es": "Tono",
+						"sv": "Ton",
+						"da": "Tone",
+						"pl": "Ton",
+						"ko": "음색"
 					},
 					"hint": {
-						"en": "Select the tone to play"
+						"en": "Select the tone to play",
+						"de": "Wählen Sie den abzuspielenden Ton",
+						"fr": "Sélectionnez la tonalité à jouer",
+						"it": "Seleziona il tono da riprodurre",
+						"es": "Seleccione el tono a reproducir",
+						"sv": "Välj tonen som ska spelas",
+						"da": "Vælg den tone, der skal afspilles",
+						"pl": "Wybierz ton do odtworzenia",
+						"ko": "재생할 음색 선택"
 					},
 					"values": [
 						{
 							"id": "Emergency",
 							"label": {
-								"en": "Emergency"
+								"en": "Emergency",
+								"de": "Notfall",
+								"fr": "Urgence",
+								"it": "Emergenza",
+								"es": "Emergencia",
+								"sv": "Nödsituation",
+								"da": "Nød",
+								"pl": "Awaryjny",
+								"ko": "비상"
 							}
 						},
 						{
 							"id": "Alert",
 							"label": {
-								"en": "Alert"
+								"en": "Alert",
+								"de": "Alarm",
+								"fr": "Alerte",
+								"it": "Allarme",
+								"es": "Alerta",
+								"sv": "Varning",
+								"da": "Alarm",
+								"pl": "Alert",
+								"ko": "경고"
 							}
 						},
 						{
 							"id": "Warn",
 							"label": {
-								"en": "Warn"
+								"en": "Warn",
+								"de": "Warnen",
+								"fr": "Avertir",
+								"it": "Avvisare",
+								"es": "Advertir",
+								"sv": "Varning",
+								"da": "Advarsel",
+								"pl": "Ostrzeżenie",
+								"ko": "경고"
 							}
 						},
 						{
 							"id": "Tip",
 							"label": {
-								"en": "Tip"
+								"en": "Tip",
+								"de": "Tipp",
+								"fr": "Astuce",
+								"it": "Suggerimento",
+								"es": "Consejo",
+								"sv": "Tips",
+								"da": "Tip",
+								"pl": "Wskazówka",
+								"ko": "팁"
 							}
 						}
 					]
@@ -52,10 +116,26 @@
 					"max": 16,
 					"step": 1,
 					"title": {
-						"en": "Volume"
+						"en": "Volume",
+						"de": "Lautstärke",
+						"fr": "Volume",
+						"it": "Volume",
+						"es": "Volumen",
+						"sv": "Volym",
+						"da": "Lydstyrke",
+						"pl": "Głośność",
+						"ko": "볼륨"
 					},
 					"hint": {
-						"en": "Set the volume level (1-16)"
+						"en": "Set the volume level (1-16)",
+						"de": "Stellen Sie die Lautstärke ein (1-16)",
+						"fr": "Réglez le niveau de volume (1-16)",
+						"it": "Imposta il livello del volume (1-16)",
+						"es": "Establezca el nivel de volumen (1-16)",
+						"sv": "Ställ in volymnivån (1-16)",
+						"da": "Indstil lydstyrkeniveauet (1-16)",
+						"pl": "Ustaw poziom głośności (1-16)",
+						"ko": "볼륨 레벨 설정 (1-16)"
 					},
 					"value": 5
 				},
@@ -63,34 +143,82 @@
 					"name": "repeat",
 					"type": "dropdown",
 					"title": {
-						"en": "Repeat"
+						"en": "Repeat",
+						"de": "Wiederholen",
+						"fr": "Répéter",
+						"it": "Ripeti",
+						"es": "Repetir",
+						"sv": "Upprepa",
+						"da": "Gentag",
+						"pl": "Powtórz",
+						"ko": "반복"
 					},
 					"hint": {
-						"en": "Set how many times to repeat the tone (1-10)"
+						"en": "Set how many times to repeat the tone (1-10)",
+						"de": "Legen Sie fest, wie oft der Ton wiederholt werden soll (1-10)",
+						"fr": "Définissez le nombre de fois que la tonalité doit être répétée (1-10)",
+						"it": "Imposta quante volte ripetere il tono (1-10)",
+						"es": "Establezca cuántas veces repetir el tono (1-10)",
+						"sv": "Ställ in hur många gånger tonen ska upprepas (1-10)",
+						"da": "Indstil, hvor mange gange tonen skal gentages (1-10)",
+						"pl": "Ustaw, ile razy powtórzyć ton (1-10)",
+						"ko": "톤을 반복할 횟수 설정 (1-10)"
 					},
 					"values": [
 						{
 							"id": "0",
 							"label": {
-								"en": "None"
+								"en": "None",
+								"de": "Keine",
+								"fr": "Aucune",
+								"it": "Nessuno",
+								"es": "Ninguno",
+								"sv": "Ingen",
+								"da": "Ingen",
+								"pl": "Brak",
+								"ko": "없음"
 							}
 						},
 						{
 							"id": "1",
 							"label": {
-								"en": "Once"
+								"en": "Once",
+								"de": "Einmal",
+								"fr": "Une fois",
+								"it": "Una volta",
+								"es": "Una vez",
+								"sv": "En gång",
+								"da": "En gang",
+								"pl": "Raz",
+								"ko": "한 번"
 							}
 						},
 						{
 							"id": "2",
 							"label": {
-								"en": "Twice"
+								"en": "Twice",
+								"de": "Zweimal",
+								"fr": "Deux fois",
+								"it": "Due volte",
+								"es": "Dos veces",
+								"sv": "Två gånger",
+								"da": "To gange",
+								"pl": "Dwa razy",
+								"ko": "두 번"
 							}
 						},
 						{
 							"id": "3",
 							"label": {
-								"en": "Thrice"
+								"en": "Thrice",
+								"de": "Dreimal",
+								"fr": "Trois fois",
+								"it": "Tre volte",
+								"es": "Tres veces",
+								"sv": "Tre gånger",
+								"da": "Tre gange",
+								"pl": "Trzy razy",
+								"ko": "세 번"
 							}
 						}
 					]
@@ -100,23 +228,63 @@
 		{
 			"id": "play_message",
 			"title": {
-				"en": "Play a message"
+				"en": "Play a message",
+				"de": "Eine Nachricht abspielen",
+				"fr": "Lire un message",
+				"it": "Riproduci un messaggio",
+				"es": "Reproducir un mensaje",
+				"sv": "Spela ett meddelande",
+				"da": "Afspil en besked",
+				"pl": "Odtwórz wiadomość",
+				"ko": "메시지 재생"
 			},
 			"titleFormatted": {
-				"en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]"
+				"en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]",
+				"de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]], wiederhole [[repeat]]",
+				"fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]], répétant [[repeat]]",
+				"it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]], ripetendo [[repeat]]",
+				"es": "Reproducir el mensaje: '[[message]]' en el nivel de volumen [[volume]], repitiendo [[repeat]]",
+				"sv": "Spela meddelandet: '[[message]]' på volymnivå [[volume]], upprepa [[repeat]]",
+				"da": "Afspil beskeden: '[[message]]' på lydstyrkeniveau [[volume]], gentag [[repeat]]",
+				"pl": "Odtwórz wiadomość: '[[message]]' na poziomie głośności [[volume]], powtarzając [[repeat]]",
+				"ko": "메시지 재생: '[[message]]' 볼륨 레벨 [[volume]]에서 [[repeat]] 반복"
 			},
 			"args": [
 				{
 					"name": "message",
 					"type": "text",
 					"title": {
-						"en": "Message"
+						"en": "Message",
+						"de": "Nachricht",
+						"fr": "Message",
+						"it": "Messaggio",
+						"es": "Mensaje",
+						"sv": "Meddelande",
+						"da": "Besked",
+						"pl": "Wiadomość",
+						"ko": "메시지"
 					},
 					"hint": {
-						"en": "Enter the message to play"
+						"en": "Enter the message to play",
+						"de": "Geben Sie die abzuspielende Nachricht ein",
+						"fr": "Entrez le message à lire",
+						"it": "Inserisci il messaggio da riprodurre",
+						"es": "Ingrese el mensaje a reproducir",
+						"sv": "Ange meddelandet som ska spelas",
+						"da": "Indtast den besked, der skal afspilles",
+						"pl": "Wprowadź wiadomość do odtworzenia",
+						"ko": "재생할 메시지를 입력하세요"
 					},
 					"placeholder": {
-						"en": "Hello, this is a test message"
+						"en": "Hello, this is a test message",
+						"de": "Hallo, dies ist eine Testnachricht",
+						"fr": "Bonjour, ceci est un message test",
+						"it": "Ciao, questo è un messaggio di prova",
+						"es": "Hola, este es un mensaje de prueba",
+						"sv": "Hej, detta är ett testmeddelande",
+						"da": "Hej, dette er en testbesked",
+						"pl": "Cześć, to jest wiadomość testowa",
+						"ko": "안녕하세요, 이것은 테스트 메시지입니다"
 					}
 				},
 				{
@@ -126,10 +294,26 @@
 					"max": 16,
 					"step": 1,
 					"title": {
-						"en": "Volume"
+						"en": "Volume",
+						"de": "Lautstärke",
+						"fr": "Volume",
+						"it": "Volume",
+						"es": "Volumen",
+						"sv": "Volym",
+						"da": "Lydstyrke",
+						"pl": "Głośność",
+						"ko": "볼륨"
 					},
 					"hint": {
-						"en": "Set the volume level (1-16)"
+						"en": "Set the volume level (1-16)",
+						"de": "Stellen Sie die Lautstärke ein (1-16)",
+						"fr": "Réglez le niveau de volume (1-16)",
+						"it": "Imposta il livello del volume (1-16)",
+						"es": "Establezca el nivel de volumen (1-16)",
+						"sv": "Ställ in volymnivån (1-16)",
+						"da": "Indstil lydstyrkeniveauet (1-16)",
+						"pl": "Ustaw poziom głośności (1-16)",
+						"ko": "볼륨 레벨 설정 (1-16)"
 					},
 					"value": 5
 				},
@@ -137,34 +321,82 @@
 					"name": "repeat",
 					"type": "dropdown",
 					"title": {
-						"en": "Repeat"
+						"en": "Repeat",
+						"de": "Wiederholen",
+						"fr": "Répéter",
+						"it": "Ripeti",
+						"es": "Repetir",
+						"sv": "Upprepa",
+						"da": "Gentag",
+						"pl": "Powtórz",
+						"ko": "반복"
 					},
 					"hint": {
-						"en": "Set how many times to repeat the tone (1-10)"
+						"en": "Set how many times to repeat the tone (1-10)",
+						"de": "Legen Sie fest, wie oft der Ton wiederholt werden soll (1-10)",
+						"fr": "Définissez combien de fois répéter le ton (1-10)",
+						"it": "Imposta quante volte ripetere il tono (1-10)",
+						"es": "Establezca cuántas veces repetir el tono (1-10)",
+						"sv": "Ställ in hur många gånger tonen ska upprepas (1-10)",
+						"da": "Indstil hvor mange gange tonen skal gentages (1-10)",
+						"pl": "Ustaw, ile razy powtórzyć ton (1-10)",
+						"ko": "톤을 반복할 횟수 설정 (1-10)"
 					},
 					"values": [
 						{
 							"id": "0",
 							"label": {
-								"en": "None"
+								"en": "None",
+								"de": "Keine",
+								"fr": "Aucun",
+								"it": "Nessuno",
+								"es": "Ninguno",
+								"sv": "Ingen",
+								"da": "Ingen",
+								"pl": "Brak",
+								"ko": "없음"
 							}
 						},
 						{
 							"id": "1",
 							"label": {
-								"en": "Once"
+								"en": "Once",
+								"de": "Einmal",
+								"fr": "Une fois",
+								"it": "Una volta",
+								"es": "Una vez",
+								"sv": "En gång",
+								"da": "En gang",
+								"pl": "Raz",
+								"ko": "한 번"
 							}
 						},
 						{
 							"id": "2",
 							"label": {
-								"en": "Twice"
+								"en": "Twice",
+								"de": "Zweimal",
+								"fr": "Deux fois",
+								"it": "Due volte",
+								"es": "Dos veces",
+								"sv": "Två gånger",
+								"da": "To gange",
+								"pl": "Dwa razy",
+								"ko": "두 번"
 							}
 						},
 						{
 							"id": "3",
 							"label": {
-								"en": "Thrice"
+								"en": "Thrice",
+								"de": "Dreimal",
+								"fr": "Trois fois",
+								"it": "Tre volte",
+								"es": "Tres veces",
+								"sv": "Tre gånger",
+								"da": "Tre gange",
+								"pl": "Trzy razy",
+								"ko": "세 번"
 							}
 						}
 					]

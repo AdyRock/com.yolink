@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Välj UAID",
+			"intro": "Välj det UAID (Användarkonto-ID) du vill använda. Detta erhålls från YoLink-appen.",
+			"uaid": "UAID",
+			"next": "Fortsätt"
+		},
+		"enter_secret": {
+			"title": "Ange Hemlighet",
+			"intro": "Ange den hemliga nyckeln för valt UAID. Detta erhålls från YoLink-appen.",
+			"secret": "Hemlig Nyckel",
+			"next": "Fortsätt"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Upptäckt",
+		"diagnosticsLog": "Diagnostik Logg",
+		"clear": "Rensa Logg",
+		"send": "Skicka Logg",
+		"detectedDescription": "** Dela inte denna information offentligt **",
+		"enableLog": "Logg Aktiverad",
+		"confirmSend": "Skicka logginnehållet till utvecklaren?\n** Alla identifierare kommer att tas bort **",
+		"logSent": "Loggen har skickats.",
+		"logSendFailed": "Misslyckades att skicka efter 5 försök.\nFelmeddelandena finns i slutet av loggen.",
+		"getDevices": "Hämta Enheter",
+		"enableLLogExplanation": "Om aktiverad kommer appen att logga mycket diagnostikinformation.<br>Appen kommer fortfarande att logga fel även om detta är inaktiverat.",
+		"emailExplanation": "Om du vill att jag ska svara på din logg, vänligen ange din e-postadress eller forum-id här så jag vet hur jag ska kontakta dig.",
+		"description": "Beskrivning",
+		"descriptionExplanation": "Vänligen ange en kort beskrivning av problemet om du ska skicka loggen.",
+		"email": "E-postadress eller Forum-id",
+		"sendLogConfirm": "Skicka logginnehållet till utvecklaren?"
+	}
+}

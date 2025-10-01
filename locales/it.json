@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Seleziona UAID",
+			"intro": "Seleziona l'UAID (ID Account Utente) che vuoi usare. Questo si ottiene dall'app YoLink.",
+			"uaid": "UAID",
+			"next": "Continua"
+		},
+		"enter_secret": {
+			"title": "Inserisci Segreto",
+			"intro": "Inserisci la chiave segreta per l'UAID selezionato. Questo si ottiene dall'app YoLink.",
+			"secret": "Chiave Segreta",
+			"next": "Continua"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Rilevato",
+		"diagnosticsLog": "Log Diagnostico",
+		"clear": "Cancella Log",
+		"send": "Invia Log",
+		"detectedDescription": "** Non condividere queste informazioni pubblicamente **",
+		"enableLog": "Log Abilitato",
+		"confirmSend": "Inviare il contenuto del log allo sviluppatore?\n** Tutti gli identificatori saranno rimossi **",
+		"logSent": "Il log è stato inviato.",
+		"logSendFailed": "Invio fallito dopo 5 tentativi.\nI messaggi di errore sono alla fine del log.",
+		"getDevices": "Ottieni Dispositivi",
+		"enableLLogExplanation": "Se abilitato, l'app registrerà molte informazioni diagnostiche.<br>L'app continuerà a registrare errori anche se questo è disabilitato.",
+		"emailExplanation": "Se vuoi che risponda al tuo log, inserisci il tuo indirizzo email o id forum qui così so come contattarti.",
+		"description": "Descrizione",
+		"descriptionExplanation": "Inserisci una breve descrizione del problema se invierai il log.",
+		"email": "Indirizzo Email o ID Forum",
+		"sendLogConfirm": "Inviare il contenuto del log allo sviluppatore?"
+	}
+}

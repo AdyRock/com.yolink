@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Sélectionner UAID",
+			"intro": "Sélectionnez l'UAID (ID de Compte Utilisateur) que vous souhaitez utiliser. Ceci est obtenu depuis l'application YoLink.",
+			"uaid": "UAID",
+			"next": "Continuer"
+		},
+		"enter_secret": {
+			"title": "Entrer le Secret",
+			"intro": "Entrez la clé secrète pour l'UAID sélectionné. Ceci est obtenu depuis l'application YoLink.",
+			"secret": "Clé Secrète",
+			"next": "Continuer"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Détecté",
+		"diagnosticsLog": "Journal de Diagnostic",
+		"clear": "Effacer le Journal",
+		"send": "Envoyer le Journal",
+		"detectedDescription": "** Ne partagez pas ces informations publiquement **",
+		"enableLog": "Journal Activé",
+		"confirmSend": "Envoyer le contenu du journal au développeur?\n** Tous les identifiants seront supprimés **",
+		"logSent": "Le journal a été envoyé.",
+		"logSendFailed": "Échec de l'envoi après 5 tentatives.\nLes messages d'erreur sont à la fin du journal.",
+		"getDevices": "Obtenir les Appareils",
+		"enableLLogExplanation": "Si activé, l'application enregistrera beaucoup d'informations de diagnostic.<br>L'application continuera d'enregistrer les erreurs même si ceci est désactivé.",
+		"emailExplanation": "Si vous voulez que je réponde à votre journal, veuillez entrer votre adresse email ou id de forum ici pour que je sache comment vous contacter.",
+		"description": "Description",
+		"descriptionExplanation": "Veuillez entrer une brève description du problème si vous allez envoyer le journal.",
+		"email": "Adresse Email ou ID de Forum",
+		"sendLogConfirm": "Envoyer le contenu du journal au développeur?"
+	}
+}

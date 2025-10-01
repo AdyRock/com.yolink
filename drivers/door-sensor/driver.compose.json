@@ -1,6 +1,14 @@
 {
 	"name": {
-		"en": "Window / Door Sensor"
+		"en": "Window / Door Sensor",
+		"de": "Tür- / Fenstersensor",
+		"fr": "Capteur de porte / fenêtre",
+		"it": "Sensore per porte/finestre",
+		"es": "Sensor de puerta/ventana",
+		"sv": "Fönster-/dörrsensor",
+		"da": "Dør-/vinduesensor",
+		"pl": "Czujnik drzwi/okien",
+		"ko": "창문/문 센서"
 	},
 	"class": "sensor",
 	"capabilities": [
@@ -10,16 +18,16 @@
 	],
 	"capabilitiesOptions": {
 		"alarm_contact": {
-			"title": "Open / Closed",
-			"titleTrue": "Open",
-			"titleFalse": "Closed",
-			"insightsTitleTrue": "Opened",
-			"insightsTitleFalse": "Closed"
+			"title": {"en": "Open / Closed", "de": "Offen / Geschlossen", "fr": "Ouvert / Fermé", "it": "Aperto / Chiuso", "es": "Abierto / Cerrado", "sv": "Öppen / Stängd", "da": "Åben / Lukket", "pl": "Otwarte / Zamknięte", "ko": "열림 / 닫힘"},
+			"titleTrue": {"en": "Open", "de": "Offen", "fr": "Ouvert", "it": "Aperto", "es": "Abierto", "sv": "Öppen", "da": "Åben", "pl": "Otwarte", "ko": "열림"},
+			"titleFalse": {"en": "Closed", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"},
+			"insightsTitleTrue": {"en": "Opened", "de": "Offen", "fr": "Ouvert", "it": "Aperto", "es": "Abierto", "sv": "Öppen", "da": "Åben", "pl": "Otwarte", "ko": "열림"},
+			"insightsTitleFalse": {"en": "Closed", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"}
 		},
 		"alarm_door_fault": {
-			"title": "Left Open",
-			"insightsTitleTrue": "Left Open",
-			"insightsTitleFalse": "Closed"
+			"title": {"en": "Left Open", "de": "Offen gelassen", "fr": "Resté ouvert", "it": "Lasciato aperto", "es": "Dejado abierto", "sv": "Lämnat öppet", "da": "Efterladt åben", "pl": "Pozostawione otwarte", "ko": "열린 상태로 둠"},
+			"insightsTitleTrue": {"en": "Left Open", "de": "Offen gelassen", "fr": "Resté ouvert", "it": "Lasciato aperto", "es": "Dejado abierto", "sv": "Lämnat öppet", "da": "Efterladt åben", "pl": "Pozostawione otwarte", "ko": "열린 상태로 둠"},
+			"insightsTitleFalse": {"en": "Closed", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"}
 		}
 	},
 	"energy": {

@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "UAID Auswählen",
+			"intro": "Wählen Sie die UAID (Benutzer-Account-ID) aus, die Sie verwenden möchten. Diese erhalten Sie aus der YoLink-App.",
+			"uaid": "UAID",
+			"next": "Weiter"
+		},
+		"enter_secret": {
+			"title": "Geheimnis Eingeben",
+			"intro": "Geben Sie den geheimen Schlüssel für die ausgewählte UAID ein. Dieser wird aus der YoLink-App erhalten.",
+			"secret": "Geheimer Schlüssel",
+			"next": "Weiter"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Erkannt",
+		"diagnosticsLog": "Diagnose-Protokoll",
+		"clear": "Protokoll Löschen",
+		"send": "Protokoll Senden",
+		"detectedDescription": "** Teilen Sie diese Informationen nicht öffentlich **",
+		"enableLog": "Protokoll Aktiviert",
+		"confirmSend": "Protokollinhalt an den Entwickler senden?\n** Alle Identifikatoren werden entfernt **",
+		"logSent": "Das Protokoll wurde gesendet.",
+		"logSendFailed": "Senden nach 5 Versuchen fehlgeschlagen.\nDie Fehlermeldungen stehen am Ende des Protokolls.",
+		"getDevices": "Geräte Abrufen",
+		"enableLLogExplanation": "Wenn aktiviert, protokolliert die App viele Diagnoseinformationen.<br>Die App protokolliert weiterhin Fehler, auch wenn dies deaktiviert ist.",
+		"emailExplanation": "Wenn Sie möchten, dass ich auf Ihr Protokoll antworte, geben Sie bitte hier Ihre E-Mail-Adresse oder Forum-ID ein, damit ich weiß, wie ich Sie kontaktieren kann.",
+		"description": "Beschreibung",
+		"descriptionExplanation": "Bitte geben Sie eine kurze Beschreibung des Problems ein, wenn Sie das Protokoll senden werden.",
+		"email": "E-Mail-Adresse oder Forum-ID",
+		"sendLogConfirm": "Protokollinhalt an den Entwickler senden?"
+	}
+}

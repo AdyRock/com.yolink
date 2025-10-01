@@ -1,6 +1,14 @@
 {
 	"name": {
-		"en": "Temperature and Humidity"
+		"en": "Temperature and Humidity",
+		"de": "Temperatur und Luftfeuchtigkeit",
+		"fr": "Température et Humidité",
+		"it": "Temperatura e Umidità",
+		"es": "Temperatura y Humedad",
+		"sv": "Temperatur och Luftfuktighet",
+		"da": "Temperatur og Luftfugtighed",
+		"pl": "Temperatura i Wilgotność",
+		"ko": "온도 및 습도"
 	},
 	"class": "sensor",
 	"capabilities": [

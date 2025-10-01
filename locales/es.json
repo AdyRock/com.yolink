@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "Seleccionar UAID",
+			"intro": "Selecciona el UAID (ID de Cuenta de Usuario) que deseas usar. Esto se obtiene de la aplicación YoLink.",
+			"uaid": "UAID",
+			"next": "Continuar"
+		},
+		"enter_secret": {
+			"title": "Introducir Secreto",
+			"intro": "Introduce la clave secreta para el UAID seleccionado. Esto se obtiene de la aplicación YoLink.",
+			"secret": "Clave Secreta",
+			"next": "Continuar"
+		}
+	},
+	"settings": {
+		"settings": "Internet",
+		"detected": "Detectado",
+		"diagnosticsLog": "Registro de Diagnósticos",
+		"clear": "Limpiar Registro",
+		"send": "Enviar Registro",
+		"detectedDescription": "** No compartas esta información públicamente **",
+		"enableLog": "Registro Habilitado",
+		"confirmSend": "¿Enviar el contenido del registro al desarrollador?\n** Todos los identificadores serán eliminados **",
+		"logSent": "El registro ha sido enviado.",
+		"logSendFailed": "Error al enviar después de 5 intentos.\nLos mensajes de error están al final del registro.",
+		"getDevices": "Obtener Dispositivos",
+		"enableLLogExplanation": "Si está habilitado, la aplicación registrará mucha información de diagnóstico.<br>La aplicación seguirá registrando errores incluso si esto está deshabilitado.",
+		"emailExplanation": "Si quieres que responda a tu registro, por favor introduce tu dirección de email o id del foro aquí para que sepa cómo contactarte.",
+		"description": "Descripción",
+		"descriptionExplanation": "Por favor introduce una breve descripción del problema si vas a enviar el registro.",
+		"email": "Dirección de Email o ID del Foro",
+		"sendLogConfirm": "¿Enviar el contenido del registro al desarrollador?"
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"pair": {
+		"select_uaid": {
+			"title": "UAID 선택",
+			"intro": "사용하려는 UAID(사용자 계정 ID)를 선택하세요. 이는 YoLink 앱에서 얻을 수 있습니다.",
+			"uaid": "UAID",
+			"next": "계속"
+		},
+		"enter_secret": {
+			"title": "비밀키 입력",
+			"intro": "선택한 UAID의 비밀키를 입력하세요. 이는 YoLink 앱에서 얻을 수 있습니다.",
+			"secret": "비밀키",
+			"next": "계속"
+		}
+	},
+	"settings": {
+		"settings": "인터넷",
+		"detected": "감지됨",
+		"diagnosticsLog": "진단 로그",
+		"clear": "로그 지우기",
+		"send": "로그 전송",
+		"detectedDescription": "** 이 정보를 공개적으로 공유하지 마세요 **",
+		"enableLog": "로그 활성화",
+		"confirmSend": "로그 내용을 개발자에게 전송하시겠습니까?\n** 모든 식별자는 제거됩니다 **",
+		"logSent": "로그가 전송되었습니다.",
+		"logSendFailed": "5번 시도 후 전송에 실패했습니다.\n오류 메시지는 로그 끝에 있습니다.",
+		"getDevices": "디바이스 가져오기",
+		"enableLLogExplanation": "활성화하면 앱이 많은 진단 정보를 기록합니다.<br>이 기능이 비활성화되어도 앱은 여전히 오류를 기록합니다.",
+		"emailExplanation": "로그에 대한 응답을 원하시면 이메일 주소나 포럼 ID를 여기에 입력해주세요. 연락 방법을 알 수 있도록 해주세요.",
+		"description": "설명",
+		"descriptionExplanation": "로그를 전송할 예정이라면 문제에 대한 간단한 설명을 입력해주세요.",
+		"email": "이메일 주소 또는 포럼 ID",
+		"sendLogConfirm": "로그 내용을 개발자에게 전송하시겠습니까?"
+	}
+}
