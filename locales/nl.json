@@ -7,9 +7,9 @@
 			"next": "Doorgaan"
 		},
 		"enter_secret": {
-			"title": "Geheim Invoeren",
-			"intro": "Voer de geheime sleutel in voor de geselecteerde UAID. Deze wordt verkregen uit de YoLink-app.",
-			"secret": "Geheime Sleutel",
+			"title": "Secret Key Invoeren",
+			"intro": "Voer de Secret Key in voor de geselecteerde UAID. Deze wordt verkregen uit de YoLink-app.",
+			"secret": "Secret Key",
 			"next": "Doorgaan"
 		}
 	},
