@@ -4,6 +4,7 @@
 		"type": "dropdown",
 		"label": {
 			"en": "Service Zone",
+			"nl": "Servicezone",
 			"de": "Servicezone",
 			"fr": "Zone de service",
 			"it": "Zona di servizio",
@@ -15,6 +16,7 @@
 		},
 		"hint": {
 			"en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+			"nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
 			"de": "Wählen Sie die Servicezone aus, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
 			"fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
 			"it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
@@ -29,6 +31,7 @@
 				"id": "us",
 				"label": {
 					"en": "US (United States)",
+					"nl": "US (Verenigde Staten)",
 					"de": "US (Vereinigte Staaten)",
 					"fr": "US (États-Unis)",
 					"it": "US (Stati Uniti)",
@@ -43,6 +46,7 @@
 				"id": "eu_uk",
 				"label": {
 					"en": "EU/UK (Europe and United Kingdom)",
+					"nl": "EU/UK (Europa en Verenigd Koninkrijk)",
 					"de": "EU/UK (Europa und Vereinigtes Königreich)",
 					"fr": "EU/UK (Europe et Royaume-Uni)",
 					"it": "EU/UK (Europa e Regno Unito)",
