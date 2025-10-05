@@ -4,6 +4,7 @@
 			"id": "play_tone",
 			"title": {
 				"en": "Play a tone",
+				"nl": "Toon afspelen",
 				"de": "Ton abspielen",
 				"fr": "Jouer une tonalité",
 				"it": "Riproduci un tono",
@@ -15,6 +16,7 @@
 			},
 			"titleFormatted": {
 				"en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]",
+				"nl": "Speel de [[tone]] tone op volume niveau [[volume]], herhaal [[repeat]]",
 				"de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]], Wiederholung [[repeat]]",
 				"fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]], répétition [[repeat]]",
 				"it": "Riproduci il tono [[tone]] al livello di volume [[volume]], ripetendo [[repeat]]",
@@ -30,6 +32,7 @@
 					"type": "dropdown",
 					"title": {
 						"en": "Tone",
+						"nl": "Toon",
 						"de": "Ton",
 						"fr": "Tonalité",
 						"it": "Tono",
@@ -41,6 +44,7 @@
 					},
 					"hint": {
 						"en": "Select the tone to play",
+						"nl": "Selecteer de af te spelen toon",
 						"de": "Wählen Sie den abzuspielenden Ton",
 						"fr": "Sélectionnez la tonalité à jouer",
 						"it": "Seleziona il tono da riprodurre",
@@ -55,6 +59,7 @@
 							"id": "Emergency",
 							"label": {
 								"en": "Emergency",
+								"nl": "Noodgeval",
 								"de": "Notfall",
 								"fr": "Urgence",
 								"it": "Emergenza",
@@ -69,6 +74,7 @@
 							"id": "Alert",
 							"label": {
 								"en": "Alert",
+								"nl": "Alarm",
 								"de": "Alarm",
 								"fr": "Alerte",
 								"it": "Allarme",
@@ -83,6 +89,7 @@
 							"id": "Warn",
 							"label": {
 								"en": "Warn",
+								"nl": "Waarschuwing",
 								"de": "Warnen",
 								"fr": "Avertir",
 								"it": "Avvisare",
@@ -97,6 +104,7 @@
 							"id": "Tip",
 							"label": {
 								"en": "Tip",
+								"nl": "Tip",
 								"de": "Tipp",
 								"fr": "Astuce",
 								"it": "Suggerimento",
@@ -117,6 +125,7 @@
 					"step": 1,
 					"title": {
 						"en": "Volume",
+						"nl": "Volume",
 						"de": "Lautstärke",
 						"fr": "Volume",
 						"it": "Volume",
@@ -128,6 +137,7 @@
 					},
 					"hint": {
 						"en": "Set the volume level (1-16)",
+						"nl": "Stel het volume niveau in (1-16)",
 						"de": "Stellen Sie die Lautstärke ein (1-16)",
 						"fr": "Réglez le niveau de volume (1-16)",
 						"it": "Imposta il livello del volume (1-16)",
@@ -144,6 +154,7 @@
 					"type": "dropdown",
 					"title": {
 						"en": "Repeat",
+						"nl": "Herhalen",
 						"de": "Wiederholen",
 						"fr": "Répéter",
 						"it": "Ripeti",
@@ -155,6 +166,7 @@
 					},
 					"hint": {
 						"en": "Set how many times to repeat the tone (1-10)",
+						"nl": "Stel in hoe vaak de toon herhaald moet worden (1-10)",
 						"de": "Legen Sie fest, wie oft der Ton wiederholt werden soll (1-10)",
 						"fr": "Définissez le nombre de fois que la tonalité doit être répétée (1-10)",
 						"it": "Imposta quante volte ripetere il tono (1-10)",
@@ -169,6 +181,7 @@
 							"id": "0",
 							"label": {
 								"en": "None",
+								"nl": "Geen",
 								"de": "Keine",
 								"fr": "Aucune",
 								"it": "Nessuno",
@@ -183,6 +196,7 @@
 							"id": "1",
 							"label": {
 								"en": "Once",
+								"nl": "Eenmaal",
 								"de": "Einmal",
 								"fr": "Une fois",
 								"it": "Una volta",
@@ -197,6 +211,7 @@
 							"id": "2",
 							"label": {
 								"en": "Twice",
+								"nl": "Tweemaal",
 								"de": "Zweimal",
 								"fr": "Deux fois",
 								"it": "Due volte",
@@ -211,6 +226,7 @@
 							"id": "3",
 							"label": {
 								"en": "Thrice",
+								"nl": "Driemaal",
 								"de": "Dreimal",
 								"fr": "Trois fois",
 								"it": "Tre volte",
@@ -229,6 +245,7 @@
 			"id": "play_message",
 			"title": {
 				"en": "Play a message",
+				"nl": "Speel een bericht af",
 				"de": "Eine Nachricht abspielen",
 				"fr": "Lire un message",
 				"it": "Riproduci un messaggio",
@@ -240,6 +257,7 @@
 			},
 			"titleFormatted": {
 				"en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]",
+				"nl": "Speel het bericht: '[[message]]' af op volume niveau [[volume]], herhaal [[repeat]]",
 				"de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]], wiederhole [[repeat]]",
 				"fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]], répétant [[repeat]]",
 				"it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]], ripetendo [[repeat]]",
@@ -255,6 +273,7 @@
 					"type": "text",
 					"title": {
 						"en": "Message",
+						"nl": "Bericht",
 						"de": "Nachricht",
 						"fr": "Message",
 						"it": "Messaggio",
@@ -266,6 +285,7 @@
 					},
 					"hint": {
 						"en": "Enter the message to play",
+						"nl": "Geef het bericht om af te spelen in",
 						"de": "Geben Sie die abzuspielende Nachricht ein",
 						"fr": "Entrez le message à lire",
 						"it": "Inserisci il messaggio da riprodurre",
@@ -277,6 +297,7 @@
 					},
 					"placeholder": {
 						"en": "Hello, this is a test message",
+						"nl": "Hallo, dit is een testbericht",
 						"de": "Hallo, dies ist eine Testnachricht",
 						"fr": "Bonjour, ceci est un message test",
 						"it": "Ciao, questo è un messaggio di prova",
@@ -295,6 +316,7 @@
 					"step": 1,
 					"title": {
 						"en": "Volume",
+						"nl": "Volume",
 						"de": "Lautstärke",
 						"fr": "Volume",
 						"it": "Volume",
@@ -306,6 +328,7 @@
 					},
 					"hint": {
 						"en": "Set the volume level (1-16)",
+						"nl": "Stel het volume niveau in (1-16)",
 						"de": "Stellen Sie die Lautstärke ein (1-16)",
 						"fr": "Réglez le niveau de volume (1-16)",
 						"it": "Imposta il livello del volume (1-16)",
@@ -322,6 +345,7 @@
 					"type": "dropdown",
 					"title": {
 						"en": "Repeat",
+						"nl": "Herhalen",
 						"de": "Wiederholen",
 						"fr": "Répéter",
 						"it": "Ripeti",
@@ -333,6 +357,7 @@
 					},
 					"hint": {
 						"en": "Set how many times to repeat the tone (1-10)",
+						"nl": "Stel in hoe vaak de toon herhaald moet worden (1-10)",
 						"de": "Legen Sie fest, wie oft der Ton wiederholt werden soll (1-10)",
 						"fr": "Définissez combien de fois répéter le ton (1-10)",
 						"it": "Imposta quante volte ripetere il tono (1-10)",
@@ -347,6 +372,7 @@
 							"id": "0",
 							"label": {
 								"en": "None",
+								"nl": "Geen",
 								"de": "Keine",
 								"fr": "Aucun",
 								"it": "Nessuno",
@@ -361,6 +387,7 @@
 							"id": "1",
 							"label": {
 								"en": "Once",
+								"nl": "Eenmaal",
 								"de": "Einmal",
 								"fr": "Une fois",
 								"it": "Una volta",
@@ -375,6 +402,7 @@
 							"id": "2",
 							"label": {
 								"en": "Twice",
+								"nl": "Tweemaal",
 								"de": "Zweimal",
 								"fr": "Deux fois",
 								"it": "Due volte",
@@ -389,6 +417,7 @@
 							"id": "3",
 							"label": {
 								"en": "Thrice",
+								"nl": "Driemaal",
 								"de": "Dreimal",
 								"fr": "Trois fois",
 								"it": "Tre volte",
