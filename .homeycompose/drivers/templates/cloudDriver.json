@@ -50,7 +50,7 @@
 				},
 				"passwordLabel": {
 					"en": "Secret Key",
-					"nl": "Geheime sleutel",
+					"nl": "Secret Key",
 					"da": "Hemmelig nøgle",
 					"de": "Geheimer Schlüssel",
 					"es": "Clave secreta",
@@ -64,7 +64,7 @@
 				},
 				"passwordPlaceholder": {
 					"en": "Secret Key obtained for the YoLink app",
-					"nl": "Geheime sleutel voor de YoLink-app",
+					"nl": "Secret Key uit de YoLink-app",
 					"da": "Hemmelig nøgle til YoLink-appen",
 					"de": "Geheimer Schlüssel für die YoLink-App",
 					"es": "Clave secreta obtenida para la aplicación YoLink",
