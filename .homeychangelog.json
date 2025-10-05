@@ -7,5 +7,8 @@
   },
   "0.0.3": {
 	"en": "Added Homey Cloud support."
+  },
+  "0.0.4": {
+	"en": "Dutch translations updated."
   }
 }
