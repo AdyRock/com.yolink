@@ -4,5 +4,8 @@
   },
   "0.0.2": {
 	"en": "Added Service Zone setting to all device drivers and updated Speaker Hub flow action to include service zone when sending command. Added insights titles to Door Sensor device driver. Changed 'Window / Door Sensor' as device name in Door Sensor driver. Added Flow action to play tones on Speaker Hub."
+  },
+  "0.0.3": {
+	"en": "Added Homey Cloud support."
   }
 }
