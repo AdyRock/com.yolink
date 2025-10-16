@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.yolink",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": ">=12.5.0",
   "sdk": 3,
   "platforms": [
@@ -13,7 +13,18 @@
     "en": "YoLink"
   },
   "description": {
-    "en": "Adds support for YoLink devices"
+    "en": "Use the YoLink long range devices in Homey. Requires a YoLink Hub and YoLink account.",
+    "nl": "Gebruik de YoLink long range apparaten in Homey. Vereist een YoLink Hub en YoLink account.",
+    "de": "Verwenden Sie die YoLink Langstrecken-Geräte in Homey. Erfordert einen YoLink Hub und ein YoLink Konto.",
+    "fr": "Utilisez les appareils longue portée YoLink dans Homey. Nécessite un YoLink Hub et un compte YoLink.",
+    "it": "Usa i dispositivi a lungo raggio YoLink in Homey. Richiede uno YoLink Hub e un account YoLink.",
+    "es": "Utilice los dispositivos de largo alcance YoLink en Homey. Requiere un YoLink Hub y una cuenta YoLink.",
+    "sv": "Använd YoLink långdistansenheter i Homey. Kräver en YoLink Hub och ett YoLink-konto.",
+    "da": "Brug YoLink langtrækkende enheder i Homey. Kræver en YoLink Hub og en YoLink-konto.",
+    "pt": "Use os dispositivos de longo alcance YoLink no Homey. Requer um YoLink Hub e uma conta YoLink.",
+    "pl": "Używaj urządzeń dalekiego zasięgu YoLink w Homey. Wymaga koncentratora YoLink i konta YoLink.",
+    "ru": "Используйте устройства дальнего действия YoLink в Homey. Требуется YoLink Hub и учетная запись YoLink.",
+    "ko": "Homey에서 YoLink 장거리 장치를 사용하십시오. YoLink 허브 및 YoLink 계정이 필요합니다."
   },
   "category": [
     "appliances"
@@ -836,7 +847,7 @@
         },
         "titleFormatted": {
           "en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]",
-          "nl": "Speel de [[tone]] tone op volume niveau [[volume]], herhaal [[repeat]]",
+          "nl": "Speel de [[tone]] toon op volume niveau [[volume]], herhaal [[repeat]]",
           "de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]], Wiederholung [[repeat]]",
           "fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]], répétition [[repeat]]",
           "it": "Riproduci il tono [[tone]] al livello di volume [[volume]], ripetendo [[repeat]]",
