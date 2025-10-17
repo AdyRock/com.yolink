@@ -2,7 +2,7 @@
 	"pair": {
 		"select_uaid": {
 			"title": "Sélectionner UAID",
-			"intro": "Sélectionnez l'UAID (ID de Compte Utilisateur) que vous souhaitez utiliser.<br>Ceci est obtenu en utilisant le menu de l'application YoLink:<br>&nbsp;&nbsp;Paramètres -<br>&nbsp;&nbsp;Compte -<br>&nbsp;&nbsp;Paramètres avancés -<br>&nbsp;&nbsp;Identifiants d'Accès Utilisateur",
+			"intro": "Sélectionnez l'UAID (ID de Compte Utilisateur) que vous souhaitez utiliser.<br>Ceci est obtenu en utilisant le menu de l'application YoLink:<br>&nbsp;&nbsp;- Paramètres<br>&nbsp;&nbsp;- Compte<br>&nbsp;&nbsp;- Paramètres avancés<br>&nbsp;&nbsp;- Identifiants d'Accès Utilisateur",
 			"uaid": "<b>UAID</b>",
 			"next": "Continuer"
 		},
