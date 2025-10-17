@@ -2,8 +2,8 @@
 	"pair": {
 		"select_uaid": {
 			"title": "Välj UAID",
-			"intro": "Välj det UAID (Användarkonto-ID) du vill använda. Detta erhålls från YoLink-appen.",
-			"uaid": "UAID",
+			"intro": "Välj det UAID (Användarkonto-ID) du vill använda.<br>Detta erhålls genom att använda YoLink-app-menyn:<br>&nbsp;&nbsp;Inställningar -<br>&nbsp;&nbsp;Konto -<br>&nbsp;&nbsp;Avancerade inställningar -<br>&nbsp;&nbsp;Användaråtkomstuppgifter",
+			"uaid": "<b>UAID</b>",
 			"next": "Fortsätt"
 		},
 		"enter_secret": {

@@ -2,8 +2,8 @@
 	"pair": {
 		"select_uaid": {
 			"title": "UAID Selecteren",
-			"intro": "Selecteer de UAID (Gebruikersaccount-ID) die u wilt gebruiken. Deze wordt verkregen uit de YoLink-app.",
-			"uaid": "UAID",
+			"intro": "Selecteer de UAID (Gebruikersaccount-ID) die u wilt gebruiken.<br>Deze wordt verkregen via het YoLink-app-menu:<br>&nbsp;&nbsp;Instellingen -<br>&nbsp;&nbsp;Account -<br>&nbsp;&nbsp;Geavanceerde instellingen -<br>&nbsp;&nbsp;Gebruikerstoegangsreferenties",
+			"uaid": "<b>UAID</b>",
 			"next": "Doorgaan"
 		},
 		"enter_secret": {

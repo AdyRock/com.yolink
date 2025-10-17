@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.yolink",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "compatibility": ">=12.5.0",
   "sdk": 3,
   "platforms": [
@@ -13,18 +13,16 @@
     "en": "YoLink"
   },
   "description": {
-    "en": "Use the YoLink long range devices in Homey. Requires a YoLink Hub and YoLink account.",
-    "nl": "Gebruik de YoLink long range apparaten in Homey. Vereist een YoLink Hub en YoLink account.",
-    "de": "Verwenden Sie die YoLink Langstrecken-Geräte in Homey. Erfordert einen YoLink Hub und ein YoLink Konto.",
-    "fr": "Utilisez les appareils longue portée YoLink dans Homey. Nécessite un YoLink Hub et un compte YoLink.",
-    "it": "Usa i dispositivi a lungo raggio YoLink in Homey. Richiede uno YoLink Hub e un account YoLink.",
-    "es": "Utilice los dispositivos de largo alcance YoLink en Homey. Requiere un YoLink Hub y una cuenta YoLink.",
-    "sv": "Använd YoLink långdistansenheter i Homey. Kräver en YoLink Hub och ett YoLink-konto.",
-    "da": "Brug YoLink langtrækkende enheder i Homey. Kræver en YoLink Hub og en YoLink-konto.",
-    "pt": "Use os dispositivos de longo alcance YoLink no Homey. Requer um YoLink Hub e uma conta YoLink.",
-    "pl": "Używaj urządzeń dalekiego zasięgu YoLink w Homey. Wymaga koncentratora YoLink i konta YoLink.",
-    "ru": "Используйте устройства дальнего действия YoLink в Homey. Требуется YoLink Hub и учетная запись YoLink.",
-    "ko": "Homey에서 YoLink 장거리 장치를 사용하십시오. YoLink 허브 및 YoLink 계정이 필요합니다."
+    "en": "Powering your smart home with Yolink’s long-range reliability.",
+    "nl": "Uw slimme huis aandrijven met de langeafstandsbetrouwbaarheid van Yolink.",
+    "de": "Ihr Smart Home mit der Langstrecken-Zuverlässigkeit von Yolink betreiben.",
+    "fr": "Alimentez votre maison intelligente avec la fiabilité à longue portée de Yolink.",
+    "it": "Alimentare la tua casa intelligente con l'affidabilità a lungo raggio di Yolink.",
+    "es": "Alimentando su hogar inteligente con la confiabilidad de largo alcance de Yolink.",
+    "sv": "Driva ditt smarta hem med Yolinks långdistanspålitlighet.",
+    "da": "Driver dit smarte hjem med Yolinks langtrækkende pålidelighed.",
+    "pl": "Zasilanie inteligentnego domu dzięki niezawodności Yolink na duże odległości.",
+    "ko": "Yolink의 장거리 안정성으로 스마트 홈을 강화하세요."
   },
   "category": [
     "appliances"
@@ -846,16 +844,16 @@
           "ko": "음색 재생"
         },
         "titleFormatted": {
-          "en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]",
-          "nl": "Speel de [[tone]] toon op volume niveau [[volume]], herhaal [[repeat]]",
-          "de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]], Wiederholung [[repeat]]",
-          "fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]], répétition [[repeat]]",
-          "it": "Riproduci il tono [[tone]] al livello di volume [[volume]], ripetendo [[repeat]]",
-          "es": "Reproduce el tono [[tone]] al nivel de volumen [[volume]], repitiendo [[repeat]]",
-          "sv": "Spela tonen [[tone]] på volymnivå [[volume]], upprepa [[repeat]]",
-          "da": "Afspil tonen [[tone]] på lydstyrkeniveau [[volume]], gentagelse [[repeat]]",
-          "pl": "Odtwórz ton [[tone]] na poziomie głośności [[volume]], powtarzając [[repeat]]",
-          "ko": "[[tone]] 톤을 볼륨 레벨 [[volume]]로 재생, [[repeat]] 반복"
+          "en": "Play the [[tone]] tone at volume level [[volume]] repeating [[repeat]]",
+          "nl": "Speel de [[tone]] toon op volume niveau [[volume]] herhaal [[repeat]]",
+          "de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]] Wiederholung [[repeat]]",
+          "fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]] répétition [[repeat]]",
+          "it": "Riproduci il tono [[tone]] al livello di volume [[volume]] ripetendo [[repeat]]",
+          "es": "Reproduce el tono [[tone]] al nivel de volumen [[volume]] repitiendo [[repeat]]",
+          "sv": "Spela tonen [[tone]] på volymnivå [[volume]] upprepa [[repeat]]",
+          "da": "Afspil tonen [[tone]] på lydstyrkeniveau [[volume]] gentagelse [[repeat]]",
+          "pl": "Odtwórz ton [[tone]] na poziomie głośności [[volume]] powtarzając [[repeat]]",
+          "ko": "[[tone]] 톤을 볼륨 레벨 [[volume]]로 재생 [[repeat]] 반복"
         },
         "args": [
           {
@@ -1016,15 +1014,15 @@
               {
                 "id": "0",
                 "label": {
-                  "en": "None",
-                  "nl": "Geen",
-                  "de": "Keine",
-                  "fr": "Aucune",
-                  "it": "Nessuno",
-                  "es": "Ninguno",
-                  "sv": "Ingen",
-                  "da": "Ingen",
-                  "pl": "Brak",
+                  "en": "Never",
+                  "nl": "Nooit",
+                  "de": "Nie",
+                  "fr": "Jamais",
+                  "it": "Mai",
+                  "es": "Nunca",
+                  "sv": "Aldrig",
+                  "da": "Aldrig",
+                  "pl": "Nigdy",
                   "ko": "없음"
                 }
               },
@@ -1092,15 +1090,15 @@
           "ko": "메시지 재생"
         },
         "titleFormatted": {
-          "en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]",
-          "nl": "Speel het bericht: '[[message]]' af op volume niveau [[volume]], herhaal [[repeat]]",
-          "de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]], wiederhole [[repeat]]",
-          "fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]], répétant [[repeat]]",
-          "it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]], ripetendo [[repeat]]",
-          "es": "Reproducir el mensaje: '[[message]]' en el nivel de volumen [[volume]], repitiendo [[repeat]]",
-          "sv": "Spela meddelandet: '[[message]]' på volymnivå [[volume]], upprepa [[repeat]]",
-          "da": "Afspil beskeden: '[[message]]' på lydstyrkeniveau [[volume]], gentag [[repeat]]",
-          "pl": "Odtwórz wiadomość: '[[message]]' na poziomie głośności [[volume]], powtarzając [[repeat]]",
+          "en": "Play the message: '[[message]]' at volume level [[volume]] repeating [[repeat]]",
+          "nl": "Speel het bericht: '[[message]]' af op volume niveau [[volume]] herhaal [[repeat]]",
+          "de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]] wiederhole [[repeat]]",
+          "fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]] répétant [[repeat]]",
+          "it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]] ripetendo [[repeat]]",
+          "es": "Reproducir el mensaje: '[[message]]' en el nivel de volumen [[volume]] repitiendo [[repeat]]",
+          "sv": "Spela meddelandet: '[[message]]' på volymnivå [[volume]] upprepa [[repeat]]",
+          "da": "Afspil beskeden: '[[message]]' på lydstyrkeniveau [[volume]] gentag [[repeat]]",
+          "pl": "Odtwórz wiadomość: '[[message]]' na poziomie głośności [[volume]] powtarzając [[repeat]]",
           "ko": "메시지 재생: '[[message]]' 볼륨 레벨 [[volume]]에서 [[repeat]] 반복"
         },
         "args": [
@@ -1212,15 +1210,15 @@
               {
                 "id": "0",
                 "label": {
-                  "en": "None",
-                  "nl": "Geen",
-                  "de": "Keine",
-                  "fr": "Aucun",
-                  "it": "Nessuno",
-                  "es": "Ninguno",
-                  "sv": "Ingen",
-                  "da": "Ingen",
-                  "pl": "Brak",
+                  "en": "Never",
+                  "nl": "Nooit",
+                  "de": "Nie",
+                  "fr": "Jamais",
+                  "it": "Mai",
+                  "es": "Nunca",
+                  "sv": "Aldrig",
+                  "da": "Aldrig",
+                  "pl": "Nigdy",
                   "ko": "없음"
                 }
               },

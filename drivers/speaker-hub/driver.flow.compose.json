@@ -15,16 +15,16 @@
 				"ko": "음색 재생"
 			},
 			"titleFormatted": {
-				"en": "Play the [[tone]] tone at volume level [[volume]], repeating [[repeat]]",
-				"nl": "Speel de [[tone]] toon op volume niveau [[volume]], herhaal [[repeat]]",
-				"de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]], Wiederholung [[repeat]]",
-				"fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]], répétition [[repeat]]",
-				"it": "Riproduci il tono [[tone]] al livello di volume [[volume]], ripetendo [[repeat]]",
-				"es": "Reproduce el tono [[tone]] al nivel de volumen [[volume]], repitiendo [[repeat]]",
-				"sv": "Spela tonen [[tone]] på volymnivå [[volume]], upprepa [[repeat]]",
-				"da": "Afspil tonen [[tone]] på lydstyrkeniveau [[volume]], gentagelse [[repeat]]",
-				"pl": "Odtwórz ton [[tone]] na poziomie głośności [[volume]], powtarzając [[repeat]]",
-				"ko": "[[tone]] 톤을 볼륨 레벨 [[volume]]로 재생, [[repeat]] 반복"
+				"en": "Play the [[tone]] tone at volume level [[volume]] repeating [[repeat]]",
+				"nl": "Speel de [[tone]] toon op volume niveau [[volume]] herhaal [[repeat]]",
+				"de": "Spiele den Ton [[tone]] auf Lautstärkelevel [[volume]] Wiederholung [[repeat]]",
+				"fr": "Jouer la tonalité [[tone]] au niveau de volume [[volume]] répétition [[repeat]]",
+				"it": "Riproduci il tono [[tone]] al livello di volume [[volume]] ripetendo [[repeat]]",
+				"es": "Reproduce el tono [[tone]] al nivel de volumen [[volume]] repitiendo [[repeat]]",
+				"sv": "Spela tonen [[tone]] på volymnivå [[volume]] upprepa [[repeat]]",
+				"da": "Afspil tonen [[tone]] på lydstyrkeniveau [[volume]] gentagelse [[repeat]]",
+				"pl": "Odtwórz ton [[tone]] na poziomie głośności [[volume]] powtarzając [[repeat]]",
+				"ko": "[[tone]] 톤을 볼륨 레벨 [[volume]]로 재생 [[repeat]] 반복"
 			},
 			"args": [
 				{
@@ -180,15 +180,15 @@
 						{
 							"id": "0",
 							"label": {
-								"en": "None",
-								"nl": "Geen",
-								"de": "Keine",
-								"fr": "Aucune",
-								"it": "Nessuno",
-								"es": "Ninguno",
-								"sv": "Ingen",
-								"da": "Ingen",
-								"pl": "Brak",
+								"en": "Never",
+								"nl": "Nooit",
+								"de": "Nie",
+								"fr": "Jamais",
+								"it": "Mai",
+								"es": "Nunca",
+								"sv": "Aldrig",
+								"da": "Aldrig",
+								"pl": "Nigdy",
 								"ko": "없음"
 							}
 						},
@@ -256,15 +256,15 @@
 				"ko": "메시지 재생"
 			},
 			"titleFormatted": {
-				"en": "Play the message: '[[message]]' at volume level [[volume]], repeating [[repeat]]",
-				"nl": "Speel het bericht: '[[message]]' af op volume niveau [[volume]], herhaal [[repeat]]",
-				"de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]], wiederhole [[repeat]]",
-				"fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]], répétant [[repeat]]",
-				"it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]], ripetendo [[repeat]]",
-				"es": "Reproducir el mensaje: '[[message]]' en el nivel de volumen [[volume]], repitiendo [[repeat]]",
-				"sv": "Spela meddelandet: '[[message]]' på volymnivå [[volume]], upprepa [[repeat]]",
-				"da": "Afspil beskeden: '[[message]]' på lydstyrkeniveau [[volume]], gentag [[repeat]]",
-				"pl": "Odtwórz wiadomość: '[[message]]' na poziomie głośności [[volume]], powtarzając [[repeat]]",
+				"en": "Play the message: '[[message]]' at volume level [[volume]] repeating [[repeat]]",
+				"nl": "Speel het bericht: '[[message]]' af op volume niveau [[volume]] herhaal [[repeat]]",
+				"de": "Spiele die Nachricht: '[[message]]' auf Lautstärkelevel [[volume]] wiederhole [[repeat]]",
+				"fr": "Jouer le message : '[[message]]' au niveau de volume [[volume]] répétant [[repeat]]",
+				"it": "Riproduci il messaggio: '[[message]]' al livello di volume [[volume]] ripetendo [[repeat]]",
+				"es": "Reproducir el mensaje: '[[message]]' en el nivel de volumen [[volume]] repitiendo [[repeat]]",
+				"sv": "Spela meddelandet: '[[message]]' på volymnivå [[volume]] upprepa [[repeat]]",
+				"da": "Afspil beskeden: '[[message]]' på lydstyrkeniveau [[volume]] gentag [[repeat]]",
+				"pl": "Odtwórz wiadomość: '[[message]]' na poziomie głośności [[volume]] powtarzając [[repeat]]",
 				"ko": "메시지 재생: '[[message]]' 볼륨 레벨 [[volume]]에서 [[repeat]] 반복"
 			},
 			"args": [
@@ -371,15 +371,15 @@
 						{
 							"id": "0",
 							"label": {
-								"en": "None",
-								"nl": "Geen",
-								"de": "Keine",
-								"fr": "Aucun",
-								"it": "Nessuno",
-								"es": "Ninguno",
-								"sv": "Ingen",
-								"da": "Ingen",
-								"pl": "Brak",
+								"en": "Never",
+								"nl": "Nooit",
+								"de": "Nie",
+								"fr": "Jamais",
+								"it": "Mai",
+								"es": "Nunca",
+								"sv": "Aldrig",
+								"da": "Aldrig",
+								"pl": "Nigdy",
 								"ko": "없음"
 							}
 						},
