@@ -22,5 +22,8 @@
 	},
 	"1.0.3": {
 		"en": "Updates for review process."
+	},
+	"1.0.4": {
+		"en": "Enhanced localization strings for UAID selection instructions., Trimmed whitespace from UAID and Secret Key inputs to prevent user errors. Added error handling for failed access token retrieval during device pairing."
 	}
 }

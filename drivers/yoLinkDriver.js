@@ -42,6 +42,9 @@ module.exports = class yoLinkDriver extends Homey.Driver
 		session.setHandler('select_uaid', async (data) =>
 		{
 			UAID = data.uaid;
+
+			// Trim whitespace
+			UAID = UAID.trim();
 			if (UAID)
 			{
 				accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, null);
@@ -55,6 +58,9 @@ module.exports = class yoLinkDriver extends Homey.Driver
 		session.setHandler('enter_secret', async (data) =>
 		{
 			secretKey = data.secret;
+
+			// trim whitespace
+			secretKey = secretKey.trim();
 			accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
 
 			if (accessToken)
@@ -62,7 +68,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 				await session.nextView();
 				return true;
 			}
-			return false;
+			throw new Error('Failed to obtain access token, please check your UAID and Secret Key');
 		});
 
 		session.setHandler('list_devices', async () =>

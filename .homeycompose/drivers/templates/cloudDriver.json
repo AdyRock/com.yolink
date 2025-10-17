@@ -1,6 +1,7 @@
 {
 	"platforms": [
-		"local"
+		"local",
+		"cloud"
 	],
 	"connectivity": [
 		"cloud"

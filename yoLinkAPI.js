@@ -97,8 +97,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey);
 			if (newTokenData.state === 'error')
 			{
-				this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.desc}`, 0);
-				return null;
+				this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`, 0);
+				// return null;
+				throw new Error(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`);
 			}
 			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
 
