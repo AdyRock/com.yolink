@@ -133,7 +133,7 @@ module.exports = class YoLink extends Homey.App
 	}
 
 	// Send the log to the developer (not applicable to Homey cloud)
-	async sendLog({ email = '', description = '' })
+	async sendLog({ email = '', description = '', log = '' })
 	{
 		let tries = 5;
 		let error = null;
@@ -166,8 +166,9 @@ module.exports = class YoLink extends Homey.App
 					{
 						from: `"Homey User" <${Homey.env.MAIL_USER}>`, // sender address
 						to: Homey.env.MAIL_RECIPIENT, // list of receivers
+						cc: email,
 						subject: `YoLink log (${Homey.manifest.version})`, // Subject line
-						text: `${email}\n${description}\n\n${this.diagLog}`, // plain text body
+						text: `${email}\n${description}\n\n${log}`, // plain text body
 					},
 				);
 
@@ -202,7 +203,7 @@ module.exports = class YoLink extends Homey.App
 				deviceList = deviceList.concat(newusDevices);
 
 				// Get the list for the EU/UK zone as well but don't add duplicates
-				const neweuDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'eu');
+				const neweuDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'eu_uk');
 
 				// Filter out duplicates
 				for (const neweuDevice of neweuDevices)

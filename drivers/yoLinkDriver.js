@@ -79,7 +79,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 				throw new Error('No access token, cannot list devices');
 			}
 			const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
-			const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu');
+			const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu_uk');
 			const deviceList = deviceusList;
 			// Add the EU devices to the list if not already present
 			if (deviceeuList && deviceeuList.length > 0)

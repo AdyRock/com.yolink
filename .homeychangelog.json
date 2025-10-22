@@ -25,5 +25,8 @@
 	},
 	"1.0.4": {
 		"en": "Enhanced localization strings for UAID selection instructions., Trimmed whitespace from UAID and Secret Key inputs to prevent user errors. Added error handling for failed access token retrieval during device pairing."
+	},
+	"1.0.5": {
+		"en": "Added Vibration Sensor device driver. Fix EU/UK region support when fetching device lists. Fix sending of device logs to developer. Enhanced error logging."
 	}
 }

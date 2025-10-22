@@ -1,0 +1,37 @@
+{
+	"name": {
+		"en": "Vibration Sensor",
+		"nl": "Vibratie Sensor",
+		"de": "Vibrationssensor",
+		"fr": "Capteur de vibration",
+		"it": "Sensore di vibrazione",
+		"es": "Sensor de vibración",
+		"sv": "Vibrationssensor",
+		"da": "Vibrationssensor",
+		"pl": "Czujnik wibracji",
+		"ko": "진동 센서"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_contact"
+	],
+	"capabilitiesOptions": {
+		"alarm_contact": {
+			"title": {"en": "Vibration", "nl": "Vibratie", "de": "Vibration", "fr": "Vibration", "it": "Vibrazione", "es": "Vibración", "sv": "Vibration", "da": "Vibration", "pl": "Wibracja", "ko": "진동"},
+			"titleTrue": {"en": "Detected", "nl": "Geopend", "de": "Erkannt", "fr": "Détecté", "it": "Rilevato", "es": "Detectado", "sv": "Öppen", "da": "Åben", "pl": "Wykryto", "ko": "감지됨"},
+			"titleFalse": {"en": "Not detected", "nl": "Gesloten", "de": "Geschlossen", "fr": "Non détecté", "it": "Chiuso", "es": "No detectado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "감지되지 않음"},
+			"insightsTitleTrue": {"en": "Detected", "nl": "Geopend", "de": "Erkannt", "fr": "Détecté", "it": "Rilevato", "es": "Detectado", "sv": "Öppen", "da": "Åben", "pl": "Wykryto", "ko": "감지됨"},
+			"insightsTitleFalse": {"en": "Not detected", "nl": "Niet gedetecteerd", "de": "Nicht erkannt", "fr": "Non détecté", "it": "Non rilevato", "es": "No detectado", "sv": "Inte upptäckt", "da": "Ikke registreret", "pl": "Nie wykryto", "ko": "감지되지 않음"}
+		}
+	},
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}
