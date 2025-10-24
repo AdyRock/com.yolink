@@ -1,0 +1,63 @@
+[
+	{
+		"id": "serviceZone",
+		"type": "dropdown",
+		"label": {
+			"en": "Service Zone",
+			"nl": "Servicezone",
+			"de": "Servicezone",
+			"fr": "Zone de service",
+			"it": "Zona di servizio",
+			"es": "Zona de servicio",
+			"sv": "Serviceområde",
+			"da": "Serviceområde",
+			"pl": "Strefa serwisowa",
+			"ko": "서비스 지역"
+		},
+		"hint": {
+			"en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+			"nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
+			"de": "Wählen Sie die Servicezone aus, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
+			"fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
+			"it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
+			"es": "Seleccione la zona de servicio en la que está registrado su dispositivo. US = Estados Unidos, EU/UK = Europa y Reino Unido",
+			"sv": "Välj den servicezon där din enhet är registrerad. US = Förenta staterna, EU/UK = Europa och Storbritannien",
+			"da": "Vælg den servicezone, som din enhed er registreret i. US = De Forenede Stater, EU/UK = Europa og Det Forenede Kongerige",
+			"pl": "Wybierz strefę serwisową, w której zarejestrowane jest Twoje urządzenie. US = Stany Zjednoczone, EU/UK = Europa i Wielka Brytania",
+			"ko": "장치가 등록된 서비스 지역을 선택하십시오. US = 미국, EU/UK = 유럽 및 영국"
+		},
+		"values": [
+			{
+				"id": "us",
+				"label": {
+					"en": "US (United States)",
+					"nl": "US (Verenigde Staten)",
+					"de": "US (Vereinigte Staaten)",
+					"fr": "US (États-Unis)",
+					"it": "US (Stati Uniti)",
+					"es": "US (Estados Unidos)",
+					"sv": "US (Förenta staterna)",
+					"da": "US (De Forenede Stater)",
+					"pl": "US (Stany Zjednoczone)",
+					"ko": "US (미국)"
+				}
+			},
+			{
+				"id": "eu_uk",
+				"label": {
+					"en": "EU/UK (Europe and United Kingdom)",
+					"nl": "EU/UK (Europa en Verenigd Koninkrijk)",
+					"de": "EU/UK (Europa und Vereinigtes Königreich)",
+					"fr": "EU/UK (Europe et Royaume-Uni)",
+					"it": "EU/UK (Europa e Regno Unito)",
+					"es": "EU/UK (Europa y Reino Unido)",
+					"sv": "EU/UK (Europa och Storbritannien)",
+					"da": "EU/UK (Europa og Det Forenede Kongerige)",
+					"pl": "EU/UK (Europa i Wielka Brytania)",
+					"ko": "EU/UK (유럽 및 영국)"
+				}
+			}
+		],
+		"value": "us"
+	}
+]

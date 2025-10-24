@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 
-module.exports = class SirenDevice extends Homey.Device
+module.exports = class PowerFailDevice extends Homey.Device
 {
 
 	/**
@@ -10,11 +10,8 @@ module.exports = class SirenDevice extends Homey.Device
 	 */
 	async onInit()
 	{
-		// Add the capability listener for the OnOff capability
-		this.registerCapabilityListener('alarm_sirenOnOff', this.onOffCapabilityListener.bind(this));
-
 		this.updateState();
-		this.homey.app.updateLog('SirenDevice has been initialized');
+		this.homey.app.updateLog('PowerFailDevice has been initialized');
 	}
 
 	/**
@@ -23,7 +20,7 @@ module.exports = class SirenDevice extends Homey.Device
 	async onAdded()
 	{
 		this.updateState();
-		this.homey.app.updateLog('SirenDevice has been added');
+		this.homey.app.updateLog('PowerFailDevice has been added');
 	}
 
 	/**
@@ -36,7 +33,7 @@ module.exports = class SirenDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('SirenDevice settings where changed');
+		this.homey.app.updateLog('PowerFailDevice settings where changed');
 	}
 
 	/**
@@ -46,7 +43,7 @@ module.exports = class SirenDevice extends Homey.Device
 	 */
 	async onRenamed(name)
 	{
-		this.homey.app.updateLog('SirenDevice was renamed');
+		this.homey.app.updateLog('PowerFailDevice was renamed');
 	}
 
 	/**
@@ -54,34 +51,7 @@ module.exports = class SirenDevice extends Homey.Device
 	 */
 	async onDeleted()
 	{
-		this.homey.app.updateLog('SirenDevice has been deleted');
-	}
-
-	async onOffCapabilityListener(value)
-	{
-		const data = await this.getData();
-		const settings = await this.getSettings();
-
-		const respone = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.id, data.deviceToken, settings.serviceZone, 'Siren.setState', { state: { alarm: value } });
-
-		if (respone.desc === 'Success')
-		{
-			if (value)
-			{
-				this.driver.triggerSirenOnFlow(this);
-			}
-			else
-			{
-				this.driver.triggerSirenOffFlow(this);
-			}
-		}
-		else
-		{
-			this.homey.app.updateLog('Failed to control Siren');
-			throw new Error(`Failed to control Siren ${respone.desc}`);
-		}
-
-		return true;
+		this.homey.app.updateLog('PowerFailDevice has been deleted');
 	}
 
 	async updateState()
@@ -96,8 +66,7 @@ module.exports = class SirenDevice extends Homey.Device
 		}
 		this.setAvailable();
 
-		this.setCapabilityValue('alarm_sirenOnOff', state.data.state === 'alert');
-		this.setCapabilityValue('alarm_power', state.data.powerSupply === 'battery');
+		this.setCapabilityValue('alarm_power', state.data.state === 'alert');
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.battery)
@@ -112,32 +81,27 @@ module.exports = class SirenDevice extends Homey.Device
 	async processMQTTMessage(mqttMessage)
 	{
 		// Check if the event field is present so we know what type of message this is
-		const mqttData = mqttMessage.data;
-		const { deviceId } = mqttMessage;
+		let mqttData;
+		let deviceId;
+
+		// Check if the event field is present so we know what type of message this is
+		if (mqttMessage.event)
+		{
+			mqttData = mqttMessage.data;
+			deviceId = mqttMessage.deviceId;
+		}
+		else
+		{
+			mqttData = mqttMessage.data.state;
+			deviceId = mqttMessage.data.deviceId;
+		}
 
 		if (deviceId !== this.getData().id)
 		{
 			return;
 		}
 
-		this.setCapabilityValue('alarm_sirenOnOff', mqttData.state === 'alert');
-
-		if (mqttMessage.event === 'Siren.StatusChange')
-		{
-			if (mqttData.state === 'alert')
-			{
-				this.driver.triggerSirenOnFlow(this);
-			}
-			else
-			{
-				this.driver.triggerSirenOffFlow(this);
-			}
-		}
-
-		if (mqttData.powerSupply)
-		{
-			this.setCapabilityValue('alarm_power', mqttData.powerSupply === 'battery');
-		}
+		this.setCapabilityValue('alarm_power', mqttData.state === 'alert');
 
 		if (mqttData.battery)
 		{

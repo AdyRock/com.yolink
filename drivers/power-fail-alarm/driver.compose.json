@@ -1,0 +1,20 @@
+{
+	"name": {
+		"en": "Power Fail Alarm",
+		"nl": "Stroomuitval Alarm",
+		"fr": "Alarme de panne de courant",
+		"de": "Stromausfallalarm",
+		"sv": "Strömavbrottslarm",
+		"da": "Strømsvigt Alarm",
+		"pl": "Alarm awarii zasilania",
+		"ko": "정전 경보"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_power"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}

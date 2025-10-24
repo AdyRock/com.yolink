@@ -288,6 +288,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		// Wait if an MQTT client is being setup
 		while (this.settingUpMQTTClient)
 		{
+			this.app.updateLog('Waiting for MQTT client setup to complete before getting device status');
 			await this.settingUpMQTTClient;
 		}
 
@@ -304,6 +305,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			try
 			{
+				this.app.updateLog(`MQTT client for UAID ${UAID} and serviceZone ${serviceZone} not found, setting up now`);
+
 				// Setup the MQTT client
 				let mqttURL;
 				if (serviceZone === 'eu_uk')
@@ -327,6 +330,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				if (MQTTConnection)
 				{
 					this.MQTTList.push(MQTTConnection);
+					this.app.updateLog(`MQTT client setup complete for UAID ${UAID}. Number of MQTT clients: ${this.MQTTList.length}`);
 				}
 			}
 			catch (err)
@@ -334,6 +338,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 				this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
 			}
 		}
+		else
+		{
+			this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZone ${serviceZone}`);
+		}
+
 		resolveToken();
 		this.settingUpMQTTClient = null;
 
@@ -503,6 +512,10 @@ module.exports = class YoLinkAPI extends SimpleClass
 					this.app.updateLog(`MQTT Client error: ${topic}: ${err.message}`, 0);
 				}
 			});
+
+			// Wait for the MQTT client to be ready
+			this.app.updateLog('setupMQTTClient: waiting for MQTT client to be ready');
+			await mqttReady;
 
 			return { UAID: brokerConfig.UAID, homeID: homeID.data.id, serviceZone: brokerConfig.serviceZone, mqttReady, MQTTClient };
 		}
