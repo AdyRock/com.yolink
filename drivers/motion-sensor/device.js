@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 
-module.exports = class DoorSensorDevice extends Homey.Device
+module.exports = class MotionSensorDevice extends Homey.Device
 {
 
 	/**
@@ -11,7 +11,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
 	async onInit()
 	{
 		this.updateState();
-		this.homey.app.updateLog('DoorSensorDevice has been initialized');
+		this.homey.app.updateLog('MotionSensorDevice has been initialized');
 	}
 
 	/**
@@ -20,7 +20,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
 	async onAdded()
 	{
 		this.updateState();
-		this.homey.app.updateLog('DoorSensorDevice has been added');
+		this.homey.app.updateLog('MotionSensorDevice has been added');
 	}
 
 	/**
@@ -33,7 +33,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('DoorSensorDevice settings where changed');
+		this.homey.app.updateLog('MotionSensorDevice settings where changed');
 	}
 
 	/**
@@ -43,7 +43,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onRenamed(name)
 	{
-		this.homey.app.updateLog('DoorSensorDevice was renamed');
+		this.homey.app.updateLog('MotionSensorDevice was renamed');
 	}
 
 	/**
@@ -51,7 +51,7 @@ module.exports = class DoorSensorDevice extends Homey.Device
    */
 	async onDeleted()
 	{
-		this.homey.app.updateLog('DoorSensorDevice has been deleted');
+		this.homey.app.updateLog('MotionSensorDevice has been deleted');
 	}
 
 	async updateState()
@@ -66,17 +66,8 @@ module.exports = class DoorSensorDevice extends Homey.Device
 		}
 		this.setAvailable();
 
-		this.setCapabilityValue('alarm_contact', state.data.state.state === 'open');
-
-		// If the door is open and the time now is greater than the openRemindDelay + the stateChangedAt time, then set the alarm_door_fault to true
-		if ((state.data.state.state === 'open') && (Date.now() > (state.data.state.stateChangedAt + (state.data.state.openRemindDelay * 1000))))
-		{
-			this.setCapabilityValue('alarm_door_fault', true);
-		}
-		else
-		{
-			this.setCapabilityValue('alarm_door_fault', false);
-		}
+		this.setCapabilityValue('alarm_motion', state.data.state.state === 'alert');
+		this.setCapabilityValue('measure_temperature', parseFloat(state.data.state.devTemperature));
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
@@ -109,20 +100,11 @@ module.exports = class DoorSensorDevice extends Homey.Device
 			return;
 		}
 
-		// Process the MQTT message
-		if (mqttData.alertType)
+		this.setCapabilityValue('alarm_motion', mqttData.state === 'alert');
+		if (mqttData.devTemperature)
 		{
-			if (mqttData.alertType === 'openRemind')
-			{
-				this.setCapabilityValue('alarm_door_fault', true);
-			}
-			else
-			{
-				this.setCapabilityValue('alarm_door_fault', false);
-			}
+			this.setCapabilityValue('measure_temperature', parseFloat(mqttData.devTemperature));
 		}
-
-		this.setCapabilityValue('alarm_contact', mqttData.state === 'open');
 
 		if (mqttData.battery)
 		{

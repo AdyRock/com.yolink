@@ -1,0 +1,29 @@
+{
+	"name": {
+		"en": "Motion Sensor",
+		"nl": "Bewegingssensor",
+		"de": "Bewegungssensor",
+		"fr": "Capteur de mouvement",
+		"it": "Sensore di movimento",
+		"es": "Sensor de movimiento",
+		"sv": "Rörelsesensor",
+		"da": "Bevægelsessensor",
+		"pl": "Czujnik ruchu",
+		"ko": "모션 센서"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_motion",
+		"measure_temperature"
+	],
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

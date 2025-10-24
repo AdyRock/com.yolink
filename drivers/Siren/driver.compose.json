@@ -1,0 +1,21 @@
+{
+	"name": {
+		"en": "Siren",
+		"nl": "Sirene",
+		"fr": "Sirène",
+		"de": "Sirene",
+		"sv": "Siren",
+		"da": "Sirene",
+		"pl": "Syrena",
+		"ko": "사이렌"
+	},
+	"class": "siren",
+	"capabilities": [
+		"measure_battery",
+		"alarm_sirenOnOff",
+		"alarm_power"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}

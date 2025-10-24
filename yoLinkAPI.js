@@ -464,7 +464,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 			MQTTClient.on('error', (err) =>
 			{
-				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}`, 0);
+				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, ${brokerConfig.username}, ${brokerConfig.password}`, 0);
 			});
 
 			MQTTClient.on('message', async (topic, message) =>

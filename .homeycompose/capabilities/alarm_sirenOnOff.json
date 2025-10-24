@@ -1,0 +1,38 @@
+{
+	"type": "boolean",
+	"getable": true,
+	"setable": true,
+	"uiComponent": "button",
+	"title": {
+		"en": "Siren",
+		"nl": "Sirene",
+		"fr": "Sirène",
+		"de": "Sirene",
+		"sv": "Siren",
+		"da": "Sirene",
+		"pl": "Syrena",
+		"ko": "사이렌"
+	},
+	"insights": true,
+	"insightsTitleFalse": {
+		"en": "Siren stopped",
+		"nl": "Sirene gestopt",
+		"fr": "Sirène arrêtée",
+		"de": "Sirene gestoppt",
+		"sv": "Sirenen stoppad",
+		"da": "Sirene stoppet",
+		"pl": "Syrena zatrzymana",
+		"ko": "사이렌 중지됨"
+	},
+	"insightsTitleTrue": {
+		"en": "Siren sounding",
+		"nl": "Sirene klinkt",
+		"fr": "Sirène en alerte",
+		"de": "Sirene ertönt",
+		"sv": "Sirenen ljuder",
+		"da": "Sirene lyder",
+		"pl": "Syrena włączona",
+		"ko": "사이렌 작동 중"
+	},
+	"icon": "/assets/bell.svg"
+}

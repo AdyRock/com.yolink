@@ -1,0 +1,82 @@
+{
+	"actions": [
+		{
+			"id": "siren_on",
+			"title": {
+				"en": "Turn the siren on",
+				"nl": "Zet de sirene aan",
+				"de": "Schalten Sie die Sirene ein",
+				"fr": "Allumer la sirène",
+				"it": "Accendi la sirena",
+				"es": "Enciende la sirena",
+				"sv": "Slå på sirenen",
+				"da": "Tænd sirenen",
+				"pl": "Włącz syrenę",
+				"ko": "사이렌 켜기"
+			},
+			"titleFormatted": {
+				"en": "Turn on the siren",
+				"nl": "Zet de sirene aan",
+				"de": "Schalten Sie die Sirene ein",
+				"fr": "Allumer la sirène",
+				"it": "Accendi la sirena",
+				"es": "Enciende la sirena",
+				"sv": "Slå på sirenen",
+				"da": "Tænd sirenen",
+				"pl": "Włącz syrenę",
+				"ko": "사이렌 켜기"
+			},
+			"highlight": true
+		},
+		{
+			"id": "siren_off",
+			"title": {
+				"en": "Turn the siren off",
+				"nl": "Zet de sirene uit",
+				"de": "Schalten Sie die Sirene aus",
+				"fr": "Éteindre la sirène",
+				"it": "Spegni la sirena",
+				"es": "Apaga la sirena",
+				"sv": "Stäng av sirenen",
+				"da": "Sluk sirenen",
+				"pl": "Wyłącz syrenę",
+				"ko": "사이렌 끄기"
+			},
+			"highlight": true
+		}
+	],
+	"triggers": [
+		{
+			"id": "siren_alert",
+			"title": {
+				"en": "Siren Alert",
+				"nl": "Sirene Alarm",
+				"de": "Sirenenalarm",
+				"fr": "Alerte de la sirène",
+				"it": "Allarme sirena",
+				"es": "Alerta de sirena",
+				"sv": "Sirenlarm",
+				"da": "Sirene Alarm",
+				"pl": "Alarm syreny",
+				"ko": "사이렌 경보"
+			},
+			"highlight": true
+		},
+		{
+			"id": "siren_off",
+			"title": {
+				"en": "Siren Off",
+				"nl": "Sirene Uit",
+				"de": "Sirene Aus",
+				"fr": "Sirène éteinte",
+				"it": "Sirena spenta",
+				"es": "Sirena apagada",
+				"sv": "Sirenen av",
+				"da": "Sirene Slukket",
+				"pl": "Syrena wyłączona",
+				"ko": "사이렌 끔"
+			},
+			"highlight": true
+		}
+	]
+}

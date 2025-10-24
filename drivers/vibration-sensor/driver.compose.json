@@ -14,7 +14,7 @@
 	"class": "sensor",
 	"capabilities": [
 		"measure_battery",
-		"alarm_contact"
+		"alarm_vibration"
 	],
 	"capabilitiesOptions": {
 		"alarm_contact": {

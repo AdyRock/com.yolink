@@ -66,7 +66,7 @@ module.exports = class VibrationSensorDevice extends Homey.Device
 		}
 		this.setAvailable();
 
-		this.setCapabilityValue('alarm_contact', state.data.state.state === 'alert');
+		this.setCapabilityValue('alarm_vibration', state.data.state.state === 'alert');
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
@@ -100,7 +100,7 @@ module.exports = class VibrationSensorDevice extends Homey.Device
 		}
 
 		// Process the MQTT message
-		this.setCapabilityValue('alarm_contact', mqttData.state === 'alert');
+		this.setCapabilityValue('alarm_vibration', mqttData.state === 'alert');
 
 		if (mqttData.battery)
 		{
