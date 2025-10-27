@@ -1,3 +1,4 @@
+/* eslint-disable operator-linebreak */
 /* eslint-disable no-tabs */
 
 'use strict';
@@ -299,48 +300,57 @@ module.exports = class YoLinkAPI extends SimpleClass
 			resolveToken = resolve;
 		});
 
-		// Ensure an MQTT client is setup for this UAID and serviceZone
-		const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZone === serviceZone));
-		if (!entry)
+		const retryKey = `${UAID}_${serviceZone}`;
+		if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
 		{
-			try
-			{
-				this.app.updateLog(`MQTT client for UAID ${UAID} and serviceZone ${serviceZone} not found, setting up now`);
-
-				// Setup the MQTT client
-				let mqttURL;
-				if (serviceZone === 'eu_uk')
-				{
-					mqttURL = yoLinkApi.mqttUrl_eu;
-				}
-				else
-				{
-					mqttURL = yoLinkApi.mqttUrl_us;
-				}
-
-				const brokerConfig = {
-					UAID,
-					url: mqttURL,
-					port: 8003,
-					username: accessToken,
-					password: '',
-					serviceZone,
-				};
-				const MQTTConnection = await this.setupMQTTClient(brokerConfig);
-				if (MQTTConnection)
-				{
-					this.MQTTList.push(MQTTConnection);
-					this.app.updateLog(`MQTT client setup complete for UAID ${UAID}. Number of MQTT clients: ${this.MQTTList.length}`);
-				}
-			}
-			catch (err)
-			{
-				this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
-			}
+			// A retry timer exists for this UAID/serviceZone, so don't try setting up MQTT client now
+			this.app.updateLog(`Skipping wait for MQTT client setup for UAID ${UAID} and serviceZone ${serviceZone} as a retry timer exists`);
 		}
 		else
 		{
-			this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZone ${serviceZone}`);
+			// Ensure an MQTT client is setup for this UAID and serviceZone
+			const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZone === serviceZone));
+			if (!entry)
+			{
+				try
+				{
+					this.app.updateLog(`MQTT client for UAID ${UAID} and serviceZone ${serviceZone} not found, setting up now`);
+
+					// Setup the MQTT client
+					let mqttURL;
+					if (serviceZone === 'eu_uk')
+					{
+						mqttURL = yoLinkApi.mqttUrl_eu;
+					}
+					else
+					{
+						mqttURL = yoLinkApi.mqttUrl_us;
+					}
+
+					const brokerConfig = {
+						UAID,
+						url: mqttURL,
+						port: 8003,
+						username: accessToken,
+						password: '',
+						serviceZone,
+					};
+					const MQTTConnection = await this.setupMQTTClient(brokerConfig);
+					if (MQTTConnection)
+					{
+						this.MQTTList.push(MQTTConnection);
+						this.app.updateLog(`MQTT client setup complete for UAID ${UAID}. Number of MQTT clients: ${this.MQTTList.length}`);
+					}
+				}
+				catch (err)
+				{
+					this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
+				}
+			}
+			else
+			{
+				this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZone ${serviceZone}`);
+			}
 		}
 
 		resolveToken();
@@ -421,7 +431,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 	}
 
-	async setupMQTTClient(brokerConfig)
+	async setupMQTTClient(brokerConfig, retryCount = 0, maxRetries = 3)
 	{
 		try
 		{
@@ -432,9 +442,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 			});
 
 			// Connect to the MQTT server and subscribe to the state change topic
-			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}, ${brokerConfig.username}, ${brokerConfig.password}`, 1);
 			const homeID = await this.getHomeInfo(brokerConfig.UAID);
-			const MQTTClient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}`, username: brokerConfig.username, password: brokerConfig.password });
+			const rndID = Math.floor(Math.random() * 100000);
+			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}, { clientId: HomeyYoLinkApp-${this.app.homeyID}-${rndID}, username: ${brokerConfig.username}, password: ${brokerConfig.password} }`, 1);
+			const MQTTClient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}-${rndID}`, username: brokerConfig.username, password: brokerConfig.password });
+			let connectionFailed = false;
 
 			MQTTClient.on('connect', () =>
 			{
@@ -473,7 +485,26 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 			MQTTClient.on('error', (err) =>
 			{
-				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, ${brokerConfig.username}, ${brokerConfig.password}`, 0);
+				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, HomeyYoLinkApp-${this.app.homeyID}-${rndID}, ${brokerConfig.username}, ${brokerConfig.password}`, 0);
+
+				// Stop reconnection attempts for authentication errors
+				if (err.code === 'ECONNREFUSED' ||
+					err.message.includes('Connection refused') ||
+					err.message.includes('Not authorized') ||
+					err.message.includes('Authentication failed'))
+				{
+					this.app.updateLog('Authentication error detected, stopping MQTT reconnection attempts', 0);
+					connectionFailed = true;
+					MQTTClient.end(true); // Force close the connection
+					readyToken();
+				}
+			});
+
+			MQTTClient.on('close', () =>
+			{
+				this.app.updateLog(`MQTT connection closed for UAID ${brokerConfig.UAID}`);
+				// Remove this client from the MQTTList when connection is closed
+				this.MQTTList = this.MQTTList.filter((item) => item.UAID !== brokerConfig.UAID || item.serviceZone !== brokerConfig.serviceZone);
 			});
 
 			MQTTClient.on('message', async (topic, message) =>
@@ -517,6 +548,19 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.updateLog('setupMQTTClient: waiting for MQTT client to be ready');
 			await mqttReady;
 
+			// Return null if connection failed
+			if (connectionFailed)
+			{
+				// Schedule retry on any other error if we haven't exceeded max retries
+				if (retryCount < maxRetries)
+				{
+					this.app.updateLog('Scheduling MQTT reconnection attempt due to error...', 1);
+					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
+				}
+
+				return null;
+			}
+
 			return { UAID: brokerConfig.UAID, homeID: homeID.data.id, serviceZone: brokerConfig.serviceZone, mqttReady, MQTTClient };
 		}
 		catch (err)
@@ -524,5 +568,76 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.updateLog(`setupMQTTClient error: ${err.message}`, 0);
 			return null;
 		}
+	}
+
+	scheduleMQTTRetry(brokerConfig, retryCount, maxRetries)
+	{
+		// Clear any existing retry timer for this UAID/serviceZone
+		const retryKey = `${brokerConfig.UAID}_${brokerConfig.serviceZone}`;
+		if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
+		{
+			clearTimeout(this.mqttRetryTimers[retryKey]);
+		}
+
+		// Initialize retry timers object if it doesn't exist
+		if (!this.mqttRetryTimers)
+		{
+			this.mqttRetryTimers = {};
+		}
+
+		// Calculate retry delay (exponential backoff: 30s, 60s, 120s)
+		const retryDelay = 30000 * (2 ** (retryCount - 1));
+
+		this.mqttRetryTimers[retryKey] = setTimeout(async () =>
+		{
+			try
+			{
+				this.app.updateLog(`Attempting MQTT reconnection for UAID ${brokerConfig.UAID} (attempt ${retryCount}/${maxRetries})`);
+
+				// Get a fresh access token
+				const newAccessToken = await this.getAccessTokenForUAID(brokerConfig.UAID);
+				if (!newAccessToken)
+				{
+					this.app.updateLog(`Failed to get new access token for UAID ${brokerConfig.UAID}, retry aborted`, 0);
+					return;
+				}
+
+				// Update the broker config with the new access token
+				const newBrokerConfig = {
+					...brokerConfig,
+					username: newAccessToken,
+				};
+
+				// Attempt to setup MQTT client again
+				const MQTTConnection = await this.setupMQTTClient(newBrokerConfig, retryCount, maxRetries);
+				if (MQTTConnection)
+				{
+					// Find and update existing entry in MQTTList or add new one
+					const existingIndex = this.MQTTList.findIndex((item) => item.UAID === brokerConfig.UAID && item.serviceZone === brokerConfig.serviceZone);
+
+					if (existingIndex >= 0)
+					{
+						this.MQTTList[existingIndex] = MQTTConnection;
+					}
+					else
+					{
+						this.MQTTList.push(MQTTConnection);
+					}
+
+					this.app.updateLog(`MQTT client reconnection successful for UAID ${brokerConfig.UAID}`, 1);
+				}
+			}
+			catch (err)
+			{
+				this.app.updateLog(`MQTT retry attempt failed for UAID ${brokerConfig.UAID}: ${err.message}`, 0);
+			}
+			finally
+			{
+				// Clean up the timer reference
+				delete this.mqttRetryTimers[retryKey];
+			}
+		}, retryDelay);
+
+		this.app.updateLog(`MQTT retry scheduled for UAID ${brokerConfig.UAID} in ${retryDelay / 1000} seconds`, 1);
 	}
 };

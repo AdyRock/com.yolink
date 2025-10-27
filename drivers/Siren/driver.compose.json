@@ -15,6 +15,12 @@
 		"alarm_sirenOnOff",
 		"alarm_power"
 	],
+	"energy": {
+		"batteries": [
+			"AA",
+			"AA"
+		]
+	},
 	"$extends": [
 		"cloudDriver"
 	]

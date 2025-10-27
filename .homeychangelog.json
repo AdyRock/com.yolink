@@ -28,5 +28,11 @@
 	},
 	"1.0.5": {
 		"en": "Added Vibration Sensor device driver. Fix EU/UK region support when fetching device lists. Fix sending of device logs to developer. Enhanced error logging."
+	},
+	"1.0.6": {
+		"en": "Added Siren, Motion sensor and Power Fail Alarm device driver. Added more diagnostics to MQTT setup process. Now waits for MQTT setup to complete before returning from setup function."
+	},
+	"1.0.7": {
+		"en": "Fixed issue with MQTT reconnect logic causing excessive connection attempts. Improved stability of MQTT connection handling."
 	}
 }
