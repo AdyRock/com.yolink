@@ -158,4 +158,17 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 		this.homey.app.yoLinkAPI.postMQTTMessage(mqttMessage);
 	}
+
+	triggerButtonPressed(device, tokens)
+	{
+		this.homey.app._triggerButtonPressed.trigger(device, tokens).catch(this.homey.app.error);
+		return this;
+	}
+
+	triggerButtonLongPressed(device, tokens)
+	{
+		this.homey.app._triggerButtonLongPressed.trigger(device, tokens).catch(this.homey.app.error);
+		return this;
+	}
+
 };

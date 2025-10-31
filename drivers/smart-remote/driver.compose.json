@@ -1,0 +1,28 @@
+{
+	"name": {
+		"en": "Smart Remotes",
+		"nl": "Slimme Afstandsbediening",
+		"de": "Smart Fernbedienung",
+		"fr": "Télécommande intelligente",
+		"it": "Telecomando intelligente",
+		"es": "Control Remoto Inteligente",
+		"sv": "Smart fjärrkontroll",
+		"da": "Smart Fjernbetjening",
+		"pl": "Inteligentny Pilot",
+		"ko": "스마트 리모컨"
+	},
+	"class": "remote",
+	"capabilities": [
+		"measure_battery",
+		"info"
+	],
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

@@ -1,14 +1,14 @@
 {
 	"name": {
-		"en": "Window / Door Sensor",
-		"nl": "Raam / Deur Sensor",
-		"de": "Tür- / Fenstersensor",
-		"fr": "Capteur de porte / fenêtre",
-		"it": "Sensore per porte/finestre",
-		"es": "Sensor de puerta/ventana",
-		"sv": "Fönster-/dörrsensor",
-		"da": "Dør-/vinduesensor",
-		"pl": "Czujnik drzwi/okien",
+		"en": "Window / Door Sensors",
+		"nl": "Raam / Deur Sensoren",
+		"de": "Tür- / Fenstersensoren",
+		"fr": "Capteurs de porte / fenêtre",
+		"it": "Sensori per porte/finestre",
+		"es": "Sensores de puerta/ventana",
+		"sv": "Fönster-/dörrsensorer",
+		"da": "Dør-/vinduesensorer",
+		"pl": "Czujniki drzwi/okien",
 		"ko": "창문/문 센서"
 	},
 	"class": "sensor",

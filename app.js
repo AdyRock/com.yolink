@@ -25,6 +25,9 @@ module.exports = class YoLink extends Homey.App
 		{
 		});
 
+		this._triggerButtonPressed = this.homey.flow.getDeviceTriggerCard('button_pressed');
+		this._triggerButtonLongPressed = this.homey.flow.getDeviceTriggerCard('button_long_pressed');
+
 		this.updateLog('YoLink app has been initialized');
 	}
 

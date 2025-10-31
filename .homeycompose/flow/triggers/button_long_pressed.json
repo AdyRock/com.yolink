@@ -1,0 +1,43 @@
+{
+	"title": {
+		"en": "Button Long Pressed",
+		"no": "Knapp Langt Trykket",
+		"nl": "Knop lang ingedrukt",
+		"da": "Knap Langt Trykket",
+		"de": "Taste Lang Gedrückt",
+		"es": "Botón Pulsado Largo",
+		"fr": "Bouton Appuyé Longtemps",
+		"it": "Pulsante Premuto a Lungo",
+		"sv": "Knapp Långt Tryckt",
+		"pl": "Przycisk Długo Naciśnięty",
+		"ru": "Кнопка Долго Нажата",
+		"ko": "버튼 길게 눌림"
+	},
+	"tokens": [
+		{
+			"name": "button",
+			"type": "number",
+			"title": {
+				"en": "Button mask",
+				"no": "Knap maske",
+				"nl": "Knop masker",
+				"da": "Knap maske",
+				"de": "Tastenmaske",
+				"es": "Máscara de botón",
+				"fr": "Masque de bouton",
+				"it": "Maschera di pulsante",
+				"sv": "Knappmask",
+				"pl": "Maska przycisku",
+				"ru": "Маска кнопки",
+				"ko": "버튼 마스크"
+			}
+		}
+	],
+	"args": [
+		{
+			"type": "device",
+			"name": "device",
+			"filter": "driver_id=smart-remote"
+		}
+	]
+}

@@ -1,0 +1,43 @@
+{
+	"title": {
+		"en": "Button Pressed",
+		"no": "Knapp Trykket",
+		"nl": "Knop ingedrukt",
+		"da": "Knap Trykket",
+		"de": "Taste Gedrückt",
+		"es": "Botón Pulsado",
+		"fr": "Bouton Appuyé",
+		"it": "Pulsante Premuto",
+		"sv": "Knapp Tryckt",
+		"pl": "Przycisk Naciśnięty",
+		"ru": "Кнопка Нажата",
+		"ko": "버튼 눌림"
+	},
+	"tokens": [
+		{
+			"name": "button",
+			"type": "number",
+			"title": {
+				"en": "Button mask",
+				"no": "Knap maske",
+				"nl": "Knop masker",
+				"da": "Knap maske",
+				"de": "Tastenmaske",
+				"es": "Máscara de botón",
+				"fr": "Masque de bouton",
+				"it": "Maschera di pulsante",
+				"sv": "Knappmask",
+				"pl": "Maska przycisku",
+				"ru": "Маска кнопки",
+				"ko": "버튼 마스크"
+			}
+		}
+	],
+	"args": [
+		{
+			"type": "device",
+			"name": "device",
+			"filter": "driver_id=smart-remote"
+		}
+	]
+}
