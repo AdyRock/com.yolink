@@ -34,5 +34,8 @@
 	},
 	"1.0.7": {
 		"en": "Fixed issue with MQTT reconnect logic causing excessive connection attempts. Improved stability of MQTT connection handling."
+	},
+	"1.0.8": {
+		"en": "Added Remote devices support."
 	}
 }
