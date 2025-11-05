@@ -97,8 +97,11 @@ module.exports = class MotionSensorDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`MotionSensorDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		this.setCapabilityValue('alarm_motion', mqttData.state === 'alert');
 		if (mqttData.devTemperature)
@@ -111,5 +114,6 @@ module.exports = class MotionSensorDevice extends Homey.Device
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+		return true;
 	}
 };

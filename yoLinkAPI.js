@@ -34,7 +34,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		// this.UAIDList is used to store the list of objects {UAID: <UAID>, access_token: <accessToken>, refresh_token: <refreshToken>, expires_at: <expires_at>}
 		this.UAIDList = this.app.homey.settings.get('UAIDList') || [];
-		this.MQTTList = []; // List of {UAID, serviceZone, MQTTClient}
+		this.MQTTList = []; // List of {UAID, serviceZoneID, MQTTClient}
 	}
 
 	async getUAIDList()
@@ -234,7 +234,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		const response = await this.request('POST', this.getZoneURL(serviceZone), body, headers);
+		const serviceZoneID = serviceZone.substring(0, 2);
+		const response = await this.request('POST', this.getZoneURL(serviceZoneID), body, headers);
 		if (response && response.desc === 'Success')
 		{
 			if (response && response.data && response.data.devices && response.data.devices.length > 0)
@@ -254,9 +255,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 		throw new Error(`Failed to obtain device list for UAID ${UAID}`);
 	}
 
-	getZoneURL(serviceZone)
+	getZoneURL(serviceZoneID)
 	{
-		if (serviceZone === 'eu_uk')
+		if (serviceZoneID === 'eu')
 		{
 			return `${yoLinkApi.cloudUrl_eu}${yoLinkApi.apiUrl}`;
 		}
@@ -284,7 +285,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 			params: {},
 		};
 
-		const url = this.getZoneURL(serviceZone);
+		// Get the service zone ID, which is the first two characters of the serviceZone string
+		const serviceZoneID = serviceZone.substring(0, 2);
+		const url = this.getZoneURL(serviceZoneID);
 
 		// Wait if an MQTT client is being setup
 		while (this.settingUpMQTTClient)
@@ -300,25 +303,25 @@ module.exports = class YoLinkAPI extends SimpleClass
 			resolveToken = resolve;
 		});
 
-		const retryKey = `${UAID}_${serviceZone}`;
+		const retryKey = `${UAID}_${serviceZoneID}`;
 		if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
 		{
-			// A retry timer exists for this UAID/serviceZone, so don't try setting up MQTT client now
-			this.app.updateLog(`Skipping wait for MQTT client setup for UAID ${UAID} and serviceZone ${serviceZone} as a retry timer exists`);
+			// A retry timer exists for this UAID/serviceZoneID, so don't try setting up MQTT client now
+			this.app.updateLog(`Skipping wait for MQTT client setup for UAID ${UAID} and serviceZoneID ${serviceZoneID} as a retry timer exists`);
 		}
 		else
 		{
-			// Ensure an MQTT client is setup for this UAID and serviceZone
-			const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZone === serviceZone));
+			// Ensure an MQTT client is setup for this UAID and serviceZoneID
+			const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZoneID === serviceZoneID));
 			if (!entry)
 			{
 				try
 				{
-					this.app.updateLog(`MQTT client for UAID ${UAID} and serviceZone ${serviceZone} not found, setting up now`);
+					this.app.updateLog(`MQTT client for UAID ${UAID} and serviceZoneID ${serviceZoneID} not found, setting up now`);
 
 					// Setup the MQTT client
 					let mqttURL;
-					if (serviceZone === 'eu_uk')
+					if (serviceZoneID === 'eu')
 					{
 						mqttURL = yoLinkApi.mqttUrl_eu;
 					}
@@ -333,7 +336,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 						port: 8003,
 						username: accessToken,
 						password: '',
-						serviceZone,
+						serviceZoneID,
 					};
 					const MQTTConnection = await this.setupMQTTClient(brokerConfig);
 					if (MQTTConnection)
@@ -349,7 +352,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			}
 			else
 			{
-				this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZone ${serviceZone}`);
+				this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZoneID ${serviceZoneID}`);
 			}
 		}
 
@@ -379,7 +382,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 			params,
 		};
 
-		const url = this.getZoneURL(serviceZone);
+		// Get the service zone ID, which is the first two characters of the serviceZone string
+		const serviceZoneID = serviceZone.substring(0, 2);
+		const url = this.getZoneURL(serviceZoneID);
 		return this.request('POST', url, body, headers);
 	}
 
@@ -504,7 +509,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				this.app.updateLog(`MQTT connection closed for UAID ${brokerConfig.UAID}`);
 				// Remove this client from the MQTTList when connection is closed
-				this.MQTTList = this.MQTTList.filter((item) => item.UAID !== brokerConfig.UAID || item.serviceZone !== brokerConfig.serviceZone);
+				this.MQTTList = this.MQTTList.filter((item) => item.UAID !== brokerConfig.UAID || item.serviceZoneID !== brokerConfig.serviceZoneID);
 			});
 
 			MQTTClient.on('message', async (topic, message) =>
@@ -524,6 +529,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 					}
 
 					this.app.updateLog(`MQTTclient.on message: ${topic}, ${this.app.varToString(mqttMessage)}`);
+					let deviceFound = false;
 
 					const drivers = this.app.homey.drivers.getDrivers();
 					for (const driver of Object.values(drivers))
@@ -533,9 +539,22 @@ module.exports = class YoLinkAPI extends SimpleClass
 						{
 							if (device.processMQTTMessage)
 							{
-								await device.processMQTTMessage(mqttMessage).catch(device.error);
+								if (await device.processMQTTMessage(mqttMessage).catch(device.error))
+								{
+									deviceFound = true;
+									break;
+								}
 							}
 						}
+						if (deviceFound)
+						{
+							break;
+						}
+					}
+
+					if (!deviceFound)
+					{
+						this.app.updateLog(`No device found to process MQTT message for topic ${topic}`);
 					}
 				}
 				catch (err)
@@ -561,7 +580,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				return null;
 			}
 
-			return { UAID: brokerConfig.UAID, homeID: homeID.data.id, serviceZone: brokerConfig.serviceZone, mqttReady, MQTTClient };
+			return { UAID: brokerConfig.UAID, homeID: homeID.data.id, serviceZoneID: brokerConfig.serviceZoneID, mqttReady, MQTTClient };
 		}
 		catch (err)
 		{
@@ -572,8 +591,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 	scheduleMQTTRetry(brokerConfig, retryCount, maxRetries)
 	{
-		// Clear any existing retry timer for this UAID/serviceZone
-		const retryKey = `${brokerConfig.UAID}_${brokerConfig.serviceZone}`;
+		// Clear any existing retry timer for this UAID/serviceZoneID
+		const retryKey = `${brokerConfig.UAID}_${brokerConfig.serviceZoneID}`;
 		if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
 		{
 			clearTimeout(this.mqttRetryTimers[retryKey]);
@@ -613,7 +632,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				if (MQTTConnection)
 				{
 					// Find and update existing entry in MQTTList or add new one
-					const existingIndex = this.MQTTList.findIndex((item) => item.UAID === brokerConfig.UAID && item.serviceZone === brokerConfig.serviceZone);
+					const existingIndex = this.MQTTList.findIndex((item) => item.UAID === brokerConfig.UAID && item.serviceZoneID === brokerConfig.serviceZoneID);
 
 					if (existingIndex >= 0)
 					{

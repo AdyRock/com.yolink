@@ -96,8 +96,11 @@ module.exports = class VibrationSensorDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`VibrationSensorDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		// Process the MQTT message
 		this.setCapabilityValue('alarm_vibration', mqttData.state === 'alert');
@@ -107,5 +110,6 @@ module.exports = class VibrationSensorDevice extends Homey.Device
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+		return true;
 	}
 };

@@ -80,8 +80,11 @@ module.exports = class THDevice extends Homey.Device
 	{
 		if (mqttMessage.deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`TemperatureAndHumidityDevice MQTT message received: ${JSON.stringify(mqttMessage)}`);
 
 		// Process the MQTT message
 		if (mqttMessage.event === 'THSensor.Report')
@@ -100,6 +103,7 @@ module.exports = class THDevice extends Homey.Device
 				this.setCapabilityValue('measure_battery', batteryLevel);
 			}
 		}
+		return true;
 	}
 
 };

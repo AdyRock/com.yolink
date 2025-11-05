@@ -106,8 +106,11 @@ module.exports = class DoorSensorDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`DoorSensorDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		// Process the MQTT message
 		if (mqttData.alertType)
@@ -129,5 +132,6 @@ module.exports = class DoorSensorDevice extends Homey.Device
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+		return true;
 	}
 };

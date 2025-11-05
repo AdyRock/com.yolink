@@ -73,6 +73,9 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 		}
 		this.setAvailable();
 
+		// Log the device status
+		this.homey.app.updateLog(`SpeakerHubDevice MQTT message received: ${JSON.stringify(state)}`);
+
 		this.setCapabilityValue('info', state.data.wifi.ip);
 	}
 };

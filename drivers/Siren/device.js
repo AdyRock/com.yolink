@@ -117,8 +117,11 @@ module.exports = class SirenDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`SirenDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		this.setCapabilityValue('alarm_sirenOnOff', mqttData.state === 'alert');
 
@@ -144,5 +147,6 @@ module.exports = class SirenDevice extends Homey.Device
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+		return true;
 	}
 };

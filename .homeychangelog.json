@@ -37,5 +37,8 @@
 	},
 	"1.0.8": {
 		"en": "Added Remote devices support."
+	},
+	"1.0.9": {
+		"en": "Fixed issue with MQTT client setup for US and us_west_1 zone discrepency. Changed Smart Remote device offline behavior. Added more logging to check status updates."
 	}
 }

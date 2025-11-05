@@ -61,7 +61,8 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			this.setUnavailable('Offline');
+			this.setCapabilityValue('info', 'Offline');
+			this.setCapabilityValue('measure_battery', null);
 			return;
 		}
 		this.setAvailable();
@@ -94,8 +95,13 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		this.setAvailable();
+
+		// Log the device status
+		this.homey.app.updateLog(`SmartRemoteDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		if (mqttData && mqttData.event)
 		{
@@ -116,5 +122,6 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
 			this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+		return true;
 	}
 };

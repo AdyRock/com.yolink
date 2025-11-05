@@ -96,8 +96,11 @@ module.exports = class LeakSensorDevice extends Homey.Device
 
 		if (deviceId !== this.getData().id)
 		{
-			return;
+			return false;
 		}
+
+		// Log the device status
+		this.homey.app.updateLog(`LeakSensorDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
 		// Process the MQTT message
 		if (mqttData.devTemperature)
@@ -115,5 +118,7 @@ module.exports = class LeakSensorDevice extends Homey.Device
 		{
 			this.setCapabilityValue('alarm_water', mqttData.state === 'alert');
 		}
+
+		return true;
 	}
 };
