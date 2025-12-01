@@ -1,6 +1,6 @@
 {
 	"name": "com.yolink",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"main": "app.js",
 	"author": "Adrian Rockall",
 	"devDependencies": {
