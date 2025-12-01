@@ -111,6 +111,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 					UAID,
 					type: device.type,
 				},
+				icon: this.getIcon ? this.getIcon(device.modelName) : null,
 				settings: {
 					serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
 				},

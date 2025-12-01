@@ -13,4 +13,23 @@ module.exports = class MotionSensorDriver extends yoLinkDriver
 		this.homey.app.updateLog('MotionSensorDriver has been initialized');
 	}
 
+	getIcon(modelNumber)
+	{
+		// the motion sensor has different icons for different models that are stored in the root/assest folder
+		// remove the '-' suffix if present
+		if (modelNumber.includes('-'))
+		{
+			modelNumber = modelNumber.split('-')[0];
+		}
+		switch (modelNumber)
+		{
+		case 'YS7805':
+			return 'YS7805.svg';
+		case 'YS7804':
+			return 'YS7804.svg';
+		default:
+			return 'YS7804.svg';
+		}
+	}
+
 };
