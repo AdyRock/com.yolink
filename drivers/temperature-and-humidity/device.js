@@ -60,19 +60,19 @@ module.exports = class THDevice extends Homey.Device
 		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			this.setUnavailable('Offline');
+			this.setUnavailable('Offline').catch(this.error);
 			return;
 		}
-		this.setAvailable();
+		this.setAvailable().catch(this.error);
 
-		this.setCapabilityValue('measure_temperature', state.data.state.temperature);
-		this.setCapabilityValue('measure_humidity', state.data.state.humidity);
+		this.setCapabilityValue('measure_temperature', state.data.state.temperature).catch(this.error);
+		this.setCapabilityValue('measure_humidity', state.data.state.humidity).catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
 		{
 			const batteryLevel = parseInt(state.data.state.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 	}
 
@@ -91,16 +91,16 @@ module.exports = class THDevice extends Homey.Device
 		{
 			if (mqttMessage.data.temperature)
 			{
-				this.setCapabilityValue('measure_temperature', mqttMessage.data.temperature);
+				this.setCapabilityValue('measure_temperature', mqttMessage.data.temperature).catch(this.error);
 			}
 			if (mqttMessage.data.humidity)
 			{
-				this.setCapabilityValue('measure_humidity', mqttMessage.data.humidity);
+				this.setCapabilityValue('measure_humidity', mqttMessage.data.humidity).catch(this.error);
 			}
 			if (mqttMessage.data.battery)
 			{
 				const batteryLevel = parseInt(mqttMessage.data.battery, 10) / 0.04;
-				this.setCapabilityValue('measure_battery', batteryLevel);
+				this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 			}
 		}
 		return true;

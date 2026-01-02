@@ -117,20 +117,20 @@ module.exports = class DoorSensorDevice extends Homey.Device
 		{
 			if (mqttData.alertType === 'openRemind')
 			{
-				this.setCapabilityValue('alarm_door_fault', true);
+				this.setCapabilityValue('alarm_door_fault', true).catch(this.error);
 			}
 			else
 			{
-				this.setCapabilityValue('alarm_door_fault', false);
+				this.setCapabilityValue('alarm_door_fault', false).catch(this.error);
 			}
 		}
 
-		this.setCapabilityValue('alarm_contact', mqttData.state === 'open');
+		this.setCapabilityValue('alarm_contact', mqttData.state === 'open').catch(this.error);
 
 		if (mqttData.battery)
 		{
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 		return true;
 	}

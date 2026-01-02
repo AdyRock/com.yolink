@@ -61,17 +61,17 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			this.setCapabilityValue('info', 'Offline');
-			this.setCapabilityValue('measure_battery', null);
+			this.setCapabilityValue('info', 'Offline').catch(this.error);
+			this.setCapabilityValue('measure_battery', null).catch(this.error);
 			return;
 		}
-		this.setAvailable();
+		this.setAvailable().catch(this.error).catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
 		{
 			const batteryLevel = parseInt(state.data.state.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 
 		this.driver.updateMQTTState(data);
@@ -105,7 +105,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 
 		if (mqttData && mqttData.event)
 		{
-			this.setCapabilityValue('info', `${mqttData.event.keyMask}: ${mqttData.event.type}`);
+			this.setCapabilityValue('info', `${mqttData.event.keyMask}: ${mqttData.event.type}`).catch(this.error);
 
 			if (mqttData.event.type === 'Press')
 			{
@@ -120,7 +120,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 		if (mqttData && mqttData.battery)
 		{
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 		return true;
 	}

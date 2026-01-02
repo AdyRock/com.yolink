@@ -60,19 +60,19 @@ module.exports = class LeakSensorDevice extends Homey.Device
 		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			this.setUnavailable('Offline');
+			this.setUnavailable('Offline').catch(this.error);
 			return;
 		}
-		this.setAvailable();
+		this.setAvailable().catch(this.error);
 
-		this.setCapabilityValue('alarm_water', state.data.state.state === 'alert');
-		this.setCapabilityValue('measure_temperature', state.data.state.devTemperature);
+		this.setCapabilityValue('alarm_water', state.data.state.state === 'alert').catch(this.error);
+		this.setCapabilityValue('measure_temperature', state.data.state.devTemperature).catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
 		{
 			const batteryLevel = parseInt(state.data.state.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 
 		this.driver.updateMQTTState(data);
@@ -105,18 +105,18 @@ module.exports = class LeakSensorDevice extends Homey.Device
 		// Process the MQTT message
 		if (mqttData.devTemperature)
 		{
-			this.setCapabilityValue('measure_temperature', mqttData.devTemperature);
+			this.setCapabilityValue('measure_temperature', mqttData.devTemperature).catch(this.error);
 		}
 
 		if (mqttData.battery)
 		{
 			const batteryLevel = parseInt(mqttData.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 
 		if (mqttData.state)
 		{
-			this.setCapabilityValue('alarm_water', mqttData.state === 'alert');
+			this.setCapabilityValue('alarm_water', mqttData.state === 'alert').catch(this.error);
 		}
 
 		return true;

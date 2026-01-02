@@ -43,5 +43,8 @@
 	},
 	"1.0.10": {
 		"en": "Updated images. Schedule retry logic for MQTT connection to use exponential backoff to reduce connection attempts during outages."
+	},
+	"1.0.11": {
+		"en": "Added error traps on all setCapabilityValue calls to improve stability."
 	}
 }
