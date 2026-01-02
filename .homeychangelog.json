@@ -41,7 +41,7 @@
 	"1.0.9": {
 		"en": "Fixed issue with MQTT client setup for US and us_west_1 zone discrepency. Changed Smart Remote device offline behavior. Added more logging to check status updates."
 	},
-	"1.1.0": {
-		"en": "Updated images."
+	"1.0.10": {
+		"en": "Updated images. Schedule retry logic for MQTT connection to use exponential backoff to reduce connection attempts during outages."
 	}
 }

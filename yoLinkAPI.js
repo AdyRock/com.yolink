@@ -502,6 +502,10 @@ module.exports = class YoLinkAPI extends SimpleClass
 					connectionFailed = true;
 					MQTTClient.end(true); // Force close the connection
 					readyToken();
+
+					// Schedule retry after a delay if we haven't exceeded max retries
+					this.app.updateLog('Scheduling MQTT reconnection attempt due to error...', 1);
+					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
 				}
 			});
 
@@ -604,8 +608,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.mqttRetryTimers = {};
 		}
 
-		// Calculate retry delay (exponential backoff: 30s, 60s, 120s)
-		const retryDelay = 30000 * (2 ** (retryCount - 1));
+		// Calculate retry delay (exponential backoff: 60s, 120s, 240s)
+		const retryDelay = 60000 * (2 ** (retryCount - 1));
 
 		this.mqttRetryTimers[retryKey] = setTimeout(async () =>
 		{
