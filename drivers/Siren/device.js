@@ -123,7 +123,7 @@ module.exports = class SirenDevice extends Homey.Device
 		// Log the device status
 		this.homey.app.updateLog(`SirenDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
-		this.setCapabilityValue('alarm_sirenOnOff', mqttData.state === 'alert');
+		this.setCapabilityValue('alarm_sirenOnOff', mqttData.state === 'alert').catch(this.error);
 
 		if (mqttMessage.event === 'Siren.StatusChange')
 		{

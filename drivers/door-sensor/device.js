@@ -66,23 +66,23 @@ module.exports = class DoorSensorDevice extends Homey.Device
 		}
 		this.setAvailable();
 
-		this.setCapabilityValue('alarm_contact', state.data.state.state === 'open');
+		this.setCapabilityValue('alarm_contact', state.data.state.state === 'open').catch(this.error);
 
 		// If the door is open and the time now is greater than the openRemindDelay + the stateChangedAt time, then set the alarm_door_fault to true
 		if ((state.data.state.state === 'open') && (Date.now() > (state.data.state.stateChangedAt + (state.data.state.openRemindDelay * 1000))))
 		{
-			this.setCapabilityValue('alarm_door_fault', true);
+			this.setCapabilityValue('alarm_door_fault', true).catch(this.error);
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_door_fault', false);
+			this.setCapabilityValue('alarm_door_fault', false).catch(this.error);
 		}
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
 		{
 			const batteryLevel = parseInt(state.data.state.battery, 10) / 0.04;
-			this.setCapabilityValue('measure_battery', batteryLevel);
+			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
 		}
 
 		this.driver.updateMQTTState(data);

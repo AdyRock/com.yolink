@@ -46,5 +46,8 @@
 	},
 	"1.0.11": {
 		"en": "Added error traps on all setCapabilityValue calls to improve stability."
+	},
+	"1.0.12": {
+		"en": "Fix Siren On / Off Flow action card handler."
 	}
 }
