@@ -49,5 +49,8 @@
 	},
 	"1.0.12": {
 		"en": "Fix Siren On / Off Flow action card handler."
+	},
+	"1.0.13": {
+		"en": "Added Power Outlet device driver. Added Water Depth Sensor device driver and trigger for water depth changes."
 	}
 }

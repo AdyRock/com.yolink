@@ -1,0 +1,41 @@
+{
+    "title": {
+        "en": "The water depth changed",
+		"nl": "De waterdiepte is veranderd",
+		"de": "Die Wassertiefe hat sich geändert",
+		"fr": "La profondeur de l'eau a changé",
+		"it": "La profondità dell'acqua è cambiata",
+		"es": "La profundidad del agua ha cambiado",
+		"sv": "Vattendjupet har ändrats",
+		"da": "Vanddybden har ændret sig",
+		"pl": "Głębokość wody się zmieniła",
+		"ko": "수심이 변경되었습니다"
+    },
+    "tokens": [
+        {
+            "name": "measure_water_depth",
+            "title": {
+                "en": "Water depth",
+				"nl": "Waterdiepte",
+				"de": "Wassertiefe",
+				"fr": "Profondeur de l'eau",
+				"it": "Profondità dell'acqua",
+				"es": "Profundidad del agua",
+				"sv": "Vattendjup",
+				"da": "Vanddybde",
+				"pl": "Głębokość wody",
+				"ko": "수심"
+
+            },
+            "type": "number",
+            "example": 99.9
+        }
+    ],
+    "args": [
+        {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=water_depth_sensor"
+        }
+    ]
+}

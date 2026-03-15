@@ -1,0 +1,20 @@
+{
+	"name": {
+		"en": "Outlet",
+		"nl": "Stopcontact",
+		"fr": "Prise",
+		"de": "Steckdose",
+		"sv": "Vägguttag",
+		"da": "Stikkontakt",
+		"pl": "Gniazdko",
+		"ko": "콘센트"
+	},
+	"class": "socket",
+	"capabilities": [
+		"onoff",
+		"measure_power"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}

@@ -1,0 +1,138 @@
+{
+	"name": {
+		"en": "Water Depth Sensor",
+		"nl": "Water Diepte Sensor",
+		"de": "Wassertiefe-Sensor",
+		"fr": "Capteur de profondeur d'eau",
+		"it": "Sensore di profondità dell'acqua",
+		"es": "Sensor de profundidad de agua",
+		"sv": "Vattendjupssensor",
+		"da": "Vanddybdemåler",
+		"pl": "Czujnik głębokości wody",
+		"ko": "수심 센서"
+	},
+	"class": "sensor",
+	"capabilities": [
+		"measure_battery",
+		"alarm_water.low",
+		"alarm_water.high",
+		"measure_water_depth"
+	],
+	"capabilitiesOptions": {
+		"alarm_water.low": {
+			"title": {
+				"en": "Low water level",
+				"nl": "Laag waterniveau",
+				"de": "Niedriger Wasserstand",
+				"fr": "Niveau d'eau bas",
+				"it": "Livello dell'acqua basso",
+				"es": "Nivel de agua bajo",
+				"sv": "Lågt vattennivå",
+				"da": "Lavt vandniveau",
+				"pl": "Niski poziom wody",
+				"ko": "낮은 수위"
+			},
+			"titleTrue": {
+				"en": "Low water",
+				"nl": "Laag water",
+				"de": "Niedriges Wasser",
+				"fr": "Eau basse",
+				"it": "Acqua bassa",
+				"es": "Agua baja",
+				"sv": "Lågt vatten",
+				"da": "Lavt vand",
+				"pl": "Niska woda",
+				"ko": "낮은 수위"
+			},
+			"titleFalse": {
+				"en": "OK",
+				"nl": "OK",
+				"de": "OK",
+				"fr": "OK",
+				"it": "OK",
+				"es": "OK",
+				"sv": "OK",
+				"da": "OK",
+				"pl": "OK",
+				"ko": "OK"
+			},
+			"insightsTitleTrue": {
+				"en": "Low water",
+				"nl": "Laag water",
+				"de": "Niedriges Wasser",
+				"fr": "Eau basse",
+				"it": "Acqua bassa",
+				"es": "Agua baja",
+				"sv": "Lågt vatten",
+				"da": "Lavt vand",
+				"pl": "Niska woda",
+				"ko": "낮은 수위"
+			},
+			"insightsTitleFalse": {
+				"en": "OK"
+			}
+		},
+		"alarm_water.high": {
+			"title": {
+				"en": "High water level",
+				"nl": "Hoog waterniveau",
+				"de": "Hoher Wasserstand",
+				"fr": "Niveau d'eau élevé",
+				"it": "Livello dell'acqua alto",
+				"es": "Nivel de agua alto",
+				"sv": "Högt vattennivå",
+				"da": "Højt vandniveau",
+				"pl": "Wysoki poziom wody",
+				"ko": "높은 수위"
+			},
+			"titleTrue": {
+				"en": "High water",
+				"nl": "Hoog water",
+				"de": "Hohes Wasser",
+				"fr": "Eau haute",
+				"it": "Acqua alta",
+				"es": "Agua alta",
+				"sv": "Högt vatten",
+				"da": "Højt vand",
+				"pl": "Wysoka woda",
+				"ko": "높은 수위"
+			},
+			"titleFalse": {
+				"en": "OK",
+				"nl": "OK",
+				"de": "OK",
+				"fr": "OK",
+				"it": "OK",
+				"es": "OK",
+				"sv": "OK",
+				"da": "OK",
+				"pl": "OK",
+				"ko": "OK"
+			},
+			"insightsTitleTrue": {
+				"en": "High water",
+				"nl": "Hoog water",
+				"de": "Hohes Wasser",
+				"fr": "Eau haute",
+				"it": "Acqua alta",
+				"es": "Agua alta",
+				"sv": "Högt vatten",
+				"da": "Højt vand",
+				"pl": "Wysoka woda",
+				"ko": "높은 수위"
+			},
+			"insightsTitleFalse": {
+				"en": "OK"
+			}
+		}
+	},
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

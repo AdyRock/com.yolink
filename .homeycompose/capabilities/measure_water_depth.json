@@ -1,0 +1,24 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Water Depth",
+		"no": "Vann Dybde",
+        "nl": "Waterdiepte",
+		"da": "Vanddybde",
+		"de": "Wassertiefe",
+		"es": "Profundidad del agua",
+		"fr": "Profondeur de l'eau",
+		"it": "Profondità dell'acqua",
+		"sv": "Vattendjup",
+		"pl": "Głębokość wody",
+		"ko": "수심"
+    },
+	"unit": "%",
+	"insights": true,
+	"chartType": "stepLine",
+	"decimals": 1,
+    "getable": true,
+    "setable": false,
+	"uiComponent": "sensor",
+    "icon": "/assets/water-depth.svg"
+}

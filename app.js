@@ -27,6 +27,7 @@ module.exports = class YoLink extends Homey.App
 
 		this._triggerButtonPressed = this.homey.flow.getDeviceTriggerCard('button_pressed');
 		this._triggerButtonLongPressed = this.homey.flow.getDeviceTriggerCard('button_long_pressed');
+		this.measure_water_depth_changedTrigger = this.homey.flow.getDeviceTriggerCard('measure_water_depth_changed');
 
 		this.updateLog('YoLink app has been initialized');
 	}
