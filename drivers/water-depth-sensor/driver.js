@@ -2,7 +2,7 @@
 
 const yoLinkDriver = require('../yoLinkDriver');
 
-module.exports = class LeakSensorDriver extends yoLinkDriver
+module.exports = class WaterDepthSensorDriver extends yoLinkDriver
 {
 
 	/**
@@ -10,8 +10,8 @@ module.exports = class LeakSensorDriver extends yoLinkDriver
  */
 	async onInit()
 	{
-		this.deviceType = 'LeakSensor';
-		this.homey.app.updateLog('LeakSensor has been initialized');
+		this.deviceType = 'WaterDepthSensor';
+		this.homey.app.updateLog('WaterDepthSensor has been initialized');
 	}
 
 };

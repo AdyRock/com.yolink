@@ -86,7 +86,7 @@ module.exports = class outletDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.setCapabilityValue('onoff', state.data.state === 'open').catch(this.error);
-		this.setCapabilityValue('measure_power', state.data.power).catch(this.error);
+		this.setCapabilityValue('measure_power', state.data.power / 10).catch(this.error);
 
 		this.driver.updateMQTTState(data);
 	}
@@ -109,7 +109,7 @@ module.exports = class outletDevice extends Homey.Device
 
 		if (mqttData.power)
 		{
-			this.setCapabilityValue('measure_power', mqttData.power).catch(this.error);
+			this.setCapabilityValue('measure_power', mqttData.power / 10).catch(this.error);
 		}
 
 		return true;
