@@ -55,5 +55,8 @@
 	},
 	"1.0.14": {
 		"en": "Fix for Water Depth Sensor device driver. Divided power measurement by 10 to match Homey capabilities. Updated product images."
+	},
+	"1.0.15": {
+		"en": "Added Water Valve device driver. Fix Water Depth Sensor units and divide value by 10 to match Homey capabilities."
 	}
 }
