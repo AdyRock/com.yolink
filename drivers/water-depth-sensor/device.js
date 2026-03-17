@@ -67,7 +67,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 
 		this.setCapabilityValue('alarm_water.low', state.data.state.alarm.lowAlarm).catch(this.error);
 		this.setCapabilityValue('alarm_water.high', state.data.state.alarm.highAlarm).catch(this.error);
-		this.setCapabilityValue('measure_water_depth', state.data.state.waterDepth).catch(this.error);
+		this.setCapabilityValue('measure_water_depth', state.data.state.waterDepth / 10).catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
@@ -114,7 +114,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 		{
 			this.setCapabilityValue('alarm_water.low', mqttData.state.alarm.lowAlarm).catch(this.error);
 			this.setCapabilityValue('alarm_water.high', mqttData.state.alarm.highAlarm).catch(this.error);
-			this.setCapabilityValue('measure_water_depth', mqttData.state.waterDepth).catch(this.error);
+			this.setCapabilityValue('measure_water_depth', mqttData.state.waterDepth / 10).catch(this.error);
 		}
 
 		return true;

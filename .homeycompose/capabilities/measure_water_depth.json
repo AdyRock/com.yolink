@@ -13,7 +13,7 @@
 		"pl": "Głębokość wody",
 		"ko": "수심"
     },
-	"unit": "%",
+	"units": "%",
 	"insights": true,
 	"chartType": "stepLine",
 	"decimals": 1,

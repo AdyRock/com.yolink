@@ -1,0 +1,19 @@
+{
+	"name": {
+		"en": "Water Valve",
+		"nl": "Waterklep",
+		"fr": "Vanne d'eau",
+		"de": "Wasserhahn",
+		"sv": "Vattenventil",
+		"da": "Vandventil",
+		"pl": "Zawór wodny",
+		"ko": "수도 밸브"
+	},
+	"class": "watervalve",
+	"capabilities": [
+		"onoff"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}
