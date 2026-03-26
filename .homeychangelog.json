@@ -58,5 +58,8 @@
 	},
 	"1.0.15": {
 		"en": "Added Water Valve device driver. Fix Water Depth Sensor units and divide value by 10 to match Homey capabilities."
+	},
+	"1.0.16": {
+		"en": "Added support for Smart Switch device. Updated product images."
 	}
 }
