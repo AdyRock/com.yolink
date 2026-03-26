@@ -1,0 +1,29 @@
+{
+	"name": {
+		"en": "Smart Switch",
+		"nl": "Slimme Schakelaar",
+		"de": "Smart Schalter",
+		"fr": "Interrupteur intelligent",
+		"it": "Interruttore intelligente",
+		"es": "Interruptor inteligente",
+		"sv": "Smart strömbrytare",
+		"da": "Smart Kontakt",
+		"pl": "Inteligentny Włącznik",
+		"ko": "스마트 스위치"
+	},
+	"class": "remote",
+	"capabilities": [
+		"onoff",
+		"measure_battery",
+		"info"
+	],
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}
