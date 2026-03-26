@@ -11,7 +11,7 @@
 		"pl": "Inteligentny Włącznik",
 		"ko": "스마트 스위치"
 	},
-	"class": "remote",
+	"class": "light",
 	"capabilities": [
 		"onoff",
 		"measure_battery",

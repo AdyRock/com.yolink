@@ -78,28 +78,68 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			{
 				throw new Error('No access token, cannot list devices');
 			}
-			const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
-			const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu_uk');
-			const deviceList = deviceusList;
-			// Add the EU devices to the list if not already present
-			if (deviceeuList && deviceeuList.length > 0)
+
+			let deviceList = [];
+
+			const simData = this.homey.app.getSymData();
+			if (simData)
 			{
-				for (const deviceeu of deviceeuList)
+				deviceList = simData;
+			}
+			else
+			{
+				const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
+				const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu_uk');
+				deviceList = deviceusList;
+
+				// Add the EU devices to the list if not already present
+				if (deviceeuList && deviceeuList.length > 0)
 				{
-					if (!deviceusList.find((device) => device.UID === deviceeu.UID))
+					for (const deviceeu of deviceeuList)
 					{
-						deviceList.push(deviceeu);
+						if (!deviceusList.find((device) => device.UID === deviceeu.UID))
+						{
+							deviceList.push(deviceeu);
+						}
 					}
 				}
-			}
 
-			if (!deviceusList)
-			{
-				return [];
+				if (!deviceusList)
+				{
+					return [];
+				}
 			}
 
 			// Filter the list to just include devices of this type
 			const filteredList = deviceList.filter((device) => device.type === this.deviceType);
+
+			// If a subType is specified, filter the list to just include devices that also have a device that matches the parentDeviceId that matches the subType
+			if (this.subType)
+			{
+				// Get the list of parent devices that match the subType
+				const parentDeviceList = deviceList.filter((device) => device.type === this.subType);
+
+				// make sure we store the parent device id, deviceUDID and token in the data so we can use it later to link the child device to the parent device
+				return filteredList.filter((device) => device.parentDeviceId && parentDeviceList.find((parentDevice) => parentDevice.deviceId === device.parentDeviceId && parentDevice.type === this.subType)).map((device) => ({
+					name: device.name,
+					data:
+					{
+						id: device.deviceId,
+						deviceUDID: device.deviceUDID,
+						deviceToken: device.token,
+						parentDeviceId: device.parentDeviceId,
+						parentDeviceUDID: parentDeviceList.find((parentDevice) => parentDevice.deviceId === device.parentDeviceId && parentDevice.type === this.subType)?.deviceUDID,
+						parentDeviceToken: parentDeviceList.find((parentDevice) => parentDevice.deviceId === device.parentDeviceId && parentDevice.type === this.subType)?.token,
+						UAID,
+						type: device.type,
+					},
+					icon: this.getIcon ? this.getIcon(device.modelName) : null,
+					settings: {
+						serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
+					},
+				}));
+			}
+
 			return filteredList.map((device) => ({
 				name: device.name,
 				data:

@@ -1,0 +1,33 @@
+{
+	"name": {
+		"en": "LeakStop 1 Channel",
+		"nl": "LeakStop 1 Kanaal",
+		"de": "LeakStop 1 Kanal",
+		"fr": "LeakStop 1 Canal",
+		"it": "LeakStop 1 Canale",
+		"es": "LeakStop 1 Canal",
+		"sv": "LeakStop 1 Kanal",
+		"da": "LeakStop 1 Kanal",
+		"pl": "LeakStop 1 Kanał",
+		"ko": "LeakStop 1 채널"
+	},
+	"class": "watervalve",
+	"capabilities": [
+		"onoff",
+		"meter_water",
+		"measure_flushes",
+		"measure_battery",
+		"alarm_water",
+		"alarm_problem"
+
+	],
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

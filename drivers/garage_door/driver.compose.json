@@ -1,0 +1,44 @@
+{
+	"name": {
+		"en": "Garage Door Switch",
+		"nl": "Garage Deur Schakelaar",
+		"de": "Garagentor Schalter",
+		"fr": "Interrupteur de porte de garage",
+		"it": "Interruttore porta del garage",
+		"es": "Interruptor de puerta de garaje",
+		"sv": "Garage Dörr Strömbrytare",
+		"da": "Garage Dør Kontakt",
+		"pl": "Przełącznik drzwi garażowych",
+		"ko": "차고 문 스위치"
+	},
+	"class": "garagedoor",
+	"capabilities": [
+		"onoff",
+		"measure_battery",
+		"alarm_contact",
+		"alarm_door_fault"
+	],
+	"capabilitiesOptions": {
+		"alarm_contact": {
+			"title": {"en": "Open / Closed", "nl": "Open / Gesloten", "de": "Offen / Geschlossen", "fr": "Ouvert / Fermé", "it": "Aperto / Chiuso", "es": "Abierto / Cerrado", "sv": "Öppen / Stängd", "da": "Åben / Lukket", "pl": "Otwarte / Zamknięte", "ko": "열림 / 닫힘"},
+			"titleTrue": {"en": "Open", "nl": "Open", "de": "Offen", "fr": "Ouvert", "it": "Aperto", "es": "Abierto", "sv": "Öppen", "da": "Åben", "pl": "Otwarte", "ko": "열림"},
+			"titleFalse": {"en": "Closed", "nl": "Gesloten", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"},
+			"insightsTitleTrue": {"en": "Opened", "nl": "Geopend", "de": "Offen", "fr": "Ouvert", "it": "Aperto", "es": "Abierto", "sv": "Öppen", "da": "Åben", "pl": "Otwarte", "ko": "열림"},
+			"insightsTitleFalse": {"en": "Closed", "nl": "Gesloten", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"}
+		},
+		"alarm_door_fault": {
+			"title": {"en": "Left Open", "nl": "Open gelaten", "de": "Offen gelassen", "fr": "Resté ouvert", "it": "Lasciato aperto", "es": "Dejado abierto", "sv": "Lämnat öppet", "da": "Efterladt åben", "pl": "Pozostawione otwarte", "ko": "열린 상태로 둠"},
+			"insightsTitleTrue": {"en": "Left Open", "nl": "Open gelaten", "de": "Offen gelassen", "fr": "Resté ouvert", "it": "Lasciato aperto", "es": "Dejado abierto", "sv": "Lämnat öppet", "da": "Efterladt åben", "pl": "Pozostawione otwarte", "ko": "열린 상태로 둠"},
+			"insightsTitleFalse": {"en": "Closed", "nl": "Gesloten", "de": "Geschlossen", "fr": "Fermé", "it": "Chiuso", "es": "Cerrado", "sv": "Stängd", "da": "Lukket", "pl": "Zamknięte", "ko": "닫힘"}
+		}
+	},
+	"energy": {
+		"batteries": [
+			"AAA",
+			"AAA"
+		]
+	},
+	"$extends": [
+		"cloudDriver"
+	]
+}

@@ -1,0 +1,23 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Number of Flushes",
+		"no": "Antall skyllinger",
+        "nl": "Aantal spoelingen",
+		"da": "Antal skylninger",
+		"de": "Anzahl der Spülungen",
+		"es": "Número de descargas",
+		"fr": "Nombre de flushs",
+		"it": "Numero di scarichi",
+		"sv": "Antal spolningar",
+		"pl": "Liczba spłukań",
+		"ko": "플러시 수"
+    },
+	"insights": true,
+	"chartType": "stepLine",
+	"decimals": 0,
+    "getable": true,
+    "setable": false,
+	"uiComponent": "sensor",
+    "icon": "/assets/flush.svg"
+}

@@ -39,6 +39,7 @@
 	<div class="tab">
 		<button class="tablinks" onclick="setPage(event, 'detected')" id="defaultOpen">Detected</button>
 		<button class="tablinks" onclick="setPage(event, 'log')">Log</button>
+		<button class="tablinks" onclick="setPage(event, 'simulator')" id="simLogTab" style="display:none">Simulation Data</button>
 	</div>
 
 	<!-- detected-->
@@ -91,6 +92,17 @@
 		</fieldset>
 	</div>
 
+	<!--SIMULATION PAGE -->
+	<div id="simulator" class="tabcontent">
+		<fieldset class="homey-form-fieldset">
+			<h1>For debug use only</h1>
+			<p><button id="useSim" style="background-color:#0f9e16;color:white;margin:5px 20px 5px 5px;">Activate</button><button id="clearSim" style="background-color:#a5510d;color:white;margin:5px 20px 5px 5px;">Clear Sim</button></p>
+			<div class="field row">
+				<textarea id="simData" style="white-space: nowrap;"></textarea>
+			</div>
+		</fieldset>
+	</div>
+
 	<script type="text/javascript">
 		// Create the busy indicator
 		var busyi;
@@ -108,9 +120,23 @@
 		var emailElement = document.getElementById('email');
 		var descriptionElement = document.getElementById('description');
 
+		// Simulation log tab
+		var useSimElement = document.getElementById('useSim');
+		var clearSimElement = document.getElementById('clearSim');
+		var simDataElement = document.getElementById('simData');
+
 		// a method named 'onHomeyReady' must be present in your code
 		function onHomeyReady(Homey)
 		{
+			Homey.get('debugMode', function (err, debugMode)
+			{
+				if (err) return Homey.alert(err);
+				if (debugMode)
+				{
+					document.getElementById("simLogTab").style.display = 'block';
+				}
+			});
+
 			// Tell Homey we're ready to be displayed
 			Homey.ready();
 
@@ -276,6 +302,43 @@
 				// Set a mouse over function for each tooltop element
 				tooltip.addEventListener("mouseover", position_tooltip); // On hover, launch the function below
 			})
+
+			useSimElement.addEventListener('click', function (e)
+			{
+				try
+				{
+					Homey.set('simData', JSON.parse(simDataElement.value), function (err)
+					{
+						if (err)
+						{
+							Homey.alert(err);
+						}
+						else
+						{
+							Homey.alert("Simulator On");
+						}
+					});
+				}
+				catch (err)
+				{
+					return Homey.alert(err);
+				}
+			});
+
+			clearSimElement.addEventListener('click', function (e)
+			{
+				Homey.unset('simData', function (err)
+				{
+					if (err)
+					{
+						return Homey.alert(err);
+					}
+					else
+					{
+						return Homey.alert("Simulator Off");
+					}
+				});
+			});
 		}
 
 		function setPage(evt, tabPage)
@@ -319,7 +382,19 @@
 				detectedDevicesElement.setAttribute('cols', detectedDevicesElement.parentElement.clientWidth / 8);
 				detectedDevicesElement.style.height = (window.innerHeight - detectedDevicesElement.offsetTop - 60) + 'px';
 			}
+			else if (tabPage == 'simulator')
+			{
+				Homey.get('simData', function (err, simData)
+				{
+					if (err) return Homey.alert(err);
+					simDataElement.value = simData ? JSON.stringify(simData, null, 2) : "";
+				});
+				// Make the simulator text box fill the page
+				simDataElement.setAttribute('cols', simDataElement.parentElement.clientWidth / 8);
+				simDataElement.style.height = (window.innerHeight - simDataElement.offsetTop - 60) + 'px';
+			}
 		}
+
 		function position_tooltip()
 		{
 			// Get .tooltiptext sibling

@@ -368,7 +368,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		if (!accessToken)
 		{
 			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
-			return null;
+			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 
 		const headers = {
@@ -394,7 +394,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		if (!accessToken)
 		{
 			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
-			return null;
+			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 
 		const headers = {

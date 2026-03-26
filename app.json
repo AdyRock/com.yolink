@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.yolink",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "compatibility": ">=12.5.0",
   "sdk": 3,
   "platforms": [
@@ -127,7 +127,7 @@
           {
             "type": "device",
             "name": "device",
-            "filter": "driver_id=smart-remote"
+            "filter": "driver_id=smart-remote|driver_id=smart-switch"
           }
         ],
         "id": "button_long_pressed"
@@ -171,7 +171,7 @@
           {
             "type": "device",
             "name": "device",
-            "filter": "driver_id=smart-remote"
+            "filter": "driver_id=smart-remote|driver_id=smart-switch"
           }
         ],
         "id": "button_pressed"
@@ -1310,6 +1310,293 @@
           }
         }
       ],
+      "icon": "/drivers/garage_door/assets/icon.svg",
+      "images": {
+        "large": "/drivers/garage_door/assets/images/large.jpg",
+        "small": "/drivers/garage_door/assets/images/small.jpg"
+      },
+      "name": {
+        "en": "Garage Door Switch",
+        "nl": "Garage Deur Schakelaar",
+        "de": "Garagentor Schalter",
+        "fr": "Interrupteur de porte de garage",
+        "it": "Interruttore porta del garage",
+        "es": "Interruptor de puerta de garaje",
+        "sv": "Garage Dörr Strömbrytare",
+        "da": "Garage Dør Kontakt",
+        "pl": "Przełącznik drzwi garażowych",
+        "ko": "차고 문 스위치"
+      },
+      "class": "garagedoor",
+      "capabilities": [
+        "onoff",
+        "measure_battery",
+        "alarm_contact",
+        "alarm_door_fault"
+      ],
+      "capabilitiesOptions": {
+        "alarm_contact": {
+          "title": {
+            "en": "Open / Closed",
+            "nl": "Open / Gesloten",
+            "de": "Offen / Geschlossen",
+            "fr": "Ouvert / Fermé",
+            "it": "Aperto / Chiuso",
+            "es": "Abierto / Cerrado",
+            "sv": "Öppen / Stängd",
+            "da": "Åben / Lukket",
+            "pl": "Otwarte / Zamknięte",
+            "ko": "열림 / 닫힘"
+          },
+          "titleTrue": {
+            "en": "Open",
+            "nl": "Open",
+            "de": "Offen",
+            "fr": "Ouvert",
+            "it": "Aperto",
+            "es": "Abierto",
+            "sv": "Öppen",
+            "da": "Åben",
+            "pl": "Otwarte",
+            "ko": "열림"
+          },
+          "titleFalse": {
+            "en": "Closed",
+            "nl": "Gesloten",
+            "de": "Geschlossen",
+            "fr": "Fermé",
+            "it": "Chiuso",
+            "es": "Cerrado",
+            "sv": "Stängd",
+            "da": "Lukket",
+            "pl": "Zamknięte",
+            "ko": "닫힘"
+          },
+          "insightsTitleTrue": {
+            "en": "Opened",
+            "nl": "Geopend",
+            "de": "Offen",
+            "fr": "Ouvert",
+            "it": "Aperto",
+            "es": "Abierto",
+            "sv": "Öppen",
+            "da": "Åben",
+            "pl": "Otwarte",
+            "ko": "열림"
+          },
+          "insightsTitleFalse": {
+            "en": "Closed",
+            "nl": "Gesloten",
+            "de": "Geschlossen",
+            "fr": "Fermé",
+            "it": "Chiuso",
+            "es": "Cerrado",
+            "sv": "Stängd",
+            "da": "Lukket",
+            "pl": "Zamknięte",
+            "ko": "닫힘"
+          }
+        },
+        "alarm_door_fault": {
+          "title": {
+            "en": "Left Open",
+            "nl": "Open gelaten",
+            "de": "Offen gelassen",
+            "fr": "Resté ouvert",
+            "it": "Lasciato aperto",
+            "es": "Dejado abierto",
+            "sv": "Lämnat öppet",
+            "da": "Efterladt åben",
+            "pl": "Pozostawione otwarte",
+            "ko": "열린 상태로 둠"
+          },
+          "insightsTitleTrue": {
+            "en": "Left Open",
+            "nl": "Open gelaten",
+            "de": "Offen gelassen",
+            "fr": "Resté ouvert",
+            "it": "Lasciato aperto",
+            "es": "Dejado abierto",
+            "sv": "Lämnat öppet",
+            "da": "Efterladt åben",
+            "pl": "Pozostawione otwarte",
+            "ko": "열린 상태로 둠"
+          },
+          "insightsTitleFalse": {
+            "en": "Closed",
+            "nl": "Gesloten",
+            "de": "Geschlossen",
+            "fr": "Fermé",
+            "it": "Chiuso",
+            "es": "Cerrado",
+            "sv": "Stängd",
+            "da": "Lukket",
+            "pl": "Zamknięte",
+            "ko": "닫힘"
+          }
+        }
+      },
+      "energy": {
+        "batteries": [
+          "AAA",
+          "AAA"
+        ]
+      },
+      "id": "garage_door",
+      "settings": [
+        {
+          "id": "serviceZone",
+          "type": "dropdown",
+          "label": {
+            "en": "Service Zone",
+            "nl": "Servicezone",
+            "da": "Servicezone",
+            "de": "Servicezone",
+            "es": "Zona de servicio",
+            "fr": "Zone de service",
+            "it": "Zona di servizio",
+            "no": "Tjenesteområde",
+            "sv": "Servicezon",
+            "pl": "Strefa serwisowa",
+            "ru": "Сервисная зона",
+            "ko": "서비스 지역"
+          },
+          "hint": {
+            "en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+            "nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
+            "da": "Vælg den servicezone, din enhed er registreret i. US = USA, EU/UK = Europa og Storbritannien",
+            "de": "Wählen Sie die Servicezone, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
+            "es": "Seleccione la zona de servicio en la que está registrado su dispositivo. US = Estados Unidos, EU/UK = Europa y Reino Unido",
+            "fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
+            "it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
+            "no": "Velg tjenesteområdet enheten din er registrert i. US = USA, EU/UK = Europa og Storbritannia",
+            "sv": "Välj den servicezon där din enhet är registrerad. US = USA, EU/UK = Europa och Storbritannien",
+            "pl": "Wybierz strefę serwisową, w której zarejestrowane jest Twoje urządzenie. US = Stany Zjednoczone, EU/UK = Europa i Wielka Brytania",
+            "ru": "Выберите сервисную зону, в которой зарегистрировано ваше устройство. US = Соединенные Штаты, EU/UK = Европа и Великобритания",
+            "ko": "장치가 등록된 서비스 지역을 선택하십시오. US = 미국, EU/UK = 유럽 및 영국"
+          },
+          "values": [
+            {
+              "id": "us",
+              "label": {
+                "en": "US (United States)",
+                "nl": "US (Verenigde Staten)",
+                "da": "US (USA)",
+                "de": "US (Vereinigte Staaten)",
+                "es": "US (Estados Unidos)",
+                "fr": "US (États-Unis)",
+                "it": "US (Stati Uniti)",
+                "no": "US (USA)",
+                "sv": "US (USA)",
+                "pl": "US (Stany Zjednoczone)",
+                "ru": "US (Соединенные Штаты)",
+                "ko": "US (미국)"
+              }
+            },
+            {
+              "id": "eu_uk",
+              "label": {
+                "en": "EU/UK (Europe and United Kingdom)",
+                "nl": "EU/UK (Europa en Verenigd Koninkrijk)",
+                "da": "EU/UK (Europa og Storbritannien)",
+                "de": "EU/UK (Europa und Vereinigtes Königreich)",
+                "es": "EU/UK (Europa y Reino Unido)",
+                "fr": "EU/UK (Europe et Royaume-Uni)",
+                "it": "EU/UK (Europa e Regno Unito)",
+                "no": "EU/UK (Europa og Storbritannia)",
+                "sv": "EU/UK (Europa och Storbritannien)",
+                "pl": "EU/UK (Europa i Wielka Brytania)",
+                "ru": "EU/UK (Европа и Великобритания)",
+                "ko": "EU/UK (유럽 및 영국)"
+              }
+            }
+          ],
+          "value": "us"
+        }
+      ]
+    },
+    {
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
+      "pair": [
+        {
+          "id": "select_uaid"
+        },
+        {
+          "id": "enter_secret"
+        },
+        {
+          "id": "list_my_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_my_devices",
+            "prev": "select_uaid"
+          }
+        },
+        {
+          "id": "add_my_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "logo": "logo.png",
+            "usernameLabel": {
+              "en": "UAID"
+            },
+            "usernamePlaceholder": {
+              "en": "Your UAID (User Account ID) from the YoLink app",
+              "nl": "Uw UAID (User Account ID) van de YoLink-app",
+              "da": "Dit er din UAID (User Account ID) fra YoLink-appen",
+              "de": "Ihre UAID (User Account ID) aus der YoLink-App",
+              "es": "Su UAID (ID de cuenta de usuario) de la aplicación YoLink",
+              "fr": "Votre UAID (ID de compte utilisateur) de l'application YoLink",
+              "it": "Il tuo UAID (ID account utente) dall'app YoLink",
+              "no": "Din UAID (User Account ID) fra YoLink-appen",
+              "sv": "Din UAID (User Account ID) från YoLink-appen",
+              "pl": "Twój UAID (identyfikator konta użytkownika) z aplikacji YoLink",
+              "ru": "Ваш UAID (идентификатор учетной записи пользователя) из приложения YoLink",
+              "ko": "YoLink 앱의 UAID(사용자 계정 ID)"
+            },
+            "passwordLabel": {
+              "en": "Secret Key",
+              "nl": "Secret Key",
+              "da": "Hemmelig nøgle",
+              "de": "Geheimer Schlüssel",
+              "es": "Clave secreta",
+              "fr": "Clé secrète",
+              "it": "Chiave segreta",
+              "no": "Hemmelig nøkkel",
+              "sv": "Hemlig nyckel",
+              "pl": "Tajny klucz",
+              "ru": "Секретный ключ",
+              "ko": "비밀 키"
+            },
+            "passwordPlaceholder": {
+              "en": "Secret Key obtained for the YoLink app",
+              "nl": "Secret Key uit de YoLink-app",
+              "da": "Hemmelig nøgle til YoLink-appen",
+              "de": "Geheimer Schlüssel für die YoLink-App",
+              "es": "Clave secreta obtenida para la aplicación YoLink",
+              "fr": "Clé secrète obtenue pour l'application YoLink",
+              "it": "Chiave segreta ottenuta per l'app YoLink",
+              "no": "Hemmelig nøkkel for YoLink-appen",
+              "sv": "Hemlig nyckel för YoLink-appen",
+              "pl": "Tajny klucz uzyskany dla aplikacji YoLink",
+              "ru": "Секретный ключ, полученный для приложения YoLink",
+              "ko": "비밀 키를 얻었습니다."
+            }
+          }
+        }
+      ],
       "icon": "/drivers/manipulator/assets/icon.svg",
       "images": {
         "large": "/drivers/manipulator/assets/images/large.jpg",
@@ -2200,7 +2487,7 @@
         "pl": "Inteligentny Włącznik",
         "ko": "스마트 스위치"
       },
-      "class": "remote",
+      "class": "light",
       "capabilities": [
         "onoff",
         "measure_battery",
@@ -3096,7 +3383,78 @@
           "AAA"
         ]
       },
-      "id": "water-depth-sensor"
+      "id": "water-depth-sensor",
+      "settings": [
+        {
+          "id": "serviceZone",
+          "type": "dropdown",
+          "label": {
+            "en": "Service Zone",
+            "nl": "Servicezone",
+            "da": "Servicezone",
+            "de": "Servicezone",
+            "es": "Zona de servicio",
+            "fr": "Zone de service",
+            "it": "Zona di servizio",
+            "no": "Tjenesteområde",
+            "sv": "Servicezon",
+            "pl": "Strefa serwisowa",
+            "ru": "Сервисная зона",
+            "ko": "서비스 지역"
+          },
+          "hint": {
+            "en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+            "nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
+            "da": "Vælg den servicezone, din enhed er registreret i. US = USA, EU/UK = Europa og Storbritannien",
+            "de": "Wählen Sie die Servicezone, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
+            "es": "Seleccione la zona de servicio en la que está registrado su dispositivo. US = Estados Unidos, EU/UK = Europa y Reino Unido",
+            "fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
+            "it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
+            "no": "Velg tjenesteområdet enheten din er registrert i. US = USA, EU/UK = Europa og Storbritannia",
+            "sv": "Välj den servicezon där din enhet är registrerad. US = USA, EU/UK = Europa och Storbritannien",
+            "pl": "Wybierz strefę serwisową, w której zarejestrowane jest Twoje urządzenie. US = Stany Zjednoczone, EU/UK = Europa i Wielka Brytania",
+            "ru": "Выберите сервисную зону, в которой зарегистрировано ваше устройство. US = Соединенные Штаты, EU/UK = Европа и Великобритания",
+            "ko": "장치가 등록된 서비스 지역을 선택하십시오. US = 미국, EU/UK = 유럽 및 영국"
+          },
+          "values": [
+            {
+              "id": "us",
+              "label": {
+                "en": "US (United States)",
+                "nl": "US (Verenigde Staten)",
+                "da": "US (USA)",
+                "de": "US (Vereinigte Staaten)",
+                "es": "US (Estados Unidos)",
+                "fr": "US (États-Unis)",
+                "it": "US (Stati Uniti)",
+                "no": "US (USA)",
+                "sv": "US (USA)",
+                "pl": "US (Stany Zjednoczone)",
+                "ru": "US (Соединенные Штаты)",
+                "ko": "US (미국)"
+              }
+            },
+            {
+              "id": "eu_uk",
+              "label": {
+                "en": "EU/UK (Europe and United Kingdom)",
+                "nl": "EU/UK (Europa en Verenigd Koninkrijk)",
+                "da": "EU/UK (Europa og Storbritannien)",
+                "de": "EU/UK (Europa und Vereinigtes Königreich)",
+                "es": "EU/UK (Europa y Reino Unido)",
+                "fr": "EU/UK (Europe et Royaume-Uni)",
+                "it": "EU/UK (Europa e Regno Unito)",
+                "no": "EU/UK (Europa og Storbritannia)",
+                "sv": "EU/UK (Europa och Storbritannien)",
+                "pl": "EU/UK (Europa i Wielka Brytania)",
+                "ru": "EU/UK (Европа и Великобритания)",
+                "ko": "EU/UK (유럽 및 영국)"
+              }
+            }
+          ],
+          "value": "us"
+        }
+      ]
     },
     {
       "platforms": [
@@ -3209,7 +3567,265 @@
           "AAA"
         ]
       },
-      "id": "water-leak-sensor"
+      "id": "water-leak-sensor",
+      "settings": [
+        {
+          "id": "serviceZone",
+          "type": "dropdown",
+          "label": {
+            "en": "Service Zone",
+            "nl": "Servicezone",
+            "da": "Servicezone",
+            "de": "Servicezone",
+            "es": "Zona de servicio",
+            "fr": "Zone de service",
+            "it": "Zona di servizio",
+            "no": "Tjenesteområde",
+            "sv": "Servicezon",
+            "pl": "Strefa serwisowa",
+            "ru": "Сервисная зона",
+            "ko": "서비스 지역"
+          },
+          "hint": {
+            "en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+            "nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
+            "da": "Vælg den servicezone, din enhed er registreret i. US = USA, EU/UK = Europa og Storbritannien",
+            "de": "Wählen Sie die Servicezone, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
+            "es": "Seleccione la zona de servicio en la que está registrado su dispositivo. US = Estados Unidos, EU/UK = Europa y Reino Unido",
+            "fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
+            "it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
+            "no": "Velg tjenesteområdet enheten din er registrert i. US = USA, EU/UK = Europa og Storbritannia",
+            "sv": "Välj den servicezon där din enhet är registrerad. US = USA, EU/UK = Europa och Storbritannien",
+            "pl": "Wybierz strefę serwisową, w której zarejestrowane jest Twoje urządzenie. US = Stany Zjednoczone, EU/UK = Europa i Wielka Brytania",
+            "ru": "Выберите сервисную зону, в которой зарегистрировано ваше устройство. US = Соединенные Штаты, EU/UK = Европа и Великобритания",
+            "ko": "장치가 등록된 서비스 지역을 선택하십시오. US = 미국, EU/UK = 유럽 및 영국"
+          },
+          "values": [
+            {
+              "id": "us",
+              "label": {
+                "en": "US (United States)",
+                "nl": "US (Verenigde Staten)",
+                "da": "US (USA)",
+                "de": "US (Vereinigte Staaten)",
+                "es": "US (Estados Unidos)",
+                "fr": "US (États-Unis)",
+                "it": "US (Stati Uniti)",
+                "no": "US (USA)",
+                "sv": "US (USA)",
+                "pl": "US (Stany Zjednoczone)",
+                "ru": "US (Соединенные Штаты)",
+                "ko": "US (미국)"
+              }
+            },
+            {
+              "id": "eu_uk",
+              "label": {
+                "en": "EU/UK (Europe and United Kingdom)",
+                "nl": "EU/UK (Europa en Verenigd Koninkrijk)",
+                "da": "EU/UK (Europa og Storbritannien)",
+                "de": "EU/UK (Europa und Vereinigtes Königreich)",
+                "es": "EU/UK (Europa y Reino Unido)",
+                "fr": "EU/UK (Europe et Royaume-Uni)",
+                "it": "EU/UK (Europa e Regno Unito)",
+                "no": "EU/UK (Europa og Storbritannia)",
+                "sv": "EU/UK (Europa och Storbritannien)",
+                "pl": "EU/UK (Europa i Wielka Brytania)",
+                "ru": "EU/UK (Европа и Великобритания)",
+                "ko": "EU/UK (유럽 및 영국)"
+              }
+            }
+          ],
+          "value": "us"
+        }
+      ]
+    },
+    {
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
+      "pair": [
+        {
+          "id": "select_uaid"
+        },
+        {
+          "id": "enter_secret"
+        },
+        {
+          "id": "list_my_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_my_devices",
+            "prev": "select_uaid"
+          }
+        },
+        {
+          "id": "add_my_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "logo": "logo.png",
+            "usernameLabel": {
+              "en": "UAID"
+            },
+            "usernamePlaceholder": {
+              "en": "Your UAID (User Account ID) from the YoLink app",
+              "nl": "Uw UAID (User Account ID) van de YoLink-app",
+              "da": "Dit er din UAID (User Account ID) fra YoLink-appen",
+              "de": "Ihre UAID (User Account ID) aus der YoLink-App",
+              "es": "Su UAID (ID de cuenta de usuario) de la aplicación YoLink",
+              "fr": "Votre UAID (ID de compte utilisateur) de l'application YoLink",
+              "it": "Il tuo UAID (ID account utente) dall'app YoLink",
+              "no": "Din UAID (User Account ID) fra YoLink-appen",
+              "sv": "Din UAID (User Account ID) från YoLink-appen",
+              "pl": "Twój UAID (identyfikator konta użytkownika) z aplikacji YoLink",
+              "ru": "Ваш UAID (идентификатор учетной записи пользователя) из приложения YoLink",
+              "ko": "YoLink 앱의 UAID(사용자 계정 ID)"
+            },
+            "passwordLabel": {
+              "en": "Secret Key",
+              "nl": "Secret Key",
+              "da": "Hemmelig nøgle",
+              "de": "Geheimer Schlüssel",
+              "es": "Clave secreta",
+              "fr": "Clé secrète",
+              "it": "Chiave segreta",
+              "no": "Hemmelig nøkkel",
+              "sv": "Hemlig nyckel",
+              "pl": "Tajny klucz",
+              "ru": "Секретный ключ",
+              "ko": "비밀 키"
+            },
+            "passwordPlaceholder": {
+              "en": "Secret Key obtained for the YoLink app",
+              "nl": "Secret Key uit de YoLink-app",
+              "da": "Hemmelig nøgle til YoLink-appen",
+              "de": "Geheimer Schlüssel für die YoLink-App",
+              "es": "Clave secreta obtenida para la aplicación YoLink",
+              "fr": "Clé secrète obtenue pour l'application YoLink",
+              "it": "Chiave segreta ottenuta per l'app YoLink",
+              "no": "Hemmelig nøkkel for YoLink-appen",
+              "sv": "Hemlig nyckel för YoLink-appen",
+              "pl": "Tajny klucz uzyskany dla aplikacji YoLink",
+              "ru": "Секретный ключ, полученный для приложения YoLink",
+              "ko": "비밀 키를 얻었습니다."
+            }
+          }
+        }
+      ],
+      "icon": "/drivers/water-meter-controller/assets/icon.svg",
+      "images": {
+        "large": "/drivers/water-meter-controller/assets/images/large.jpg",
+        "small": "/drivers/water-meter-controller/assets/images/small.jpg"
+      },
+      "name": {
+        "en": "LeakStop 1 Channel",
+        "nl": "LeakStop 1 Kanaal",
+        "de": "LeakStop 1 Kanal",
+        "fr": "LeakStop 1 Canal",
+        "it": "LeakStop 1 Canale",
+        "es": "LeakStop 1 Canal",
+        "sv": "LeakStop 1 Kanal",
+        "da": "LeakStop 1 Kanal",
+        "pl": "LeakStop 1 Kanał",
+        "ko": "LeakStop 1 채널"
+      },
+      "class": "watervalve",
+      "capabilities": [
+        "onoff",
+        "meter_water",
+        "measure_flushes",
+        "measure_battery",
+        "alarm_water",
+        "alarm_problem"
+      ],
+      "energy": {
+        "batteries": [
+          "AAA",
+          "AAA"
+        ]
+      },
+      "id": "water-meter-controller",
+      "settings": [
+        {
+          "id": "serviceZone",
+          "type": "dropdown",
+          "label": {
+            "en": "Service Zone",
+            "nl": "Servicezone",
+            "da": "Servicezone",
+            "de": "Servicezone",
+            "es": "Zona de servicio",
+            "fr": "Zone de service",
+            "it": "Zona di servizio",
+            "no": "Tjenesteområde",
+            "sv": "Servicezon",
+            "pl": "Strefa serwisowa",
+            "ru": "Сервисная зона",
+            "ko": "서비스 지역"
+          },
+          "hint": {
+            "en": "Select the service zone your device is registered in. US = United States, EU/UK = Europe and United Kingdom",
+            "nl": "Selecteer de servicezone waarin uw apparaat is geregistreerd. US = Verenigde Staten, EU/UK = Europa en Verenigd Koninkrijk",
+            "da": "Vælg den servicezone, din enhed er registreret i. US = USA, EU/UK = Europa og Storbritannien",
+            "de": "Wählen Sie die Servicezone, in der Ihr Gerät registriert ist. US = Vereinigte Staaten, EU/UK = Europa und Vereinigtes Königreich",
+            "es": "Seleccione la zona de servicio en la que está registrado su dispositivo. US = Estados Unidos, EU/UK = Europa y Reino Unido",
+            "fr": "Sélectionnez la zone de service dans laquelle votre appareil est enregistré. US = États-Unis, EU/UK = Europe et Royaume-Uni",
+            "it": "Seleziona la zona di servizio in cui è registrato il tuo dispositivo. US = Stati Uniti, EU/UK = Europa e Regno Unito",
+            "no": "Velg tjenesteområdet enheten din er registrert i. US = USA, EU/UK = Europa og Storbritannia",
+            "sv": "Välj den servicezon där din enhet är registrerad. US = USA, EU/UK = Europa och Storbritannien",
+            "pl": "Wybierz strefę serwisową, w której zarejestrowane jest Twoje urządzenie. US = Stany Zjednoczone, EU/UK = Europa i Wielka Brytania",
+            "ru": "Выберите сервисную зону, в которой зарегистрировано ваше устройство. US = Соединенные Штаты, EU/UK = Европа и Великобритания",
+            "ko": "장치가 등록된 서비스 지역을 선택하십시오. US = 미국, EU/UK = 유럽 및 영국"
+          },
+          "values": [
+            {
+              "id": "us",
+              "label": {
+                "en": "US (United States)",
+                "nl": "US (Verenigde Staten)",
+                "da": "US (USA)",
+                "de": "US (Vereinigte Staaten)",
+                "es": "US (Estados Unidos)",
+                "fr": "US (États-Unis)",
+                "it": "US (Stati Uniti)",
+                "no": "US (USA)",
+                "sv": "US (USA)",
+                "pl": "US (Stany Zjednoczone)",
+                "ru": "US (Соединенные Штаты)",
+                "ko": "US (미국)"
+              }
+            },
+            {
+              "id": "eu_uk",
+              "label": {
+                "en": "EU/UK (Europe and United Kingdom)",
+                "nl": "EU/UK (Europa en Verenigd Koninkrijk)",
+                "da": "EU/UK (Europa og Storbritannien)",
+                "de": "EU/UK (Europa und Vereinigtes Königreich)",
+                "es": "EU/UK (Europa y Reino Unido)",
+                "fr": "EU/UK (Europe et Royaume-Uni)",
+                "it": "EU/UK (Europa e Regno Unito)",
+                "no": "EU/UK (Europa og Storbritannia)",
+                "sv": "EU/UK (Europa och Storbritannien)",
+                "pl": "EU/UK (Europa i Wielka Brytania)",
+                "ru": "EU/UK (Европа и Великобритания)",
+                "ko": "EU/UK (유럽 및 영국)"
+              }
+            }
+          ],
+          "value": "us"
+        }
+      ]
     }
   ],
   "capabilities": {
@@ -3269,6 +3885,29 @@
       "getable": true,
       "setable": false,
       "icon": "/assets/info.svg"
+    },
+    "measure_flushes": {
+      "type": "number",
+      "title": {
+        "en": "Number of Flushes",
+        "no": "Antall skyllinger",
+        "nl": "Aantal spoelingen",
+        "da": "Antal skylninger",
+        "de": "Anzahl der Spülungen",
+        "es": "Número de descargas",
+        "fr": "Nombre de flushs",
+        "it": "Numero di scarichi",
+        "sv": "Antal spolningar",
+        "pl": "Liczba spłukań",
+        "ko": "플러시 수"
+      },
+      "insights": true,
+      "chartType": "stepLine",
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/flush.svg"
     },
     "measure_water_depth": {
       "type": "number",

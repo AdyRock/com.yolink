@@ -21,6 +21,15 @@ module.exports = class YoLink extends Homey.App
 		this.yoLinkAPI = new YoLinkAPI(this);
 		this.homeyID = await this.homey.cloud.getHomeyId();
 
+		if (process.env.DEBUG === '1')
+		{
+			this.homey.settings.set('debugMode', true);
+		}
+		else
+		{
+			this.homey.settings.set('debugMode', false);
+		}
+
 		this.homey.settings.on('set', async (setting) =>
 		{
 		});
@@ -30,6 +39,15 @@ module.exports = class YoLink extends Homey.App
 		this.measure_water_depth_changedTrigger = this.homey.flow.getDeviceTriggerCard('measure_water_depth_changed');
 
 		this.updateLog('YoLink app has been initialized');
+	}
+
+	getSymData()
+	{
+		if (process.env.DEBUG === '1')
+		{
+			return this.homey.settings.get('simData');
+		}
+		return null;
 	}
 
 	// Convert a variable of any type (almost) to a string
