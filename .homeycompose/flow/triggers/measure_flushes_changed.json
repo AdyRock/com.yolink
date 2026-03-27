@@ -1,0 +1,41 @@
+{
+    "title": {
+        "en": "The number of flushes changed",
+		"nl": "Het aantal spoelingen is veranderd",
+		"de": "Die Anzahl der Spülungen hat sich geändert",
+		"fr": "Le nombre de rinçages a changé",
+		"it": "Il numero di risciacqui è cambiato",
+		"es": "El número de enjuagues ha cambiado",
+		"sv": "Antalet spolningar har ändrats",
+		"da": "Antallet af skylninger er ændret",
+		"pl": "Liczba spłukań się zmieniła",
+		"ko": "플러시 수가 변경되었습니다"
+    },
+    "tokens": [
+        {
+            "name": "measure_flushes",
+            "title": {
+                "en": "Number of flushes",
+				"nl": "Aantal spoelingen",
+				"de": "Anzahl der Spülungen",
+				"fr": "Nombre de rinçages",
+				"it": "Numero di risciacqui",
+				"es": "Número de enjuagues",
+				"sv": "Antal spolningar",
+				"da": "Antal skylninger",
+				"pl": "Liczba spłukań",
+				"ko": "플러시 수"
+
+            },
+            "type": "number",
+            "example": 5
+        }
+    ],
+    "args": [
+        {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=water_meter_controller"
+        }
+    ]
+}

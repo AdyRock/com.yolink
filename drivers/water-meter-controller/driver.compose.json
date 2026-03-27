@@ -12,6 +12,7 @@
 		"ko": "LeakStop 1 채널"
 	},
 	"class": "watervalve",
+	"deprecated": true,
 	"capabilities": [
 		"onoff",
 		"meter_water",
