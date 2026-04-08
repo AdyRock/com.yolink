@@ -13,6 +13,11 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		// Add the capability listener for the OnOff capability
 		this.registerCapabilityListener('onoff', this.onOffCapabilityListener.bind(this));
 
+		if (!this.hasCapability('meter_water.daily'))
+		{
+			this.addCapability('meter_water.daily').catch(this.error);
+		}
+
 		this.updateState();
 		this.log('WaterMeterControllerDevice has been initialized');
 	}
@@ -77,18 +82,44 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 		const state = await this.driver.getState(data, settings);
+		this.unsetWarning().catch(this.error);
 		if (!state || !state.data)
 		{
+			if (state && state === 'error')
+			{
+				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
+				this.setWarning(`Error: ${state.msg}`).catch(this.error);
+				return;
+			}
 			this.setUnavailable('Offline').catch(this.error);
 			return;
 		}
 		this.setAvailable().catch(this.error);
 
-		this.setCapabilityValue('alarm_water', state.data.alarm.leak).catch(this.error);
-		this.setCapabilityValue('alarm_problem', state.data.alarm.valveError).catch(this.error);
-		this.setCapabilityValue('measure_flushes', state.data.dailyUsage.times).catch(this.error);
-		this.setCapabilityValue('meter_water', state.data.dailyUsage.amount).catch(this.error);
-		this.setCapabilityValue('onoff', state.data.state.valve === 'open').catch(this.error);
+		let meterConversion = (1 / state.data.state.attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
+		if (state.data.state.attributes.meterUnit === 0)
+		{
+			// Meter unit is in Gallons, so convert to liters
+			meterConversion = 3.78541;
+		}
+		else if (state.data.state.attributes.meterUnit === 1)
+		{
+			// Meter unit is in cubic feet, so convert to liters
+			meterConversion = 28.3168;
+		}
+		else if (state.data.state.attributes.meterUnit === 2)
+		{
+			// Meter unit is in M3, so convert to liters
+			meterConversion = 1000;
+		}
+
+		this.setCapabilityValue('meter_water.recent_usage', state.data.state.recentUsage.amount / meterConversion).catch(this.error);
+		this.setCapabilityValue('alarm_water', state.data.state.alarm.leak).catch(this.error);
+		this.setCapabilityValue('alarm_problem', state.data.state.alarm.valveError).catch(this.error);
+		this.setCapabilityValue('measure_flushes', state.data.state.dailyUsage.times).catch(this.error);
+		this.setCapabilityValue('meter_water.daily', state.data.state.dailyUsage.amount / meterConversion).catch(this.error);
+		this.setCapabilityValue('meter_water', state.data.state.state.meter / meterConversion).catch(this.error);
+		this.setCapabilityValue('onoff', state.data.state.state.valve === 'open').catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
@@ -129,6 +160,23 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		// Log the device status
 		this.homey.app.updateLog(`WaterMeterControllerDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
+		let meterConversion = (1 / mqttData.attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
+		if (mqttData.attributes.meterUnit === 0)
+		{
+			// Meter unit is in Gallons, so convert to liters
+			meterConversion = 3.78541;
+		}
+		else if (mqttData.attributes.meterUnit === 1)
+		{
+			// Meter unit is in cubic feet, so convert to liters
+			meterConversion = 28.3168;
+		}
+		else if (mqttData.attributes.meterUnit === 2)
+		{
+			// Meter unit is in M3, so convert to liters
+			meterConversion = 1000;
+		}
+
 		if (mqttData.alarm)
 		{
 			this.setCapabilityValue('alarm_water', mqttData.alarm.leak).catch(this.error);
@@ -138,7 +186,12 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		if (mqttData.dailyUsage)
 		{
 			this.setCapabilityValue('measure_flushes', mqttData.dailyUsage.times).catch(this.error);
-			this.setCapabilityValue('meter_water', mqttData.dailyUsage.amount).catch(this.error);
+			this.setCapabilityValue('meter_water.daily', mqttData.dailyUsage.amount / meterConversion).catch(this.error);
+		}
+
+		if (mqttData.state)
+		{
+			this.setCapabilityValue('meter_water', mqttData.state.meter / meterConversion).catch(this.error);
 		}
 
 		if (mqttData.state && mqttData.state.valve)

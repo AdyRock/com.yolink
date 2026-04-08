@@ -12,16 +12,31 @@
 		"ko": "LeakStop 1 채널"
 	},
 	"class": "watervalve",
-	"deprecated": true,
 	"capabilities": [
 		"onoff",
-		"meter_water",
+		"meter_water.recent_usage",
+		"meter_water.daily",
 		"measure_flushes",
+		"meter_water",
 		"measure_battery",
 		"alarm_water",
 		"alarm_problem"
 
 	],
+	"capabilitiesOptions": {
+		"meter_water.recent_usage": {
+			"title": "Recent Usage", "nl": "Recente verbruik", "de": "Kürzliche Nutzung", "fr": "Utilisation récente", "it": "Utilizzo recente", "es": "Uso reciente", "sv": "Senaste användning", "da": "Seneste forbrug", "pl": "Ostatnie zużycie", "ko": "최근 사용량",
+			"units": "L"
+		},
+		"meter_water.daily": {
+			"title": "Daily Usage", "nl": "Dagelijks verbruik", "de": "Täglicher Verbrauch", "fr": "Consommation quotidienne", "it": "Consumo giornaliero", "es": "Consumo diario", "sv": "Daglig användning", "da": "Dagligt forbrug", "pl": "Dzienne zużycie", "ko": "일일 사용량",
+			"units": "L"
+		},
+		"meter_water": {
+			"title": "Total Usage", "nl": "Totaal verbruik", "de": "Gesamtverbrauch", "fr": "Consommation totale", "it": "Consumo totale", "es": "Consumo total", "sv": "Total användning", "da": "Samlet forbrug", "pl": "Całkowite zużycie", "ko": "총 사용량",
+			"units": "L"
+		}
+	},
 	"energy": {
 		"batteries": [
 			"AAA",

@@ -150,10 +150,18 @@ module.exports = class YoLinkAPI extends SimpleClass
 			body: JSON.stringify(body),
 		};
 
-		const response = await fetch(url, options);
-		const data = await response.json();
-		this.app.updateLog(`API response: ${JSON.stringify(data)}`);
-		return data;
+		try
+		{
+			const response = await fetch(url, options);
+			const data = await response.json();
+			this.app.updateLog(`API response: ${JSON.stringify(data)}`);
+			return data;
+		}
+		catch (error)
+		{
+			this.app.updateLog(`API request failed: ${error.message}`, 0);
+			return { state: 'error', msg: error.message };
+		}
 	}
 
 	// Obtain access token using UAID and secretKey
@@ -170,20 +178,28 @@ module.exports = class YoLinkAPI extends SimpleClass
 			body,
 		};
 
-		const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
-		this.app.updateLog(`response status is ${response.status}`);
-		const mediaType = response.headers.get('content-type');
-		let data;
-		if (mediaType.includes('json'))
+		try
 		{
-			data = await response.json();
+			const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+			this.app.updateLog(`response status is ${response.status}`);
+			const mediaType = response.headers.get('content-type');
+			let data;
+			if (mediaType.includes('json'))
+			{
+				data = await response.json();
+			}
+			else
+			{
+				data = await response.text();
+			}
+			this.app.updateLog(data);
+			return data;
 		}
-		else
+		catch (error)
 		{
-			data = await response.text();
+			this.app.updateLog(`Failed to obtain access token with secret for UAID ${UAID}: ${error.message}`, 0);
+			return { state: 'error', msg: error.message };
 		}
-		this.app.updateLog(data);
-		return data;
 	}
 
 	async obtainAccessTokenWithRefreshToken(UAID, refreshToken)
@@ -199,20 +215,28 @@ module.exports = class YoLinkAPI extends SimpleClass
 			body,
 		};
 
-		const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
-		this.app.updateLog(`response status is ${response.status}`);
-		const mediaType = response.headers.get('content-type');
-		let data;
-		if (mediaType.includes('json'))
+		try
 		{
-			data = await response.json();
+			const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+			this.app.updateLog(`response status is ${response.status}`);
+			const mediaType = response.headers.get('content-type');
+			let data;
+			if (mediaType.includes('json'))
+			{
+				data = await response.json();
+			}
+			else
+			{
+				data = await response.text();
+			}
+			this.app.updateLog(data);
+			return data;
 		}
-		else
+		catch (error)
 		{
-			data = await response.text();
+			this.app.updateLog(`Failed to obtain access token with refresh token for UAID ${UAID}: ${error.message}`, 0);
+			return { state: 'error', msg: error.message };
 		}
-		this.app.updateLog(data);
-		return data;
 	}
 
 	async getDeviceList(UAID, SecretKey, serviceZone)

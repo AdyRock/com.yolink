@@ -58,8 +58,15 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 		const state = await this.driver.getState(data, settings);
+		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
+			if (state && state === 'error')
+			{
+				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
+				this.setWarning(`Error: ${state.msg}`).catch(this.error);
+				return;
+			}
 			this.setUnavailable('Offline').catch(this.error);
 			return;
 		}
