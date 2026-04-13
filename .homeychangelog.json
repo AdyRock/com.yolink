@@ -61,5 +61,8 @@
 	},
 	"1.0.16": {
 		"en": "Added support for Smart Switch device, Leak Stop 1 Channel and Garage Door device. Updated product images."
+	},
+	"1.0.17": {
+		"en": "Updated device icons."
 	}
 }
