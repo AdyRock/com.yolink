@@ -69,6 +69,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 					// Token has expired so get a new one using the refresh token
 					const newTokenData = await this.obtainAccessTokenWithRefreshToken(entry.UAID, entry.refresh_token);
+					this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
 
 					// Update the entry in the UAIDList
 					entry.access_token = newTokenData.access_token;
@@ -102,6 +103,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				// return null;
 				throw new Error(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`);
 			}
+			this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
 			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
 
 			// Add the new entry to the UAIDList
@@ -472,6 +474,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 			// Connect to the MQTT server and subscribe to the state change topic
 			const homeID = await this.getHomeInfo(brokerConfig.UAID);
+			if (!homeID || !homeID.data || !homeID.data.id)
+			{
+				this.app.updateLog(`Failed to get home info for UAID ${brokerConfig.UAID}: ${homeID || 'No response'}`, 0);
+				return null;
+			}
 			const rndID = Math.floor(Math.random() * 100000);
 			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}, { clientId: HomeyYoLinkApp-${this.app.homeyID}-${rndID}, username: ${brokerConfig.username}, password: ${brokerConfig.password} }`, 1);
 			const MQTTClient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}-${rndID}`, username: brokerConfig.username, password: brokerConfig.password });
