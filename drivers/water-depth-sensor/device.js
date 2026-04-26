@@ -32,6 +32,15 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
+		if (changedKeys.includes('tankDepth'))
+		{
+			const tankDepth = Number(newSettings.tankDepth);
+			if (!Number.isFinite(tankDepth) || tankDepth <= 0)
+			{
+				throw new Error('Tank depth must be a positive number.');
+			}
+		}
+
 		this.log('WaterDepthSensorDevice settings where changed');
 	}
 
@@ -57,6 +66,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 	{
 		const data = await this.getData();
 		const settings = await this.getSettings();
+		const tankMaxDepth = Number(settings.tankDepth);
 		const state = await this.driver.getState(data, settings);
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
@@ -74,7 +84,8 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 
 		this.setCapabilityValue('alarm_water.low', state.data.state.alarm.lowAlarm).catch(this.error);
 		this.setCapabilityValue('alarm_water.high', state.data.state.alarm.highAlarm).catch(this.error);
-		this.setCapabilityValue('measure_water_depth', state.data.state.waterDepth / 10).catch(this.error);
+		const actualPercentage = this.calculateWaterDepthPercentage(state.data.state.waterDepth, tankMaxDepth);
+		this.setCapabilityValue('measure_water_depth', actualPercentage).catch(this.error);
 
 		// The returned battery is a string with a level between 0 and 4, so convert to 0 to 1
 		if (state.data.state.battery)
@@ -88,6 +99,8 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 
 	async processMQTTMessage(mqttMessage)
 	{
+		const settings = await this.getSettings();
+		const tankMaxDepth = Number(settings.tankDepth);
 		let mqttData;
 		let deviceId;
 		// Check if the event field is present so we know what type of message this is
@@ -121,9 +134,28 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 		{
 			this.setCapabilityValue('alarm_water.low', mqttData.state.alarm.lowAlarm).catch(this.error);
 			this.setCapabilityValue('alarm_water.high', mqttData.state.alarm.highAlarm).catch(this.error);
-			this.setCapabilityValue('measure_water_depth', mqttData.state.waterDepth / 10).catch(this.error);
+			const actualPercentage = this.calculateWaterDepthPercentage(mqttData.state.waterDepth, tankMaxDepth);
+			this.setCapabilityValue('measure_water_depth', actualPercentage).catch(this.error);
 		}
 
 		return true;
+	}
+
+	calculateWaterDepthPercentage(rawWaterDepth, tankMaxDepth)
+	{
+		const rawDepth = Number(rawWaterDepth);
+		if (!Number.isFinite(rawDepth))
+		{
+			return 0;
+		}
+
+		if (!Number.isFinite(tankMaxDepth) || tankMaxDepth <= 0)
+		{
+			return rawDepth;
+		}
+
+		const currentDepth = rawDepth / 10;
+
+		return (currentDepth / tankMaxDepth) * 100;
 	}
 };

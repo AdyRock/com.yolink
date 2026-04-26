@@ -64,5 +64,8 @@
 	},
 	"1.0.17": {
 		"en": "Updated device icons."
+	},
+	"1.0.18": {
+		"en": "Added tank depth setting for Water Depth Sensor device. Extra error handling added."
 	}
 }
