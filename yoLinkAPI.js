@@ -43,11 +43,67 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return this.UAIDList.map((item) => item.UAID);
 	}
 
+	formatDateForLog(value)
+	{
+		const date = new Date(value);
+		return Number.isFinite(date.getTime()) ? date.toISOString() : `invalid date (${String(value)})`;
+	}
+
+	safeJsonStringify(value)
+	{
+		try
+		{
+			return JSON.stringify(value);
+		}
+		catch (error)
+		{
+			return `unserializable value: ${error.message}`;
+		}
+	}
+
+	getServiceZoneID(serviceZone)
+	{
+		if (typeof serviceZone !== 'string' || serviceZone.length < 2)
+		{
+			return 'us';
+		}
+		return serviceZone.substring(0, 2);
+	}
+
+	getSafeExpiresAt(expiresInSeconds, UAID)
+	{
+		const fallbackSeconds = 300;
+		const maxSeconds = 30 * 24 * 60 * 60;
+		const parsed = Number(expiresInSeconds);
+
+		if (!Number.isFinite(parsed) || parsed <= 0)
+		{
+			this.app.updateLog(`Invalid expires_in for UAID ${UAID}: ${this.app.varToString(expiresInSeconds)}. Using fallback ${fallbackSeconds}s`, 0);
+			return Date.now() + (fallbackSeconds * 1000);
+		}
+
+		const safeSeconds = Math.min(parsed, maxSeconds);
+		return Date.now() + (safeSeconds * 1000);
+	}
+
+	isAccessTokenExpired(expiresAt)
+	{
+		const parsed = Number(expiresAt);
+		if (!Number.isFinite(parsed))
+		{
+			return true;
+		}
+
+		// Refresh slightly early to avoid edge-case expiry during a request.
+		const refreshSkewMs = 30 * 1000;
+		return parsed <= (Date.now() + refreshSkewMs);
+	}
+
 	async getAccessTokenForUAID(UAID, SecretKey)
 	{
 		// Return the accessToken for the given UAID
 		let entry = this.UAIDList.find((item) => item.UAID === UAID);
-		if (entry && entry.expires_at && entry.expires_at < Date.now())
+		if (entry && this.isAccessTokenExpired(entry.expires_at))
 		{
 			// If already fetching a token, wait for it to complete
 			if (this.fetchingToken)
@@ -74,8 +130,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 					// Update the entry in the UAIDList
 					entry.access_token = newTokenData.access_token;
 					entry.refresh_token = newTokenData.refresh_token;
-					entry.expires_at = Date.now() + (newTokenData.expires_in * 1000);
-					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(entry.expires_at).toISOString()}, ${entry.access_token}`);
+					entry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, UAID);
+					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(entry.expires_at)}, ${entry.access_token}`);
 					this.app.homey.settings.set('UAIDList', this.UAIDList);
 
 					resolveToken();
@@ -104,14 +160,14 @@ module.exports = class YoLinkAPI extends SimpleClass
 				throw new Error(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`);
 			}
 			this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
-			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${new Date(newTokenData.expires_in).toISOString()}`);
+			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(Date.now() + (newTokenData.expires_in * 1000))}`);
 
 			// Add the new entry to the UAIDList
 			entry = {
 				UAID,
 				access_token: newTokenData.access_token,
 				refresh_token: newTokenData.refresh_token,
-				expires_at: Date.now() + (newTokenData.expires_in * 1000),
+				expires_at: this.getSafeExpiresAt(newTokenData.expires_in, UAID),
 			};
 			this.UAIDList.push(entry);
 			this.app.homey.settings.set('UAIDList', this.UAIDList);
@@ -142,14 +198,14 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 	async request(method = 'GET', url, body = null, headers = {})
 	{
-		this.app.updateLog(`API request: ${method} ${url} ${JSON.stringify(body)}`);
+		this.app.updateLog(`API request: ${method} ${url} ${this.safeJsonStringify(body)}`);
 		const options = {
 			method,
 			headers: {
 				'Content-Type': 'application/json',
 				...headers,
 			},
-			body: JSON.stringify(body),
+			body: body === null ? null : this.safeJsonStringify(body),
 		};
 
 		try
@@ -186,7 +242,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.updateLog(`response status is ${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
-			if (mediaType.includes('json'))
+			if (mediaType && mediaType.includes('json'))
 			{
 				data = await response.json();
 			}
@@ -223,7 +279,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.updateLog(`response status is ${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
-			if (mediaType.includes('json'))
+			if (mediaType && mediaType.includes('json'))
 			{
 				data = await response.json();
 			}
@@ -244,7 +300,17 @@ module.exports = class YoLinkAPI extends SimpleClass
 	async getDeviceList(UAID, SecretKey, serviceZone)
 	{
 		// Get the access token for the UAID. The SecretKey is only needed if there is no valid access token yet
-		const accessToken = await this.getAccessTokenForUAID(UAID, SecretKey);
+		let accessToken = null;
+		try
+		{
+			accessToken = await this.getAccessTokenForUAID(UAID, SecretKey);
+		}
+		catch (error)
+		{
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			return null;
+		}
+
 		if (!accessToken)
 		{
 			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
@@ -260,7 +326,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		const serviceZoneID = serviceZone.substring(0, 2);
+		const serviceZoneID = this.getServiceZoneID(serviceZone);
 		const response = await this.request('POST', this.getZoneURL(serviceZoneID), body, headers);
 		if (response && response.desc === 'Success')
 		{
@@ -292,7 +358,17 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 	async getDeviceStatus(UAID, type, deviceId, deviceToken, serviceZone)
 	{
-		const accessToken = await this.getAccessTokenForUAID(UAID);
+		let accessToken = null;
+		try
+		{
+			accessToken = await this.getAccessTokenForUAID(UAID);
+		}
+		catch (error)
+		{
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			return null;
+		}
+
 		if (!accessToken)
 		{
 			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
@@ -312,7 +388,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		};
 
 		// Get the service zone ID, which is the first two characters of the serviceZone string
-		const serviceZoneID = serviceZone.substring(0, 2);
+		const serviceZoneID = this.getServiceZoneID(serviceZone);
 		const url = this.getZoneURL(serviceZoneID);
 
 		// Wait if an MQTT client is being setup
@@ -390,7 +466,17 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 	async controlDevice(UAID, deviceId, deviceToken, serviceZone, command, params = {})
 	{
-		const accessToken = await this.getAccessTokenForUAID(UAID);
+		let accessToken = null;
+		try
+		{
+			accessToken = await this.getAccessTokenForUAID(UAID);
+		}
+		catch (error)
+		{
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			return { desc: `Failed to obtain access token for UAID ${UAID}` };
+		}
+
 		if (!accessToken)
 		{
 			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
@@ -409,17 +495,21 @@ module.exports = class YoLinkAPI extends SimpleClass
 		};
 
 		// Get the service zone ID, which is the first two characters of the serviceZone string
-		const serviceZoneID = serviceZone.substring(0, 2);
+		const serviceZoneID = this.getServiceZoneID(serviceZone);
 		const url = this.getZoneURL(serviceZoneID);
 		return this.request('POST', url, body, headers);
 	}
 
 	async getHomeInfo(UAID)
 	{
-		const accessToken = await this.getAccessTokenForUAID(UAID);
-		if (!accessToken)
+		let accessToken = null;
+		try
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
+			accessToken = await this.getAccessTokenForUAID(UAID);
+		}
+		catch (error)
+		{
+			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
 			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 

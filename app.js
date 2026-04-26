@@ -99,7 +99,7 @@ module.exports = class YoLink extends Homey.App
 			this.updateLog(`VarToString Error: ${err.message}`);
 		}
 
-		return source.toString();
+		return String(source);
 	}
 
 	// Add a message to the debug log if not running in the cloud

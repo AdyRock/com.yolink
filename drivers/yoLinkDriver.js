@@ -44,7 +44,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			UAID = data.uaid;
 
 			// Trim whitespace
-			UAID = UAID.trim();
+			UAID = typeof UAID === 'string' ? UAID.trim() : '';
 			if (UAID)
 			{
 				accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, null);
@@ -60,7 +60,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			secretKey = data.secret;
 
 			// trim whitespace
-			secretKey = secretKey.trim();
+			secretKey = typeof secretKey === 'string' ? secretKey.trim() : '';
 			accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
 
 			if (accessToken)
@@ -90,14 +90,14 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			{
 				const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
 				const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu_uk');
-				deviceList = deviceusList;
+				deviceList = deviceusList || [];
 
 				// Add the EU devices to the list if not already present
 				if (deviceeuList && deviceeuList.length > 0)
 				{
 					for (const deviceeu of deviceeuList)
 					{
-						if (!deviceusList.find((device) => device.UID === deviceeu.UID))
+						if (!deviceList.find((device) => device.UID === deviceeu.UID))
 						{
 							deviceList.push(deviceeu);
 						}
