@@ -67,5 +67,8 @@
 	},
 	"1.0.18": {
 		"en": "Added tank depth setting for Water Depth Sensor device. Extra error handling added."
+	},
+	"1.0.19": {
+		"en": "Improved API resilience with per-account token refresh and MQTT setup locking, region-aware cloud token/home routing, and safer app-level logging/device list handling. Added CI checks and lightweight API/app harness tests for regression coverage."
 	}
 }
