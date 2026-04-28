@@ -35,6 +35,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 		// this.UAIDList is used to store the list of objects {UAID: <UAID>, access_token: <accessToken>, refresh_token: <refreshToken>, expires_at: <expires_at>}
 		this.UAIDList = this.app.homey.settings.get('UAIDList') || [];
 		this.MQTTList = []; // List of {UAID, serviceZoneID, MQTTClient}
+		this.tokenRefreshPromises = {}; // Keyed by UAID
+		this.mqttSetupPromises = {}; // Keyed by UAID_serviceZoneID
 	}
 
 	async getUAIDList()
@@ -67,7 +69,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			return 'us';
 		}
-		return serviceZone.substring(0, 2);
+		return serviceZone.substring(0, 2).toLowerCase();
 	}
 
 	getSafeExpiresAt(expiresInSeconds, UAID)
@@ -99,60 +101,65 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return parsed <= (Date.now() + refreshSkewMs);
 	}
 
-	async getAccessTokenForUAID(UAID, SecretKey)
+	async getAccessTokenForUAID(UAID, SecretKey, serviceZone)
 	{
+		const serviceZoneID = this.getServiceZoneID(serviceZone);
+
 		// Return the accessToken for the given UAID
 		let entry = this.UAIDList.find((item) => item.UAID === UAID);
 		if (entry && this.isAccessTokenExpired(entry.expires_at))
 		{
-			// If already fetching a token, wait for it to complete
-			if (this.fetchingToken)
+			const refreshPromise = this.tokenRefreshPromises[UAID] || (async () =>
 			{
-				await this.fetchingToken;
-			}
-			else
+				this.app.updateLog(`Access token for UAID ${UAID} has expired`);
+
+				const currentEntry = this.UAIDList.find((item) => item.UAID === UAID);
+				if (!currentEntry)
+				{
+					throw new Error(`No token entry found for UAID ${UAID} during refresh`);
+				}
+
+				// Token has expired so get a new one using the refresh token
+				const newTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, serviceZoneID);
+				if (!newTokenData || newTokenData.state === 'error' || !newTokenData.access_token)
+				{
+					throw new Error(`Failed to refresh access token for UAID ${UAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
+				}
+
+				this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
+
+				// Update the entry in the UAIDList
+				currentEntry.access_token = newTokenData.access_token;
+				currentEntry.refresh_token = newTokenData.refresh_token;
+				currentEntry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, UAID);
+				this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}, ${currentEntry.access_token}`);
+				this.app.homey.settings.set('UAIDList', this.UAIDList);
+			})();
+
+			if (!this.tokenRefreshPromises[UAID])
 			{
-				// Set a promise to indicate that we are fetching a token
-				let resolveToken;
-				this.fetchingToken = new Promise((resolve) =>
-				{
-					resolveToken = resolve;
-				});
+				this.tokenRefreshPromises[UAID] = refreshPromise;
+			}
 
-				try
+			try
+			{
+				await refreshPromise;
+			}
+			finally
+			{
+				if (this.tokenRefreshPromises[UAID] === refreshPromise)
 				{
-					this.app.updateLog(`Access token for UAID ${UAID} has expired`);
-
-					// Token has expired so get a new one using the refresh token
-					const newTokenData = await this.obtainAccessTokenWithRefreshToken(entry.UAID, entry.refresh_token);
-					this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
-
-					// Update the entry in the UAIDList
-					entry.access_token = newTokenData.access_token;
-					entry.refresh_token = newTokenData.refresh_token;
-					entry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, UAID);
-					this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(entry.expires_at)}, ${entry.access_token}`);
-					this.app.homey.settings.set('UAIDList', this.UAIDList);
-
-					resolveToken();
-				}
-				catch (error)
-				{
-					resolveToken(); // Resolve even on error to prevent hanging
-					throw error;
-				}
-				finally
-				{
-					// Clear the fetchingToken promise
-					this.fetchingToken = null;
+					delete this.tokenRefreshPromises[UAID];
 				}
 			}
+
+			entry = this.UAIDList.find((item) => item.UAID === UAID);
 		}
 		else if (!entry && SecretKey)
 		{
 			// No entry found for this UAID, so obtain a new access token using the secret key
 			this.app.updateLog(`No entry found for UAID ${UAID}`);
-			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey);
+			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey, serviceZoneID);
 			if (newTokenData.state === 'error')
 			{
 				this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`, 0);
@@ -196,6 +203,15 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return entry ? entry.access_token : null;
 	}
 
+	getTokenURL(serviceZoneID)
+	{
+		if (serviceZoneID === 'eu')
+		{
+			return `${yoLinkApi.cloudUrl_eu}token`;
+		}
+		return `${yoLinkApi.cloudUrl_us}token`;
+	}
+
 	async request(method = 'GET', url, body = null, headers = {})
 	{
 		this.app.updateLog(`API request: ${method} ${url} ${this.safeJsonStringify(body)}`);
@@ -223,7 +239,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 	}
 
 	// Obtain access token using UAID and secretKey
-	async obtainAccessTokenWithSecret(UAID, secretKey)
+	async obtainAccessTokenWithSecret(UAID, secretKey, serviceZoneID = 'us')
 	{
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/x-www-form-urlencoded');
@@ -238,7 +254,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		try
 		{
-			const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+			const response = await fetch(this.getTokenURL(serviceZoneID), init);
 			this.app.updateLog(`response status is ${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
@@ -260,7 +276,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 	}
 
-	async obtainAccessTokenWithRefreshToken(UAID, refreshToken)
+	async obtainAccessTokenWithRefreshToken(UAID, refreshToken, serviceZoneID = 'us')
 	{
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/x-www-form-urlencoded');
@@ -275,7 +291,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		try
 		{
-			const response = await fetch(`${yoLinkApi.cloudUrl_us}token`, init);
+			const response = await fetch(this.getTokenURL(serviceZoneID), init);
 			this.app.updateLog(`response status is ${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
@@ -303,7 +319,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		let accessToken = null;
 		try
 		{
-			accessToken = await this.getAccessTokenForUAID(UAID, SecretKey);
+			accessToken = await this.getAccessTokenForUAID(UAID, SecretKey, serviceZone);
 		}
 		catch (error)
 		{
@@ -361,7 +377,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		let accessToken = null;
 		try
 		{
-			accessToken = await this.getAccessTokenForUAID(UAID);
+			accessToken = await this.getAccessTokenForUAID(UAID, null, serviceZone);
 		}
 		catch (error)
 		{
@@ -391,28 +407,23 @@ module.exports = class YoLinkAPI extends SimpleClass
 		const serviceZoneID = this.getServiceZoneID(serviceZone);
 		const url = this.getZoneURL(serviceZoneID);
 
-		// Wait if an MQTT client is being setup
-		while (this.settingUpMQTTClient)
+		const setupKey = `${UAID}_${serviceZoneID}`;
+		while (this.mqttSetupPromises[setupKey])
 		{
-			this.app.updateLog('Waiting for MQTT client setup to complete before getting device status');
-			await this.settingUpMQTTClient;
+			this.app.updateLog(`Waiting for MQTT client setup to complete for UAID ${UAID} and serviceZoneID ${serviceZoneID}`);
+			await this.mqttSetupPromises[setupKey];
 		}
 
-		// Set a promise to indicate that we are fetching a token
-		let resolveToken;
-		this.settingUpMQTTClient = new Promise((resolve) =>
+		const setupPromise = (async () =>
 		{
-			resolveToken = resolve;
-		});
+			const retryKey = `${UAID}_${serviceZoneID}`;
+			if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
+			{
+				// A retry timer exists for this UAID/serviceZoneID, so don't try setting up MQTT client now
+				this.app.updateLog(`Skipping wait for MQTT client setup for UAID ${UAID} and serviceZoneID ${serviceZoneID} as a retry timer exists`);
+				return;
+			}
 
-		const retryKey = `${UAID}_${serviceZoneID}`;
-		if (this.mqttRetryTimers && this.mqttRetryTimers[retryKey])
-		{
-			// A retry timer exists for this UAID/serviceZoneID, so don't try setting up MQTT client now
-			this.app.updateLog(`Skipping wait for MQTT client setup for UAID ${UAID} and serviceZoneID ${serviceZoneID} as a retry timer exists`);
-		}
-		else
-		{
 			// Ensure an MQTT client is setup for this UAID and serviceZoneID
 			const entry = this.MQTTList.find((item) => (item.UAID === UAID) && (item.serviceZoneID === serviceZoneID));
 			if (!entry)
@@ -456,10 +467,20 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				this.app.updateLog(`MQTT client already setup for UAID ${UAID} and serviceZoneID ${serviceZoneID}`);
 			}
-		}
+		})();
 
-		resolveToken();
-		this.settingUpMQTTClient = null;
+		this.mqttSetupPromises[setupKey] = setupPromise;
+		try
+		{
+			await setupPromise;
+		}
+		finally
+		{
+			if (this.mqttSetupPromises[setupKey] === setupPromise)
+			{
+				delete this.mqttSetupPromises[setupKey];
+			}
+		}
 
 		return this.request('POST', url, body, headers);
 	}
@@ -469,7 +490,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		let accessToken = null;
 		try
 		{
-			accessToken = await this.getAccessTokenForUAID(UAID);
+			accessToken = await this.getAccessTokenForUAID(UAID, null, serviceZone);
 		}
 		catch (error)
 		{
@@ -500,12 +521,12 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return this.request('POST', url, body, headers);
 	}
 
-	async getHomeInfo(UAID)
+	async getHomeInfo(UAID, serviceZone)
 	{
 		let accessToken = null;
 		try
 		{
-			accessToken = await this.getAccessTokenForUAID(UAID);
+			accessToken = await this.getAccessTokenForUAID(UAID, null, serviceZone);
 		}
 		catch (error)
 		{
@@ -522,15 +543,28 @@ module.exports = class YoLinkAPI extends SimpleClass
 			time: Math.floor(Date.now() / 1000),
 		};
 
-		return this.request('POST', `${yoLinkApi.cloudUrl_us}${yoLinkApi.apiUrl}`, body, headers);
+		const serviceZoneID = this.getServiceZoneID(serviceZone);
+		return this.request('POST', this.getZoneURL(serviceZoneID), body, headers);
 	}
 
 	async postMQTTMessage(mqttMessage)
 	{
 		this.app.updateLog(`postMQTTMessage: ${this.app.varToString(mqttMessage)}`);
 
-		// Find the MQTT client for the UAID
-		const entry = this.MQTTList.find((item) => item.UAID === mqttMessage.UAID);
+		// Find the MQTT client for the UAID/service zone when available.
+		let requestedServiceZoneID = null;
+		if (typeof mqttMessage.serviceZoneID === 'string' && mqttMessage.serviceZoneID.length >= 2)
+		{
+			requestedServiceZoneID = mqttMessage.serviceZoneID.substring(0, 2).toLowerCase();
+		}
+		else if (typeof mqttMessage.serviceZone === 'string' && mqttMessage.serviceZone.length >= 2)
+		{
+			requestedServiceZoneID = this.getServiceZoneID(mqttMessage.serviceZone);
+		}
+
+		const entry = requestedServiceZoneID
+			? this.MQTTList.find((item) => item.UAID === mqttMessage.UAID && item.serviceZoneID === requestedServiceZoneID)
+			: this.MQTTList.find((item) => item.UAID === mqttMessage.UAID);
 		if (entry && entry.MQTTClient)
 		{
 			// wait for the MQTT client is ready
@@ -563,7 +597,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			});
 
 			// Connect to the MQTT server and subscribe to the state change topic
-			const homeID = await this.getHomeInfo(brokerConfig.UAID);
+			const homeID = await this.getHomeInfo(brokerConfig.UAID, brokerConfig.serviceZoneID);
 			if (!homeID || !homeID.data || !homeID.data.id)
 			{
 				this.app.updateLog(`Failed to get home info for UAID ${brokerConfig.UAID}: ${homeID || 'No response'}`, 0);
@@ -623,10 +657,6 @@ module.exports = class YoLinkAPI extends SimpleClass
 					connectionFailed = true;
 					MQTTClient.end(true); // Force close the connection
 					readyToken();
-
-					// Schedule retry after a delay if we haven't exceeded max retries
-					this.app.updateLog('Scheduling MQTT reconnection attempt due to error...', 1);
-					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
 				}
 			});
 
@@ -739,7 +769,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				this.app.updateLog(`Attempting MQTT reconnection for UAID ${brokerConfig.UAID} (attempt ${retryCount}/${maxRetries})`);
 
 				// Get a fresh access token
-				const newAccessToken = await this.getAccessTokenForUAID(brokerConfig.UAID);
+				const newAccessToken = await this.getAccessTokenForUAID(brokerConfig.UAID, null, brokerConfig.serviceZoneID);
 				if (!newAccessToken)
 				{
 					this.app.updateLog(`Failed to get new access token for UAID ${brokerConfig.UAID}, retry aborted`, 0);

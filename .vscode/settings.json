@@ -2,8 +2,10 @@
   "typescript.enablePromptUseWorkspaceTsdk": false,
   "typescript.suggest.enabled": false,
   "typescript.tsserver.enable": false,
-"javascript.validate.enable": true,
-"cSpell.words": [
-	"UAID"
+  "javascript.validate.enable": true,
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "cSpell.words": [
+	"UAID",
+	"yosmart"
 ]
 }

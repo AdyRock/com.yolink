@@ -20,6 +20,7 @@ module.exports = class YoLink extends Homey.App
 	{
 		this.yoLinkAPI = new YoLinkAPI(this);
 		this.homeyID = await this.homey.cloud.getHomeyId();
+		this.diagLog = this.diagLog || '';
 
 		if (process.env.DEBUG === '1')
 		{
@@ -29,10 +30,6 @@ module.exports = class YoLink extends Homey.App
 		{
 			this.homey.settings.set('debugMode', false);
 		}
-
-		this.homey.settings.on('set', async (setting) =>
-		{
-		});
 
 		this._triggerButtonPressed = this.homey.flow.getDeviceTriggerCard('button_pressed');
 		this._triggerButtonLongPressed = this.homey.flow.getDeviceTriggerCard('button_long_pressed');
@@ -65,7 +62,7 @@ module.exports = class YoLink extends Homey.App
 			}
 			if (source instanceof Error)
 			{
-				const stack = source.stack.replace('/\\n/g', '\n');
+				const stack = typeof source.stack === 'string' ? source.stack.replace(/\\n/g, '\n') : '';
 				return `${source.message}\n${stack}`;
 			}
 			if (typeof (source) === 'object')
@@ -119,6 +116,10 @@ module.exports = class YoLink extends Homey.App
 			try
 			{
 				const nowTime = new Date(Date.now());
+				if (typeof this.diagLog !== 'string')
+				{
+					this.diagLog = '';
+				}
 
 				this.diagLog += '\r\n* ';
 				this.diagLog += nowTime.toJSON();
@@ -221,11 +222,11 @@ module.exports = class YoLink extends Homey.App
 			for (const uaid of uaidList)
 			{
 				// Append the devices to the list
-				const newusDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'us');
+				const newusDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'us') || [];
 				deviceList = deviceList.concat(newusDevices);
 
 				// Get the list for the EU/UK zone as well but don't add duplicates
-				const neweuDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'eu_uk');
+				const neweuDevices = await this.yoLinkAPI.getDeviceList(uaid, null, 'eu_uk') || [];
 
 				// Filter out duplicates
 				for (const neweuDevice of neweuDevices)

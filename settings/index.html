@@ -1,7 +1,10 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>YoLink Settings</title>
 	<link rel="stylesheet" type="text/css" href="lwsa.css">
 	<link rel="stylesheet" type="text/css" href="busy_indicator.css" />
 	<link rel="stylesheet" type="text/css" href="extraStyles.css">
@@ -22,6 +25,26 @@
 		#busybox.show {
 			display: block;
 		}
+
+		.is-hidden {
+			display: none;
+		}
+
+		#simData {
+			white-space: nowrap;
+		}
+
+		.sim-activate {
+			background-color: #0f9e16;
+			color: white;
+			margin: 5px 20px 5px 5px;
+		}
+
+		.sim-clear {
+			background-color: #a5510d;
+			color: white;
+			margin: 5px 20px 5px 5px;
+		}
 	</style>
 
 	<!-- The '/homey.js' script must be included in your settings view to work -->
@@ -39,19 +62,20 @@
 	<div class="tab">
 		<button class="tablinks" onclick="setPage(event, 'detected')" id="defaultOpen">Detected</button>
 		<button class="tablinks" onclick="setPage(event, 'log')">Log</button>
-		<button class="tablinks" onclick="setPage(event, 'simulator')" id="simLogTab" style="display:none">Simulation Data</button>
+		<button class="tablinks is-hidden" onclick="setPage(event, 'simulator')" id="simLogTab">Simulation Data</button>
 	</div>
 
 	<!-- detected-->
 	<div id="detected" class="tabcontent">
 		<fieldset>
 			<p>
-				<button id="getDeviceLog" class="homey-button-small" data-i18n="settings.getDevices"></button>
-				<button id="clearDeviceLog" class="homey-button-small" data-i18n="settings.clear"></button>
-				<button id="sendDeviceLog" class="homey-button-small" data-i18n="settings.send"></button>
+				<button id="getDeviceLog" class="homey-button-small" data-i18n="settings.getDevices" aria-label="Get devices" title="Get devices">Get devices</button>
+				<button id="clearDeviceLog" class="homey-button-small" data-i18n="settings.clear" aria-label="Clear devices" title="Clear devices">Clear</button>
+				<button id="sendDeviceLog" class="homey-button-small" data-i18n="settings.send" aria-label="Send device log" title="Send device log">Send</button>
 			</p>
 			<div class="field row">
-				<textarea id="detectedDevices" class="homey-form-textarea" wrap="off"></textarea>
+				<label class="homey-form-label" for="detectedDevices">Detected devices</label>
+				<textarea id="detectedDevices" class="homey-form-textarea" wrap="off" aria-label="Detected devices"></textarea>
 			</div>
 		</fieldset>
 	</div>
@@ -60,7 +84,7 @@
 	<div id="log" class="tabcontent">
 		<fieldset class="homey-form-fieldset">
 			<label class="homey-form-checkbox">
-				<input class="homey-form-checkbox-input" id="enableLog" type="checkbox" value="auto" />
+				<input class="homey-form-checkbox-input" id="enableLog" type="checkbox" value="auto" aria-label="Enable logging" title="Enable logging" />
 				<span class="homey-form-checkbox-checkmark"></span>
 				<span class="homey-form-checkbox-text"><span data-i18n="settings.enableLog"></span></span>
 				<div class="tooltip"><i class="fi fi-rr-info"></i>
@@ -73,21 +97,22 @@
 						<span class="tooltiptext" data-i18n="settings.emailExplanation"></span>
 					</div>
 				</label>
-				<input class="homey-form-input" id="email" type="text" value />
+				<input class="homey-form-input" id="email" type="text" value="" aria-label="Email address" />
 				<label class="homey-form-label" for="description"><span data-i18n="settings.description"></span>
 					<div class="tooltip"><i class="fi fi-rr-info"></i>
 						<span class="tooltiptext" data-i18n="settings.descriptionExplanation"></span>
 					</div>
 				</label>
-				<input class="homey-form-input" id="description" type="text" value />
+				<input class="homey-form-input" id="description" type="text" value="" aria-label="Description" />
 				<p></p>
 			</div>
 			<p>
-				<button id="clearInfoLog" class="homey-button-small" data-i18n="settings.clear"></button>
-				<button id="sendInfoLog" class="homey-button-small" data-i18n="settings.send"></button>
+				<button id="clearInfoLog" class="homey-button-small" data-i18n="settings.clear" aria-label="Clear log" title="Clear log">Clear</button>
+				<button id="sendInfoLog" class="homey-button-small" data-i18n="settings.send" aria-label="Send log" title="Send log">Send</button>
 			</p>
 			<div class="field row">
-				<textarea id="infoLog" class="homey-form-textarea" wrap="off"></textarea>
+				<label class="homey-form-label" for="infoLog">Information log</label>
+				<textarea id="infoLog" class="homey-form-textarea" wrap="off" aria-label="Information log"></textarea>
 			</div>
 		</fieldset>
 	</div>
@@ -96,9 +121,10 @@
 	<div id="simulator" class="tabcontent">
 		<fieldset class="homey-form-fieldset">
 			<h1>For debug use only</h1>
-			<p><button id="useSim" style="background-color:#0f9e16;color:white;margin:5px 20px 5px 5px;">Activate</button><button id="clearSim" style="background-color:#a5510d;color:white;margin:5px 20px 5px 5px;">Clear Sim</button></p>
+			<p><button id="useSim" class="sim-activate" aria-label="Activate simulator">Activate</button><button id="clearSim" class="sim-clear" aria-label="Clear simulator">Clear Sim</button></p>
 			<div class="field row">
-				<textarea id="simData" style="white-space: nowrap;"></textarea>
+				<label class="homey-form-label" for="simData">Simulator data</label>
+				<textarea id="simData" aria-label="Simulator data"></textarea>
 			</div>
 		</fieldset>
 	</div>

@@ -61,7 +61,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 		const state = await this.driver.getState(data, settings);
 		if (!state || !state.data || !state.data.wifi || !state.data.wifi.ip)
 		{
-			if (state.desc)
+			if (state?.desc)
 			{
 				this.setUnavailable(state.desc);
 			}

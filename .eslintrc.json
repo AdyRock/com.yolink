@@ -1,5 +1,9 @@
 {
   "extends": "athom",
+	"ignorePatterns": [
+		"mqtt/index.js",
+		"nodemailer/index.js"
+	],
 	"rules":
 	{
 		"node/no-extraneous-require": "off",

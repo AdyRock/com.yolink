@@ -1,3 +1,5 @@
+[![CI](https://github.com/AdyRock/com.yolink/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AdyRock/com.yolink/actions/workflows/ci.yml)
+
 Adds support to connect YoLink devices to Homey via the cloud using the UUID and secrect found in the YoLink app.
 A YoLink hub is required for devices to send information to the cloud so that Homey can use them as they use a LoRa signal that is not supported by Homey.
 Create Flows to respond quickly to notifications from sensor and play sounds and messages on the speaker hub.
