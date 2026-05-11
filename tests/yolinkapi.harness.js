@@ -242,6 +242,67 @@ async function testPostMqttMessagePrefersZoneSpecificClient()
 	assert(publishedBy && publishedBy.indexOf('eu:yl-home/HOME_EU/**/request') === 0, `Expected EU MQTT client publish, got ${publishedBy}`);
 }
 
+async function testTokenRefreshRestartsMqttClient()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: 'UAID_A',
+			access_token: 'expired_token',
+			refresh_token: 'refresh_a',
+			expires_at: now - 1000,
+		},
+	]));
+
+	let oldClientEnded = false;
+	let setupArgs = null;
+	const replacementClient = {
+		publish: () =>
+		{},
+	};
+
+	api.MQTTList = [
+		{
+			UAID: 'UAID_A',
+			serviceZoneID: 'us',
+			homeID: 'HOME_US',
+			mqttReady: Promise.resolve(),
+			MQTTClient: {
+				end: (force) =>
+				{
+					oldClientEnded = force === true;
+				},
+			},
+		},
+	];
+
+	api.obtainAccessTokenWithRefreshToken = async () => ({
+		access_token: 'new_token_a',
+		refresh_token: 'new_refresh_a',
+		expires_in: 3600,
+	});
+
+	api.setupMQTTClient = async (brokerConfig) =>
+	{
+		setupArgs = brokerConfig;
+		return {
+			UAID: brokerConfig.UAID,
+			homeID: 'HOME_US_NEW',
+			serviceZoneID: brokerConfig.serviceZoneID,
+			mqttReady: Promise.resolve(),
+			MQTTClient: replacementClient,
+		};
+	};
+
+	const token = await api.getAccessTokenForUAID('UAID_A', null, 'us');
+	await sleep(10);
+
+	assert(token === 'new_token_a', `Expected refreshed token, got ${token}`);
+	assert(oldClientEnded, 'Expected the stale MQTT client to be ended');
+	assert(setupArgs && setupArgs.username === 'new_token_a', 'Expected MQTT reconnect to use refreshed token');
+	assert(api.MQTTList.some((item) => item.MQTTClient === replacementClient), 'Expected MQTT list to contain the refreshed client');
+}
+
 async function main()
 {
 	const results = [];
@@ -251,6 +312,7 @@ async function main()
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
+	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
 
 	const failed = results.filter((result) => !result.ok);
 	if (failed.length > 0)

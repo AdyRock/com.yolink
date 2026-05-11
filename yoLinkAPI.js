@@ -134,6 +134,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				currentEntry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, UAID);
 				this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}, ${currentEntry.access_token}`);
 				this.app.homey.settings.set('UAIDList', this.UAIDList);
+				this.refreshMQTTClientsForUAID(UAID);
 			})();
 
 			if (!this.tokenRefreshPromises[UAID])
@@ -203,6 +204,57 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return entry ? entry.access_token : null;
 	}
 
+	refreshMQTTClientsForUAID(UAID)
+	{
+		if (!this.MQTTList || this.MQTTList.length === 0)
+		{
+			return;
+		}
+
+		const mqttConnections = this.MQTTList.filter((item) => item.UAID === UAID && item.MQTTClient);
+		for (const connection of mqttConnections)
+		{
+			const accessTokenEntry = this.UAIDList.find((item) => item.UAID === UAID);
+			if (!accessTokenEntry || !accessTokenEntry.access_token)
+			{
+				continue;
+			}
+
+			const { serviceZoneID } = connection;
+			const brokerConfig = {
+				UAID,
+				url: serviceZoneID === 'eu' ? yoLinkApi.mqttUrl_eu : yoLinkApi.mqttUrl_us,
+				port: 8003,
+				username: accessTokenEntry.access_token,
+				password: '',
+				serviceZoneID,
+			};
+
+			this.app.updateLog(`Refreshing MQTT client for UAID ${UAID} and serviceZoneID ${serviceZoneID} after token refresh`);
+			connection.MQTTClient.end(true);
+			this.setupMQTTClient(brokerConfig).then((mqttConnection) =>
+			{
+				if (!mqttConnection)
+				{
+					return;
+				}
+
+				const index = this.MQTTList.findIndex((item) => item.UAID === UAID && item.serviceZoneID === serviceZoneID);
+				if (index >= 0)
+				{
+					this.MQTTList[index] = mqttConnection;
+				}
+				else
+				{
+					this.MQTTList.push(mqttConnection);
+				}
+			}).catch((error) =>
+			{
+				this.app.updateLog(`Failed to refresh MQTT client for UAID ${UAID} and serviceZoneID ${serviceZoneID}: ${error.message}`, 0);
+			});
+		}
+	}
+
 	getTokenURL(serviceZoneID)
 	{
 		if (serviceZoneID === 'eu')
@@ -266,7 +318,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				data = await response.text();
 			}
-			this.app.updateLog(data);
+			this.app.updateLog(this.app.varToString(data));
 			return data;
 		}
 		catch (error)
@@ -303,7 +355,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				data = await response.text();
 			}
-			this.app.updateLog(data);
+			this.app.updateLog(this.app.varToString(data));
 			return data;
 		}
 		catch (error)
