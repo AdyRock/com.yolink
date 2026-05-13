@@ -36,7 +36,7 @@ module.exports = class GarageDoorDevice extends Homey.Device
    */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('GarageDoorDevice settings where changed');
+		this.homey.app.updateLog('GarageDoorDevice settings were changed');
 	}
 
 	/**
@@ -62,12 +62,12 @@ module.exports = class GarageDoorDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 
-		const respone = await this.homey.app.yoLinkAPI.controlDevice(data.parentDeviceUDID, data.parentDeviceId, data.parentDeviceToken, settings.serviceZone, 'GarageDoor.toggle', {});
+		const response = await this.homey.app.yoLinkAPI.controlDevice(data.parentDeviceUDID, data.parentDeviceId, data.parentDeviceToken, settings.serviceZone, 'GarageDoor.toggle', {});
 
-		if (respone.desc !== 'Success')
+		if (!response || response.desc !== 'Success')
 		{
 			this.homey.app.updateLog('Failed to control Garage Door');
-			throw new Error(`Failed to control Garage Door ${respone.desc}`);
+			throw new Error(`Failed to control Garage Door ${response ? response.desc : 'No response'}`);
 		}
 
 		return true;
@@ -81,7 +81,7 @@ module.exports = class GarageDoorDevice extends Homey.Device
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);

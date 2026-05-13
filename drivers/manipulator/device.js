@@ -36,7 +36,7 @@ module.exports = class ManipulatorDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('ManipulatorDevice settings where changed');
+		this.homey.app.updateLog('ManipulatorDevice settings were changed');
 	}
 
 	/**
@@ -62,12 +62,12 @@ module.exports = class ManipulatorDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 
-		const respone = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.id, data.deviceToken, settings.serviceZone, 'Manipulator.setState', { state: value ? 'open' : 'close' });
+		const response = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.id, data.deviceToken, settings.serviceZone, 'Manipulator.setState', { state: value ? 'open' : 'close' });
 
-		if (respone.desc !== 'Success')
+		if (!response || response.desc !== 'Success')
 		{
 			this.homey.app.updateLog('Failed to control Manipulator');
-			throw new Error(`Failed to control Manipulator ${respone.desc}`);
+			throw new Error(`Failed to control Manipulator ${response ? response.desc : 'No response'}`);
 		}
 
 		return true;
@@ -81,7 +81,7 @@ module.exports = class ManipulatorDevice extends Homey.Device
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data)
 		{
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);

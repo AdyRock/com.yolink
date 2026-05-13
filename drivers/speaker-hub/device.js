@@ -33,7 +33,7 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('SpeakerHubDevice settings where changed');
+		this.homey.app.updateLog('SpeakerHubDevice settings were changed');
 	}
 
 	/**
@@ -56,26 +56,32 @@ module.exports = class SpeakerHubDevice extends Homey.Device
 
 	async updateState()
 	{
-		const data = await this.getData();
-		const settings = await this.getSettings();
-		const state = await this.driver.getState(data, settings);
-		if (!state || !state.data || !state.data.wifi || !state.data.wifi.ip)
+		try
 		{
-			if (state?.desc)
+			const data = await this.getData();
+			const settings = await this.getSettings();
+			const state = await this.driver.getState(data, settings);
+
+			if (!state || !state.data || !state.data.wifi || !state.data.wifi.ip)
 			{
-				this.setUnavailable(state.desc);
+				const unavailableMessage = (state && typeof state.desc === 'string' && state.desc.length > 0)
+					? state.desc
+					: 'Offline';
+				this.setUnavailable(unavailableMessage).catch(this.error);
+				return;
 			}
-			else
-			{
-				this.setUnavailable('Offline');
-			}
-			return;
+
+			this.setAvailable().catch(this.error);
+
+			// Log the device status
+			this.homey.app.updateLog(`SpeakerHubDevice MQTT message received: ${JSON.stringify(state)}`);
+
+			this.setCapabilityValue('info', state.data.wifi.ip).catch(this.error);
 		}
-		this.setAvailable();
-
-		// Log the device status
-		this.homey.app.updateLog(`SpeakerHubDevice MQTT message received: ${JSON.stringify(state)}`);
-
-		this.setCapabilityValue('info', state.data.wifi.ip);
+		catch (error)
+		{
+			this.homey.app.updateLog(`SpeakerHubDevice updateState failed: ${error.message}`, 0);
+			this.setUnavailable('Offline').catch(this.error);
+		}
 	}
 };

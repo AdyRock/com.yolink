@@ -32,7 +32,7 @@ module.exports = class LeakSensorDevice extends Homey.Device
 	 */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.log('LeakSensorDevice settings where changed');
+		this.log('LeakSensorDevice settings were changed');
 	}
 
 	/**
@@ -61,7 +61,7 @@ module.exports = class LeakSensorDevice extends Homey.Device
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);

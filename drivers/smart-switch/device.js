@@ -36,7 +36,7 @@ module.exports = class SmartSwitchDevice extends Homey.Device
    */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('SmartSwitchDevice settings where changed');
+		this.homey.app.updateLog('SmartSwitchDevice settings were changed');
 	}
 
 	/**
@@ -62,12 +62,12 @@ module.exports = class SmartSwitchDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 
-		const respone = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.id, data.deviceToken, settings.serviceZone, 'Switch.setState', { state: value ? 'open' : 'close' });
+		const response = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.id, data.deviceToken, settings.serviceZone, 'Switch.setState', { state: value ? 'open' : 'close' });
 
-		if (respone.desc !== 'Success')
+		if (!response || response.desc !== 'Success')
 		{
 			this.homey.app.updateLog('Failed to control Switch');
-			throw new Error(`Failed to control Switch ${respone.desc}`);
+			throw new Error(`Failed to control Switch ${response ? response.desc : 'No response'}`);
 		}
 
 		return true;
@@ -83,7 +83,7 @@ module.exports = class SmartSwitchDevice extends Homey.Device
 		{
 			this.setCapabilityValue('info', 'Offline').catch(this.error);
 			this.setCapabilityValue('measure_battery', null).catch(this.error);
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);
@@ -128,7 +128,7 @@ module.exports = class SmartSwitchDevice extends Homey.Device
 			return false;
 		}
 
-		this.setAvailable();
+		this.setAvailable().catch(this.error);
 
 		// Log the device status
 		this.homey.app.updateLog(`SmartSwitchDevice MQTT message received: ${JSON.stringify(mqttData)}`);

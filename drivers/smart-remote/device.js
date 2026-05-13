@@ -33,7 +33,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
    */
 	async onSettings({ oldSettings, newSettings, changedKeys })
 	{
-		this.homey.app.updateLog('SmartRemoteDevice settings where changed');
+		this.homey.app.updateLog('SmartRemoteDevice settings were changed');
 	}
 
 	/**
@@ -62,7 +62,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);
@@ -104,7 +104,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
 			return false;
 		}
 
-		this.setAvailable();
+		this.setAvailable().catch(this.error);
 
 		// Log the device status
 		this.homey.app.updateLog(`SmartRemoteDevice MQTT message received: ${JSON.stringify(mqttData)}`);

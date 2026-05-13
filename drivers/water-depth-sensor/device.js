@@ -41,7 +41,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 			}
 		}
 
-		this.log('WaterDepthSensorDevice settings where changed');
+		this.log('WaterDepthSensorDevice settings were changed');
 	}
 
 	/**
@@ -71,7 +71,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 		this.unsetWarning().catch(this.error);
 		if (!state || !state.data || !state.data.online || state.data.online !== true)
 		{
-			if (state && state === 'error')
+			if (state && state.state === 'error')
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.id}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);
