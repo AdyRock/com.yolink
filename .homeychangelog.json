@@ -70,5 +70,8 @@
 	},
 	"1.0.19": {
 		"en": "Improved API resilience with per-account token refresh and MQTT setup locking, region-aware cloud token/home routing, and safer app-level logging/device list handling. Added CI checks and lightweight API/app harness tests for regression coverage."
+	},
+	"1.0.20": {
+		"en": "Enhance MQTT client error handling with fresh-token reconnect logic and adjustable retry delay"
 	}
 }
