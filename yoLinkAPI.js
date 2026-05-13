@@ -659,9 +659,12 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.app.updateLog(`setupMQTTClient connect: ${brokerConfig.url}:${brokerConfig.port}, { clientId: HomeyYoLinkApp-${this.app.homeyID}-${rndID}, username: ${brokerConfig.username}, password: ${brokerConfig.password} }`, 1);
 			const MQTTClient = mqtt.connect(`${brokerConfig.url}:${brokerConfig.port}`, { clientId: `HomeyYoLinkApp-${this.app.homeyID}-${rndID}`, username: brokerConfig.username, password: brokerConfig.password });
 			let connectionFailed = false;
+			let hasConnected = false;
+			let authRetryScheduled = false;
 
 			MQTTClient.on('connect', () =>
 			{
+				hasConnected = true;
 				this.app.updateLog(`setupMQTTClient.onConnect: connected to ${brokerConfig.url}:${brokerConfig.port} as ${brokerConfig.UAID}`);
 
 				// Subscribe to the yl-home/HomeID/+/report topic to receive device reports
@@ -705,7 +708,16 @@ module.exports = class YoLinkAPI extends SimpleClass
 					err.message.includes('Not authorized') ||
 					err.message.includes('Authentication failed'))
 				{
-					this.app.updateLog('Authentication error detected, stopping MQTT reconnection attempts', 0);
+					this.app.updateLog('Authentication error detected, stopping MQTT client auto-reconnect attempts', 0);
+
+					// If this client previously worked, force a fresh-token reconnect quickly.
+					if (hasConnected && !authRetryScheduled)
+					{
+						authRetryScheduled = true;
+						this.app.updateLog(`Scheduling immediate fresh-token MQTT recovery for UAID ${brokerConfig.UAID}`, 1);
+						this.scheduleMQTTRetry(brokerConfig, 1, 1, 1000);
+					}
+
 					connectionFailed = true;
 					MQTTClient.end(true); // Force close the connection
 					readyToken();
@@ -796,7 +808,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 	}
 
-	scheduleMQTTRetry(brokerConfig, retryCount, maxRetries)
+	scheduleMQTTRetry(brokerConfig, retryCount, maxRetries, delayOverrideMs = null)
 	{
 		// Clear any existing retry timer for this UAID/serviceZoneID
 		const retryKey = `${brokerConfig.UAID}_${brokerConfig.serviceZoneID}`;
@@ -811,8 +823,10 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.mqttRetryTimers = {};
 		}
 
-		// Calculate retry delay (exponential backoff: 60s, 120s, 240s)
-		const retryDelay = 60000 * (2 ** (retryCount - 1));
+		// Calculate retry delay (exponential backoff: 60s, 120s, 240s) unless overridden.
+		const retryDelay = (Number.isFinite(delayOverrideMs) && delayOverrideMs >= 0)
+			? delayOverrideMs
+			: 60000 * (2 ** (retryCount - 1));
 
 		this.mqttRetryTimers[retryKey] = setTimeout(async () =>
 		{
