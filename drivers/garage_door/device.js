@@ -62,7 +62,7 @@ module.exports = class GarageDoorDevice extends Homey.Device
 		const data = await this.getData();
 		const settings = await this.getSettings();
 
-		const response = await this.homey.app.yoLinkAPI.controlDevice(data.parentDeviceUDID, data.parentDeviceId, data.parentDeviceToken, settings.serviceZone, 'GarageDoor.toggle', {});
+		const response = await this.homey.app.yoLinkAPI.controlDevice(data.UAID, data.parentDeviceId, data.parentDeviceToken, settings.serviceZone, 'GarageDoor.toggle', {});
 
 		if (!response || response.desc !== 'Success')
 		{

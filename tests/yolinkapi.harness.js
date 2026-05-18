@@ -10,6 +10,8 @@ Module._load = function patchedModuleLoad(request, parent, isMain)
 	if (request === 'homey')
 	{
 		return {
+			Device: class DeviceStub
+			{},
 			SimpleClass: class SimpleClassStub
 			{},
 		};
@@ -19,6 +21,7 @@ Module._load = function patchedModuleLoad(request, parent, isMain)
 };
 
 const YoLinkAPI = require('../yoLinkAPI');
+const GarageDoorDevice = require('../drivers/garage_door/device');
 
 Module._load = originalModuleLoad;
 
@@ -303,6 +306,47 @@ async function testTokenRefreshRestartsMqttClient()
 	assert(api.MQTTList.some((item) => item.MQTTClient === replacementClient), 'Expected MQTT list to contain the refreshed client');
 }
 
+async function testGarageDoorControlUsesAccountUaid()
+{
+	const device = Object.create(GarageDoorDevice.prototype);
+	let capturedArgs = null;
+
+	device.getData = async () => ({
+		UAID: 'UAID_ACCOUNT',
+		parentDeviceId: 'PARENT_DEVICE_ID',
+		parentDeviceUDID: 'PARENT_DEVICE_UDID',
+		parentDeviceToken: 'PARENT_DEVICE_TOKEN',
+	});
+	device.getSettings = async () => ({ serviceZone: 'us' });
+	device.homey = {
+		app: {
+			yoLinkAPI: {
+				controlDevice: async (UAID, deviceId, deviceToken, serviceZone, command, params) =>
+				{
+					capturedArgs = {
+						UAID,
+						deviceId,
+						deviceToken,
+						serviceZone,
+						command,
+						params,
+					};
+					return { desc: 'Success' };
+				},
+			},
+			updateLog: () => {},
+		},
+	};
+
+	const result = await device.onOffCapabilityListener(true);
+
+	assert(result === true, 'Expected garage door control to succeed');
+	assert(capturedArgs && capturedArgs.UAID === 'UAID_ACCOUNT', `Expected controlDevice to use the account UAID, got ${capturedArgs ? capturedArgs.UAID : 'no call'}`);
+	assert(capturedArgs.deviceId === 'PARENT_DEVICE_ID', 'Expected garage door control to target the parent device ID');
+	assert(capturedArgs.deviceToken === 'PARENT_DEVICE_TOKEN', 'Expected garage door control to use the parent device token');
+	assert(capturedArgs.command === 'GarageDoor.toggle', 'Expected garage door toggle command');
+}
+
 async function main()
 {
 	const results = [];
@@ -313,6 +357,7 @@ async function main()
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
 	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
+	results.push(await runTest('garage door control uses account UAID', testGarageDoorControlUsesAccountUaid));
 
 	const failed = results.filter((result) => !result.ok);
 	if (failed.length > 0)
