@@ -34,9 +34,238 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		// this.UAIDList is used to store the list of objects {UAID: <UAID>, access_token: <accessToken>, refresh_token: <refreshToken>, expires_at: <expires_at>}
 		this.UAIDList = this.app.homey.settings.get('UAIDList') || [];
+		this.normalizeStoredUAIDList();
 		this.MQTTList = []; // List of {UAID, serviceZoneID, MQTTClient}
 		this.tokenRefreshPromises = {}; // Keyed by UAID
 		this.mqttSetupPromises = {}; // Keyed by UAID_serviceZoneID
+	}
+
+	normalizeUAID(value)
+	{
+		if (typeof value !== 'string')
+		{
+			return '';
+		}
+
+		const trimmed = value.trim();
+		if (!trimmed)
+		{
+			return '';
+		}
+
+		const noPrefix = trimmed.replace(/^ua_/i, '');
+		if (/^[A-Fa-f0-9]{32}$/.test(noPrefix))
+		{
+			return `ua_${noPrefix.toUpperCase()}`;
+		}
+
+		return trimmed;
+	}
+
+	isValidNormalizedUAID(uaid)
+	{
+		return typeof uaid === 'string' && /^ua_[A-F0-9]{32}$/.test(uaid);
+	}
+
+	getTokenFailureReason(message)
+	{
+		const msg = typeof message === 'string' ? message.toLowerCase() : '';
+		if (msg.includes('client_id not existed'))
+		{
+			return 'invalid_client_id';
+		}
+		if (msg.includes('not support'))
+		{
+			return 'unsupported_client_id_format';
+		}
+		if (msg.includes('auth failed'))
+		{
+			return 'auth_failed';
+		}
+		if (msg.includes('invalid_client'))
+		{
+			return 'invalid_client';
+		}
+		if (msg.includes('invalid_grant'))
+		{
+			return 'invalid_grant';
+		}
+		if (msg.includes('timeout') || msg.includes('network') || msg.includes('fetch'))
+		{
+			return 'transport_error';
+		}
+		return 'unknown';
+	}
+
+	getTokenFailureHint(reason, zone, grantType)
+	{
+		switch (reason)
+		{
+		case 'invalid_client_id':
+			return 'YoLink did not recognize this UAID in the selected region.';
+		case 'unsupported_client_id_format':
+			return 'The UAID format is not supported by YoLink.';
+		case 'auth_failed':
+			if (grantType === 'refresh_token')
+			{
+				return `Refresh token rejected in ${zone.toUpperCase()} zone.`;
+			}
+			return `Credentials were rejected in ${zone.toUpperCase()} zone.`;
+		case 'invalid_client':
+			return 'Client authentication failed.';
+		case 'invalid_grant':
+			return 'Refresh token grant was rejected.';
+		case 'transport_error':
+			return 'Network/transport issue while contacting YoLink token service.';
+		default:
+			return 'Token request failed for an unknown reason.';
+		}
+	}
+
+	getTokenFailureUserAction(reason, zone, grantType)
+	{
+		switch (reason)
+		{
+		case 'invalid_client_id':
+			return `Please verify the UAID in the YoLink app and try again in ${zone.toUpperCase()} zone.`;
+		case 'unsupported_client_id_format':
+			return 'Please paste the full UAID exactly as shown in YoLink (format: ua_ + 32 characters).';
+		case 'auth_failed':
+			if (grantType === 'refresh_token')
+			{
+				return 'Please reconnect the account (re-enter UAID + Secret Key) to get a fresh token.';
+			}
+			return `Please check the Secret Key and try the other region if needed (US/EU). Current region: ${zone.toUpperCase()}.`;
+		case 'invalid_client':
+			return 'Please confirm UAID and Secret Key belong to the same YoLink account.';
+		case 'invalid_grant':
+			return 'Please re-enter UAID and Secret Key to refresh authentication.';
+		case 'transport_error':
+			return 'Please check internet connectivity and retry in a moment.';
+		case 'unexpected_response_format':
+			return 'YoLink returned an unexpected response. Please retry; if it continues, send diagnostics.';
+		default:
+			return 'Please retry and, if it fails again, send diagnostics to support.';
+		}
+	}
+
+	normalizeTokenResponse(data, UAID, serviceZoneID, grantType)
+	{
+		if (!data || typeof data !== 'object' || Array.isArray(data))
+		{
+			const preview = typeof data === 'string' ? data.substring(0, 160) : this.app.varToString(data);
+			return {
+				state: 'error',
+				msg: `Unexpected non-JSON token response: ${preview}`,
+				reason: 'unexpected_response_format',
+				hint: 'Token endpoint did not return expected JSON payload.',
+				zone: serviceZoneID,
+				grantType,
+				UAID,
+			};
+		}
+
+		if (data.state === 'error' || !data.access_token)
+		{
+			const msg = typeof data.msg === 'string' && data.msg ? data.msg : 'Unknown token error';
+			const reason = this.getTokenFailureReason(msg);
+			return {
+				...data,
+				state: 'error',
+				msg,
+				reason,
+				hint: this.getTokenFailureHint(reason, serviceZoneID, grantType),
+				zone: serviceZoneID,
+				grantType,
+				UAID,
+			};
+		}
+
+		return {
+			...data,
+			state: data.state || 'ok',
+			zone: serviceZoneID,
+			grantType,
+			UAID,
+		};
+	}
+
+	logTokenFailure(prefix, tokenData)
+	{
+		const details = tokenData && typeof tokenData === 'object' ? tokenData : {};
+		const zone = details.zone || 'us';
+		const reason = details.reason || this.getTokenFailureReason(details.msg);
+		const hint = details.hint || this.getTokenFailureHint(reason, zone, details.grantType || 'client_credentials');
+		const action = this.normalizeUserAction(this.getTokenFailureUserAction(reason, zone, details.grantType || 'client_credentials'));
+		const msg = details.msg || 'Unknown error';
+		this.app.updateLog(`${prefix}. What you can do: ${action} | diag: zone=${zone} grant=${details.grantType || 'unknown'} reason=${reason} msg=${msg} hint=${hint}`, 0);
+	}
+
+	normalizeUserAction(action)
+	{
+		const actionText = typeof action === 'string' ? action.trim() : '';
+		if (!actionText)
+		{
+			return 'Please retry and, if it fails again, send diagnostics to support.';
+		}
+
+		if (/^please\b/i.test(actionText))
+		{
+			return actionText;
+		}
+
+		return `Please ${actionText.charAt(0).toLowerCase()}${actionText.slice(1)}`;
+	}
+
+	logUserFixableFailure(prefix, action, diag = {})
+	{
+		const normalizedAction = this.normalizeUserAction(action);
+		const diagEntries = Object.entries(diag)
+			.filter(([, value]) => value !== null && value !== undefined && value !== '')
+			.map(([key, value]) => `${key}=${String(value).replace(/\s+/g, ' ').trim()}`);
+		const diagSuffix = diagEntries.length > 0 ? ` | diag: ${diagEntries.join(' ')}` : '';
+		this.app.updateLog(`${prefix}. What you can do: ${normalizedAction}${diagSuffix}`, 0);
+	}
+
+	normalizeStoredUAIDList()
+	{
+		if (!Array.isArray(this.UAIDList) || this.UAIDList.length === 0)
+		{
+			this.UAIDList = [];
+			return;
+		}
+
+		const normalizedList = [];
+		const seenUAID = new Set();
+
+		for (const entry of this.UAIDList)
+		{
+			if (!entry || typeof entry !== 'object')
+			{
+				continue;
+			}
+
+			const normalizedUAID = this.normalizeUAID(entry.UAID);
+			if (!normalizedUAID || !this.isValidNormalizedUAID(normalizedUAID) || seenUAID.has(normalizedUAID))
+			{
+				continue;
+			}
+
+			seenUAID.add(normalizedUAID);
+			normalizedList.push({
+				...entry,
+				UAID: normalizedUAID,
+				serviceZoneID: entry.serviceZoneID === 'eu' ? 'eu' : 'us',
+			});
+		}
+
+		if (normalizedList.length !== this.UAIDList.length)
+		{
+			this.app.updateLog(`Normalized UAIDList from ${this.UAIDList.length} to ${normalizedList.length} entries`);
+		}
+
+		this.UAIDList = normalizedList;
+		this.app.homey.settings.set('UAIDList', this.UAIDList);
 	}
 
 	async getUAIDList()
@@ -103,43 +332,83 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 	async getAccessTokenForUAID(UAID, SecretKey, serviceZone)
 	{
-		const serviceZoneID = this.getServiceZoneID(serviceZone);
+		const normalizedUAID = this.normalizeUAID(UAID);
+		if (!normalizedUAID)
+		{
+			this.app.updateLog('Token request rejected: UAID is empty. What you can do: Please enter the full UAID from YoLink and try again. | diag: reason=missing_uaid', 0);
+			throw new Error('Invalid UAID');
+		}
+
+		if (!this.isValidNormalizedUAID(normalizedUAID))
+		{
+			this.app.updateLog(`Token request rejected for UAID ${normalizedUAID}. What you can do: Please use the full UAID from YoLink (ua_ + 32 characters). | diag: reason=invalid_uaid_format expected=ua_<32 hex>`, 0);
+			throw new Error(`Invalid UAID format: ${normalizedUAID}`);
+		}
+
+		if (normalizedUAID !== UAID)
+		{
+			this.app.updateLog(`Normalized UAID ${UAID} -> ${normalizedUAID}`);
+		}
+
+		const requestedServiceZoneID = this.getServiceZoneID(serviceZone);
 
 		// Return the accessToken for the given UAID
-		let entry = this.UAIDList.find((item) => item.UAID === UAID);
+		let entry = this.UAIDList.find((item) => item.UAID === normalizedUAID);
+		const effectiveServiceZoneID = entry && !serviceZone
+			? (entry.serviceZoneID || 'us')
+			: requestedServiceZoneID;
 		if (entry && this.isAccessTokenExpired(entry.expires_at))
 		{
-			const refreshPromise = this.tokenRefreshPromises[UAID] || (async () =>
+			const refreshPromise = this.tokenRefreshPromises[normalizedUAID] || (async () =>
 			{
-				this.app.updateLog(`Access token for UAID ${UAID} has expired`);
+				this.app.updateLog(`Access token for UAID ${normalizedUAID} has expired, attempting refresh`);
 
-				const currentEntry = this.UAIDList.find((item) => item.UAID === UAID);
+				const currentEntry = this.UAIDList.find((item) => item.UAID === normalizedUAID);
 				if (!currentEntry)
 				{
-					throw new Error(`No token entry found for UAID ${UAID} during refresh`);
+					throw new Error(`No token entry found for UAID ${normalizedUAID} during refresh`);
 				}
+
+				let refreshZone = currentEntry.serviceZoneID === 'eu' ? 'eu' : effectiveServiceZoneID;
 
 				// Token has expired so get a new one using the refresh token
-				const newTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, serviceZoneID);
-				if (!newTokenData || newTokenData.state === 'error' || !newTokenData.access_token)
+				let newTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, refreshZone);
+
+				if (newTokenData && newTokenData.state === 'error' && !serviceZone)
 				{
-					throw new Error(`Failed to refresh access token for UAID ${UAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
+					const alternateZone = refreshZone === 'eu' ? 'us' : 'eu';
+					this.logTokenFailure(`Refresh token failed for UAID ${normalizedUAID}`, newTokenData);
+					this.app.updateLog(`Retrying refresh token for UAID ${normalizedUAID} in alternate zone ${alternateZone}`);
+					const retryTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, alternateZone);
+					if (retryTokenData && retryTokenData.state !== 'error' && retryTokenData.access_token)
+					{
+						newTokenData = retryTokenData;
+						refreshZone = alternateZone;
+						this.app.updateLog(`Refresh token succeeded for UAID ${normalizedUAID} after zone switch to ${alternateZone}`);
+					}
 				}
 
-				this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
+				if (!newTokenData || newTokenData.state === 'error' || !newTokenData.access_token)
+				{
+					this.logTokenFailure(`Failed to refresh access token for UAID ${normalizedUAID}`, newTokenData);
+					throw new Error(`Failed to refresh access token for UAID ${normalizedUAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
+				}
+
+				this.app.updateLog(`New token data for UAID ${normalizedUAID}: ${this.app.varToString(newTokenData)}`);
 
 				// Update the entry in the UAIDList
 				currentEntry.access_token = newTokenData.access_token;
 				currentEntry.refresh_token = newTokenData.refresh_token;
-				currentEntry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, UAID);
-				this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}, ${currentEntry.access_token}`);
+				currentEntry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, normalizedUAID);
+				currentEntry.serviceZoneID = refreshZone;
+				this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}, ${currentEntry.access_token}`);
 				this.app.homey.settings.set('UAIDList', this.UAIDList);
-				this.refreshMQTTClientsForUAID(UAID);
+				this.refreshMQTTClientsForUAID(normalizedUAID);
 			})();
 
-			if (!this.tokenRefreshPromises[UAID])
+			if (!this.tokenRefreshPromises[normalizedUAID])
 			{
-				this.tokenRefreshPromises[UAID] = refreshPromise;
+				this.tokenRefreshPromises[normalizedUAID] = refreshPromise;
 			}
 
 			try
@@ -148,34 +417,51 @@ module.exports = class YoLinkAPI extends SimpleClass
 			}
 			finally
 			{
-				if (this.tokenRefreshPromises[UAID] === refreshPromise)
+				if (this.tokenRefreshPromises[normalizedUAID] === refreshPromise)
 				{
-					delete this.tokenRefreshPromises[UAID];
+					delete this.tokenRefreshPromises[normalizedUAID];
 				}
 			}
 
-			entry = this.UAIDList.find((item) => item.UAID === UAID);
+			entry = this.UAIDList.find((item) => item.UAID === normalizedUAID);
 		}
 		else if (!entry && SecretKey)
 		{
 			// No entry found for this UAID, so obtain a new access token using the secret key
-			this.app.updateLog(`No entry found for UAID ${UAID}`);
-			const newTokenData = await this.obtainAccessTokenWithSecret(UAID, SecretKey, serviceZoneID);
+			this.app.updateLog(`No token cache entry found for UAID ${normalizedUAID}, requesting a new token`);
+			let resolvedServiceZoneID = effectiveServiceZoneID;
+			let newTokenData = await this.obtainAccessTokenWithSecret(normalizedUAID, SecretKey, resolvedServiceZoneID);
+
+			if (newTokenData && newTokenData.state === 'error' && !serviceZone)
+			{
+				const alternateZone = effectiveServiceZoneID === 'eu' ? 'us' : 'eu';
+				this.logTokenFailure(`Initial token request failed for UAID ${normalizedUAID}`, newTokenData);
+				this.app.updateLog(`Retrying initial token request for UAID ${normalizedUAID} in alternate zone ${alternateZone}`);
+				const retryTokenData = await this.obtainAccessTokenWithSecret(normalizedUAID, SecretKey, alternateZone);
+				if (retryTokenData && retryTokenData.state !== 'error' && retryTokenData.access_token)
+				{
+					newTokenData = retryTokenData;
+					resolvedServiceZoneID = alternateZone;
+					this.app.updateLog(`Initial token request succeeded for UAID ${normalizedUAID} after zone switch to ${alternateZone}`);
+				}
+			}
+
 			if (newTokenData.state === 'error')
 			{
-				this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`, 0);
+				this.logTokenFailure(`Failed to obtain access token for UAID ${normalizedUAID}`, newTokenData);
 				// return null;
-				throw new Error(`Failed to obtain access token for UAID ${UAID}: ${newTokenData.msg}`);
+				throw new Error(`Failed to obtain access token for UAID ${normalizedUAID}: ${newTokenData.msg}`);
 			}
-			this.app.updateLog(`New token data for UAID ${UAID}: ${this.app.varToString(newTokenData)}`);
-			this.app.updateLog(`Obtained new access token for UAID ${UAID}, expires at ${this.formatDateForLog(Date.now() + (newTokenData.expires_in * 1000))}`);
+			this.app.updateLog(`New token data for UAID ${normalizedUAID}: ${this.app.varToString(newTokenData)}`);
+			this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(Date.now() + (newTokenData.expires_in * 1000))}`);
 
 			// Add the new entry to the UAIDList
 			entry = {
-				UAID,
+				UAID: normalizedUAID,
 				access_token: newTokenData.access_token,
 				refresh_token: newTokenData.refresh_token,
-				expires_at: this.getSafeExpiresAt(newTokenData.expires_in, UAID),
+				expires_at: this.getSafeExpiresAt(newTokenData.expires_in, normalizedUAID),
+				serviceZoneID: resolvedServiceZoneID,
 			};
 			this.UAIDList.push(entry);
 			this.app.homey.settings.set('UAIDList', this.UAIDList);
@@ -285,7 +571,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (error)
 		{
-			this.app.updateLog(`API request failed: ${error.message}`, 0);
+			this.logUserFixableFailure(
+				'Cloud request failed',
+				'Check internet connectivity and retry in a moment.',
+				{ method, url, reason: 'request_error', msg: error.message },
+			);
 			return { state: 'error', msg: error.message };
 		}
 	}
@@ -296,7 +586,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/x-www-form-urlencoded');
 
-		const body = `grant_type=client_credentials&client_id=${UAID}&client_secret=${secretKey}`;
+		const body = `grant_type=client_credentials&client_id=${encodeURIComponent(UAID)}&client_secret=${encodeURIComponent(secretKey)}`;
 
 		const init = {
 			method: 'POST',
@@ -306,8 +596,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		try
 		{
+			this.app.updateLog(`Token request start | zone=${serviceZoneID} | grant=client_credentials | UAID=${UAID}`);
 			const response = await fetch(this.getTokenURL(serviceZoneID), init);
-			this.app.updateLog(`response status is ${response.status}`);
+			this.app.updateLog(`Token request response | zone=${serviceZoneID} | grant=client_credentials | status=${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
 			if (mediaType && mediaType.includes('json'))
@@ -318,13 +609,18 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				data = await response.text();
 			}
-			this.app.updateLog(this.app.varToString(data));
-			return data;
+			const normalizedData = this.normalizeTokenResponse(data, UAID, serviceZoneID, 'client_credentials');
+			if (normalizedData.state === 'error')
+			{
+				this.logTokenFailure(`Token endpoint rejected client_credentials for UAID ${UAID}`, normalizedData);
+			}
+			return normalizedData;
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token with secret for UAID ${UAID}: ${error.message}`, 0);
-			return { state: 'error', msg: error.message };
+			const errorData = this.normalizeTokenResponse({ state: 'error', msg: error.message }, UAID, serviceZoneID, 'client_credentials');
+			this.logTokenFailure(`Failed to obtain access token with secret for UAID ${UAID}`, errorData);
+			return errorData;
 		}
 	}
 
@@ -333,7 +629,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/x-www-form-urlencoded');
 
-		const body = `grant_type=refresh_token&client_id=${UAID}&refresh_token=${refreshToken}`;
+		const body = `grant_type=refresh_token&client_id=${encodeURIComponent(UAID)}&refresh_token=${encodeURIComponent(refreshToken)}`;
 
 		const init = {
 			method: 'POST',
@@ -343,8 +639,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 		try
 		{
+			this.app.updateLog(`Token request start | zone=${serviceZoneID} | grant=refresh_token | UAID=${UAID}`);
 			const response = await fetch(this.getTokenURL(serviceZoneID), init);
-			this.app.updateLog(`response status is ${response.status}`);
+			this.app.updateLog(`Token request response | zone=${serviceZoneID} | grant=refresh_token | status=${response.status}`);
 			const mediaType = response.headers.get('content-type');
 			let data;
 			if (mediaType && mediaType.includes('json'))
@@ -355,13 +652,18 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				data = await response.text();
 			}
-			this.app.updateLog(this.app.varToString(data));
-			return data;
+			const normalizedData = this.normalizeTokenResponse(data, UAID, serviceZoneID, 'refresh_token');
+			if (normalizedData.state === 'error')
+			{
+				this.logTokenFailure(`Token endpoint rejected refresh_token for UAID ${UAID}`, normalizedData);
+			}
+			return normalizedData;
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token with refresh token for UAID ${UAID}: ${error.message}`, 0);
-			return { state: 'error', msg: error.message };
+			const errorData = this.normalizeTokenResponse({ state: 'error', msg: error.message }, UAID, serviceZoneID, 'refresh_token');
+			this.logTokenFailure(`Failed to obtain access token with refresh token for UAID ${UAID}`, errorData);
+			return errorData;
 		}
 	}
 
@@ -375,13 +677,21 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			this.logUserFixableFailure(
+				`Unable to list devices for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'getDeviceList', reason: 'access_token_error', msg: error.message, zone: this.getServiceZoneID(serviceZone) },
+			);
 			return null;
 		}
 
 		if (!accessToken)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
+			this.logUserFixableFailure(
+				`Unable to list devices for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'getDeviceList', reason: 'missing_access_token', zone: this.getServiceZoneID(serviceZone) },
+			);
 			return null;
 		}
 
@@ -408,7 +718,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		else if (response)
 		{
-			this.app.updateLog(`Failed to obtain device list for UAID ${UAID}: ${response.desc}`);
+			this.logUserFixableFailure(
+				`Device list request failed for UAID ${UAID}`,
+				'Check that the correct region is selected (US/EU) and retry.',
+				{ operation: 'getDeviceList', zone: serviceZoneID, desc: response.desc },
+			);
 			throw new Error(`Failed to obtain device list for UAID ${UAID}: ${response.desc}`);
 		}
 
@@ -433,13 +747,21 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			this.logUserFixableFailure(
+				`Unable to fetch device status for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'getDeviceStatus', reason: 'access_token_error', msg: error.message, zone: this.getServiceZoneID(serviceZone) },
+			);
 			return null;
 		}
 
 		if (!accessToken)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
+			this.logUserFixableFailure(
+				`Unable to fetch device status for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'getDeviceStatus', reason: 'missing_access_token', zone: this.getServiceZoneID(serviceZone) },
+			);
 			return null;
 		}
 
@@ -512,7 +834,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 				}
 				catch (err)
 				{
-					this.app.updateLog(`Failed to setup MQTT client for UAID ${UAID}: ${err.message}`, 0);
+					this.logUserFixableFailure(
+						`Failed to setup MQTT for UAID ${UAID}`,
+						'Check that the selected region matches your YoLink account, then retry.',
+						{ operation: 'mqtt_setup', zone: serviceZoneID, msg: err.message },
+					);
 				}
 			}
 			else
@@ -546,13 +872,21 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			this.logUserFixableFailure(
+				`Unable to control device for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'controlDevice', command, reason: 'access_token_error', msg: error.message, zone: this.getServiceZoneID(serviceZone) },
+			);
 			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 
 		if (!accessToken)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}`, 0);
+			this.logUserFixableFailure(
+				`Unable to control device for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'controlDevice', command, reason: 'missing_access_token', zone: this.getServiceZoneID(serviceZone) },
+			);
 			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 
@@ -582,7 +916,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (error)
 		{
-			this.app.updateLog(`Failed to obtain access token for UAID ${UAID}: ${error.message}`, 0);
+			this.logUserFixableFailure(
+				`Unable to fetch home info for UAID ${UAID}`,
+				'Reconnect the account by re-entering UAID and Secret Key, then try again.',
+				{ operation: 'getHomeInfo', reason: 'access_token_error', msg: error.message, zone: this.getServiceZoneID(serviceZone) },
+			);
 			return { desc: `Failed to obtain access token for UAID ${UAID}` };
 		}
 
@@ -652,7 +990,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 			const homeID = await this.getHomeInfo(brokerConfig.UAID, brokerConfig.serviceZoneID);
 			if (!homeID || !homeID.data || !homeID.data.id)
 			{
-				this.app.updateLog(`Failed to get home info for UAID ${brokerConfig.UAID}: ${homeID || 'No response'}`, 0);
+				this.logUserFixableFailure(
+					`Unable to establish MQTT for UAID ${brokerConfig.UAID}`,
+					'Check account credentials and region (US/EU), then retry.',
+					{ operation: 'mqtt_home_info', zone: brokerConfig.serviceZoneID, msg: homeID && homeID.desc ? homeID.desc : (homeID || 'No response') },
+				);
 				return null;
 			}
 			const rndID = Math.floor(Math.random() * 100000);
@@ -803,7 +1145,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 		catch (err)
 		{
-			this.app.updateLog(`setupMQTTClient error: ${err.message}`, 0);
+			this.logUserFixableFailure(
+				`MQTT setup failed for UAID ${brokerConfig.UAID}`,
+				'Check account credentials, region selection, and network connectivity, then retry.',
+				{ operation: 'setupMQTTClient', zone: brokerConfig.serviceZoneID, msg: err.message },
+			);
 			return null;
 		}
 	}
@@ -838,7 +1184,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 				const newAccessToken = await this.getAccessTokenForUAID(brokerConfig.UAID, null, brokerConfig.serviceZoneID);
 				if (!newAccessToken)
 				{
-					this.app.updateLog(`Failed to get new access token for UAID ${brokerConfig.UAID}, retry aborted`, 0);
+					this.logUserFixableFailure(
+						`MQTT reconnect aborted for UAID ${brokerConfig.UAID}`,
+						'Reconnect the account by re-entering UAID and Secret Key, then retry.',
+						{ operation: 'mqtt_retry', reason: 'missing_access_token', zone: brokerConfig.serviceZoneID },
+					);
 					return;
 				}
 
@@ -869,7 +1219,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 			}
 			catch (err)
 			{
-				this.app.updateLog(`MQTT retry attempt failed for UAID ${brokerConfig.UAID}: ${err.message}`, 0);
+				this.logUserFixableFailure(
+					`MQTT retry attempt failed for UAID ${brokerConfig.UAID}`,
+					'Check network and account credentials, then retry.',
+					{ operation: 'mqtt_retry', zone: brokerConfig.serviceZoneID, msg: err.message, attempt: `${retryCount}/${maxRetries}` },
+				);
 			}
 			finally
 			{

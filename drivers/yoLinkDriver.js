@@ -88,8 +88,8 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			}
 			else
 			{
-				const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'us');
-				const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, accessToken, 'eu_uk');
+				const deviceusList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, null, 'us');
+				const deviceeuList = await this.homey.app.yoLinkAPI.getDeviceList(UAID, null, 'eu_uk');
 				deviceList = deviceusList || [];
 
 				// Add the EU devices to the list if not already present
@@ -166,8 +166,8 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 		session.setHandler('login', async (data) =>
 		{
-			UAID = data.username;
-			secretKey = data.password;
+			UAID = typeof data.username === 'string' ? data.username.trim() : '';
+			secretKey = typeof data.password === 'string' ? data.password.trim() : '';
 			const accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
 			const credentialsAreValid = (accessToken !== null);
 			// return true to continue adding the device if the login succeeded

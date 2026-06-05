@@ -79,5 +79,8 @@
 	},
 	"1.0.22": {
 		"en": "Fix for water meter units conversion."
+	},
+	"1.0.23": {
+		"en": "Improved diagnostics and error handling."
 	}
 }
