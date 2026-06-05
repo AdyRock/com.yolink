@@ -97,21 +97,33 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		}
 		this.setAvailable().catch(this.error);
 
-		let meterConversion = (1 / state.data.state.attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
-		if (state.data.state.attributes.meterUnit === 0)
+		const { attributes } = state.data.state;
+		if (!attributes)
+		{
+			this.homey.app.updateLog(`Missing attributes in state for device ${data.id}`, 0);
+			return;
+		}
+
+		let meterConversion = (1 / attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
+		if (attributes.meterUnit === 0)
 		{
 			// Meter unit is in Gallons, so convert to liters
 			meterConversion = 3.78541;
 		}
-		else if (state.data.state.attributes.meterUnit === 1)
+		else if (attributes.meterUnit === 1)
 		{
-			// Meter unit is in cubic feet, so convert to liters
-			meterConversion = 28.3168;
+			// Meter unit is in CCF (hundred cubic feet), so convert to liters
+			meterConversion = 2831.68;
 		}
-		else if (state.data.state.attributes.meterUnit === 2)
+		else if (attributes.meterUnit === 2)
 		{
 			// Meter unit is in M3, so convert to liters
 			meterConversion = 1000;
+		}
+		else if (attributes.meterUnit === 3)
+		{
+			// Meter unit is already in liters
+			meterConversion = 1;
 		}
 
 		this.setCapabilityValue('meter_water.recent_usage', state.data.state.recentUsage.amount / meterConversion).catch(this.error);
@@ -161,21 +173,33 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 		// Log the device status
 		this.homey.app.updateLog(`WaterMeterControllerDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
-		let meterConversion = (1 / mqttData.attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
-		if (mqttData.attributes.meterUnit === 0)
+		const mqttAttributes = mqttData.attributes;
+		if (!mqttAttributes)
+		{
+			this.homey.app.updateLog(`Missing attributes in MQTT message for device ${this.getData().id}`, 0);
+			return true;
+		}
+
+		let meterConversion = (1 / mqttAttributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
+		if (mqttAttributes.meterUnit === 0)
 		{
 			// Meter unit is in Gallons, so convert to liters
 			meterConversion = 3.78541;
 		}
-		else if (mqttData.attributes.meterUnit === 1)
+		else if (mqttAttributes.meterUnit === 1)
 		{
-			// Meter unit is in cubic feet, so convert to liters
-			meterConversion = 28.3168;
+			// Meter unit is in CCF (hundred cubic feet), so convert to liters
+			meterConversion = 2831.68;
 		}
-		else if (mqttData.attributes.meterUnit === 2)
+		else if (mqttAttributes.meterUnit === 2)
 		{
 			// Meter unit is in M3, so convert to liters
 			meterConversion = 1000;
+		}
+		else if (mqttAttributes.meterUnit === 3)
+		{
+			// Meter unit is already in liters
+			meterConversion = 1;
 		}
 
 		if (mqttData.alarm)
