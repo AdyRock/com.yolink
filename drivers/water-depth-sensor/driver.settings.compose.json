@@ -69,36 +69,94 @@
 		"value": "us"
 	},
 	{
+		"id": "sensorRange",
+		"type": "dropdown",
+		"label": {
+			"en": "Length of sensor cable 5m or 10m"
+		},
+		"hint": {
+			"en": "Select the cable length of your YoLink water depth sensor. 5m uses a range factor of 0.5, 10m uses 1.0."
+		},
+		"values": [
+			{
+				"id": "0.5",
+				"label": {
+					"en": "5m"
+				}
+			},
+			{
+				"id": "1.0",
+				"label": {
+					"en": "10m"
+				}
+			}
+		],
+		"value": "0.5"
+	},
+	{
+		"id": "liquidDensity",
+		"type": "number",
+		"label": {
+			"en": "Liquid density"
+		},
+		"hint": {
+			"en": "Density of the liquid relative to water. Use 1.0 for water."
+		},
+		"value": 1.0
+	},
+	{
 		"id": "tankDepth",
 		"type": "number",
 		"label": {
-			"en": "Tank depth (cm)",
-			"nl": "Tankdiepte (cm)",
-			"da": "Tankdybde (cm)",
-			"de": "Tanktiefe (cm)",
-			"es": "Profundidad del tanque (cm)",
-			"fr": "Profondeur du réservoir (cm)",
-			"it": "Profondità del serbatoio (cm)",
-			"no": "Tankdybde (cm)",
-			"sv": "Tankdjup (cm)",
-			"pl": "Głębokość zbiornika (cm)",
-			"ru": "Глубина резервуара (см)",
-			"ko": "탱크 깊이 (cm)"
+			"en": "Tank depth (m)",
+			"nl": "Tankdiepte (m)",
+			"da": "Tankdybde (m)",
+			"de": "Tanktiefe (m)",
+			"es": "Profundidad del tanque (m)",
+			"fr": "Profondeur du réservoir (m)",
+			"it": "Profondità del serbatoio (m)",
+			"no": "Tankdybde (m)",
+			"sv": "Tankdjup (m)",
+			"pl": "Głębokość zbiornika (m)",
+			"ru": "Глубина резервуара (м)",
+			"ko": "탱크 깊이 (m)"
 		},
 		"hint": {
-			"en": "Set the total depth of your tank in centimeters.",
-			"nl": "Stel de totale diepte van uw tank in centimeters in.",
-			"da": "Angiv den samlede dybde af din tank i centimeter.",
-			"de": "Stellen Sie die Gesamttiefe Ihres Tanks in Zentimetern ein.",
-			"es": "Configure la profundidad total de su tanque en centímetros.",
-			"fr": "Définissez la profondeur totale de votre réservoir en centimètres.",
-			"it": "Imposta la profondità totale del serbatoio in centimetri.",
-			"no": "Angi total dybde på tanken i centimeter.",
-			"sv": "Ange tankens totala djup i centimeter.",
-			"pl": "Ustaw całkowitą głębokość zbiornika w centymetrach.",
-			"ru": "Укажите общую глубину резервуара в сантиметрах.",
-			"ko": "탱크의 전체 깊이를 센티미터로 설정하세요."
+			"en": "Total depth of your tank in meters.",
+			"nl": "Totale diepte van uw tank in meters.",
+			"da": "Din tanks samlede dybde i meter.",
+			"de": "Gesamttiefe Ihres Tanks in Metern.",
+			"es": "Profundidad total de su tanque en metros.",
+			"fr": "Profondeur totale de votre réservoir en mètres.",
+			"it": "Profondità totale del serbatoio in metri.",
+			"no": "Total dybde på tanken i meter.",
+			"sv": "Tankens totala djup i meter.",
+			"pl": "Całkowita głębokość zbiornika w metrach.",
+			"ru": "Общая глубина резервуара в метрах.",
+			"ko": "탱크의 전체 깊이(미터)."
 		},
-		"value": 200
+		"value": 2.0
+	},
+	{
+		"id": "lowDepthThreshold",
+		"type": "number",
+		"label": {
+			"en": "Low depth alarm threshold (meters)"
+		},
+		"hint": {
+			"en": "Trigger a low water alarm in Homey when depth falls at or below this value (meters). Set to 0 to use YoLink's own alarm instead."
+		},
+		"value": 0
+	},
+	{
+		"id": "highDepthThreshold",
+		"type": "number",
+		"label": {
+			"en": "High depth alarm threshold (meters)"
+		},
+		"hint": {
+			"en": "Trigger a high water alarm in Homey when depth reaches or exceeds this value (meters). Set to 0 to use YoLink's own alarm instead."
+		},
+		"value": 0
 	}
 ]
