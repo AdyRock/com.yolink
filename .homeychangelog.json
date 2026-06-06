@@ -82,5 +82,8 @@
 	},
 	"1.0.23": {
 		"en": "Improved diagnostics and error handling."
+	},
+	"1.0.24": {
+		"en": "Updated water depth driver from pull request by Caesar"
 	}
 }
