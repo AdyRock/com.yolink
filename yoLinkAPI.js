@@ -1090,6 +1090,37 @@ module.exports = class YoLinkAPI extends SimpleClass
 					}
 
 					this.app.updateLog(`MQTTclient.on message: ${topic}, ${this.app.varToString(mqttMessage)}`);
+
+					const topicParts = topic.split('/');
+					const topicDeviceId = topicParts.length >= 3 ? topicParts[2] : null;
+					const isTopicDeviceWildcard = topicDeviceId === null || topicDeviceId === '+' || topicDeviceId === '#' || topicDeviceId === '*'
+						|| topicDeviceId === '**';
+
+					if (mqttMessage && typeof mqttMessage === 'object')
+					{
+						if (!mqttMessage.deviceId)
+						{
+							mqttMessage.deviceId = mqttMessage.targetDevice || (mqttMessage.data && mqttMessage.data.deviceId) || (mqttMessage.data && mqttMessage.data.targetDevice);
+						}
+
+						if (!mqttMessage.targetDevice)
+						{
+							mqttMessage.targetDevice = mqttMessage.deviceId || (mqttMessage.data && mqttMessage.data.targetDevice) || (mqttMessage.data && mqttMessage.data.deviceId);
+						}
+
+						if (!isTopicDeviceWildcard && topicDeviceId)
+						{
+							if (!mqttMessage.deviceId)
+							{
+								mqttMessage.deviceId = topicDeviceId;
+							}
+
+							if (!mqttMessage.targetDevice)
+							{
+								mqttMessage.targetDevice = topicDeviceId;
+							}
+						}
+					}
 					let deviceFound = false;
 
 					const drivers = this.app.homey.drivers.getDrivers();
@@ -1115,7 +1146,21 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 					if (!deviceFound)
 					{
-						this.app.updateLog(`No device found to process MQTT message for topic ${topic}`);
+						const isResponseTopic = topic.endsWith('/response');
+						const hasTargetDevice = mqttMessage && typeof mqttMessage === 'object'
+							&& (mqttMessage.targetDevice || mqttMessage.deviceId || (mqttMessage.data && (mqttMessage.data.targetDevice || mqttMessage.data.deviceId)));
+
+						const payloadPreview = this.app.varToString(mqttMessage);
+						const payloadSummary = payloadPreview.length > 500 ? `${payloadPreview.substring(0, 500)}...` : payloadPreview;
+
+						if (isResponseTopic && !hasTargetDevice)
+						{
+							this.app.updateLog(`Ignoring MQTT response without target device for topic ${topic} | payload=${payloadSummary}`, 1);
+						}
+						else
+						{
+							this.app.updateLog(`No device found to process MQTT message for topic ${topic} | payload=${payloadSummary}`);
+						}
 					}
 				}
 				catch (err)
