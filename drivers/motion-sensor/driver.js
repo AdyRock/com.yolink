@@ -27,6 +27,8 @@ module.exports = class MotionSensorDriver extends yoLinkDriver
 			return 'YS7805.svg';
 		case 'YS7804':
 			return 'YS7804.svg';
+		case 'YS7806':
+			return 'YS7805.svg';
 		default:
 			return 'YS7804.svg';
 		}

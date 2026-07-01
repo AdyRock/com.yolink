@@ -30,6 +30,16 @@
 		"description": "Beschrijving",
 		"descriptionExplanation": "Voer een korte beschrijving van het probleem in als u het logboek gaat verzenden.",
 		"email": "E-mailadres of Forum-ID",
-		"sendLogConfirm": "Logboekinhoud naar de ontwikkelaar verzenden?"
+		"sendLogConfirm": "Logboekinhoud naar de ontwikkelaar verzenden?",
+		"loginPanelTitle": "Inloggen bij YoLink",
+		"loginPanelHelp": "Voer uw UAID en uw geheime sleutel uit de YoLink-app in om apparaten op te halen.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Geheime sleutel",
+		"loginPanelServiceZone": "Servicezone",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Annuleren",
+		"loginPanelSubmit": "Inloggen",
+		"loginPanelMissingCredentials": "Voer zowel uw UAID als uw geheime sleutel in."
 	}
 }

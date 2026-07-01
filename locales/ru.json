@@ -30,6 +30,16 @@
 		"description": "Описание",
 		"descriptionExplanation": "Пожалуйста, введите краткое описание проблемы, если собираетесь отправить журнал.",
 		"email": "Адрес Электронной Почты или ID Форума",
-		"sendLogConfirm": "Отправить содержимое журнала разработчику?"
+		"sendLogConfirm": "Отправить содержимое журнала разработчику?",
+		"loginPanelTitle": "Войти в YoLink",
+		"loginPanelHelp": "Введите UAID и секретный ключ из приложения YoLink, чтобы получить устройства.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Секретный ключ",
+		"loginPanelServiceZone": "Зона обслуживания",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Отмена",
+		"loginPanelSubmit": "Войти",
+		"loginPanelMissingCredentials": "Пожалуйста, введите и UAID, и секретный ключ."
 	}
 }

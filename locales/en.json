@@ -30,6 +30,16 @@
 		"description": "Description",
 		"descriptionExplanation": "Please enter a brief description of the problem if you are going to send the log.",
 		"email": "Email Address or Forum id",
-		"sendLogConfirm": "Send the log contents to the developer?"
+		"sendLogConfirm": "Send the log contents to the developer?",
+		"loginPanelTitle": "Log in to YoLink",
+		"loginPanelHelp": "Enter your UAID and Secret Key from the YoLink app to retrieve devices.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Secret Key",
+		"loginPanelServiceZone": "Service Zone",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Cancel",
+		"loginPanelSubmit": "Log in",
+		"loginPanelMissingCredentials": "Please enter both UAID and Secret Key."
 	}
 }

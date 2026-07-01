@@ -1,6 +1,6 @@
 {
 	"id": "com.yolink",
-	"version": "1.0.24",
+	"version": "1.0.25",
 	"compatibility": ">=12.5.0",
 	"sdk": 3,
 	"platforms": [
@@ -72,6 +72,16 @@
 		"sendInfoLog": {
 			"method": "post",
 			"path": "/sendInfoLog",
+			"public": false
+		},
+		"isYoLinkLoggedIn": {
+			"method": "get",
+			"path": "/isYoLinkLoggedIn",
+			"public": false
+		},
+		"loginYoLink": {
+			"method": "post",
+			"path": "/loginYoLink",
 			"public": false
 		}
 	},

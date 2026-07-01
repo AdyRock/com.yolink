@@ -30,6 +30,16 @@
 		"description": "Opis",
 		"descriptionExplanation": "Proszę wprowadzić krótki opis problemu, jeśli zamierzasz wysłać dziennik.",
 		"email": "Adres Email lub ID Forum",
-		"sendLogConfirm": "Wysłać zawartość dziennika do programisty?"
+		"sendLogConfirm": "Wysłać zawartość dziennika do programisty?",
+		"loginPanelTitle": "Zaloguj się do YoLink",
+		"loginPanelHelp": "Proszę wprowadzić UAID i tajny klucz z aplikacji YoLink, aby pobrać urządzenia.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Tajny klucz",
+		"loginPanelServiceZone": "Strefa usług",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Anuluj",
+		"loginPanelSubmit": "Zaloguj się",
+		"loginPanelMissingCredentials": "Proszę wprowadzić zarówno UAID, jak i tajny klucz."
 	}
 }

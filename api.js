@@ -32,4 +32,16 @@ module.exports = {
 		return homey.app.sendLog(body);
 	},
 
+	async isYoLinkLoggedIn({ homey })
+	{
+		return {
+			loggedIn: await homey.app.isYoLinkLoggedIn(),
+		};
+	},
+
+	async loginYoLink({ homey, body })
+	{
+		return homey.app.loginYoLink(body);
+	},
+
 };

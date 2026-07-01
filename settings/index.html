@@ -45,6 +45,47 @@
 			color: white;
 			margin: 5px 20px 5px 5px;
 		}
+
+		.login-panel-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(20, 20, 20, 0.6);
+			z-index: 150;
+		}
+
+		.login-panel {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: min(92vw, 460px);
+			background: #fff;
+			border-radius: 12px;
+			padding: 18px;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+		}
+
+		.login-panel-title {
+			margin: 0 0 8px;
+			font-size: 1.15rem;
+		}
+
+		.login-panel-help {
+			margin: 0 0 14px;
+			color: #5f5f5f;
+			font-size: 0.92rem;
+		}
+
+		.login-panel-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 8px;
+			margin-top: 12px;
+		}
 	</style>
 
 	<!-- The '/homey.js' script must be included in your settings view to work -->
@@ -56,6 +97,23 @@
 	<!-- Busy indicator -->
 	<div id="busybox" class="fog_div">
 		<div></div>
+	</div>
+
+	<div id="loginPanelOverlay" class="login-panel-overlay" role="dialog" aria-modal="true" aria-labelledby="loginPanelTitle">
+		<div class="login-panel">
+			<h2 id="loginPanelTitle" class="login-panel-title" data-i18n="settings.loginPanelTitle">Log in to YoLink</h2>
+			<p class="login-panel-help" data-i18n="settings.loginPanelHelp">Enter your UAID and Secret Key from the YoLink app to retrieve devices.</p>
+			<div class="field row">
+				<label class="homey-form-label" for="loginUAID" data-i18n="settings.loginPanelUAID">UAID</label>
+				<input class="homey-form-input" id="loginUAID" type="text" value="" aria-label="UAID" />
+				<label class="homey-form-label" for="loginSecret" data-i18n="settings.loginPanelSecretKey">Secret Key</label>
+				<input class="homey-form-input" id="loginSecret" type="password" value="" aria-label="Secret Key" />
+			</div>
+			<div class="login-panel-actions">
+				<button id="cancelLoginPanel" class="homey-button-secondary" data-i18n="settings.loginPanelCancel">Cancel</button>
+				<button id="submitLoginPanel" class="homey-button-primary" data-i18n="settings.loginPanelSubmit">Log in</button>
+			</div>
+		</div>
 	</div>
 
 	<!-- Tab links -->
@@ -151,6 +209,90 @@
 		var clearSimElement = document.getElementById('clearSim');
 		var simDataElement = document.getElementById('simData');
 
+		var loginPanelOverlayElement = document.getElementById('loginPanelOverlay');
+		var loginUAIDElement = document.getElementById('loginUAID');
+		var loginSecretElement = document.getElementById('loginSecret');
+		var submitLoginPanelElement = document.getElementById('submitLoginPanel');
+		var cancelLoginPanelElement = document.getElementById('cancelLoginPanel');
+
+		function setLoginPanelVisible(isVisible)
+		{
+			loginPanelOverlayElement.style.display = isVisible ? 'block' : 'none';
+			if (isVisible)
+			{
+				loginUAIDElement.focus();
+			}
+		}
+
+		function fetchDetectedDevices()
+		{
+			waitCursor(true);
+			Homey.api('GET', '/getDeviceLog/',
+				{
+					hubDevices: true
+				}, function (err, result)
+			{
+				if (err)
+				{
+					Homey.alert(err);
+				}
+				else
+				{
+					detectedDevicesElement.value = result;
+				}
+				waitCursor(false);
+			});
+		}
+
+		function loginAndFetchDevices()
+		{
+			const UAID = typeof loginUAIDElement.value === 'string' ? loginUAIDElement.value.trim() : '';
+			const secretKey = typeof loginSecretElement.value === 'string' ? loginSecretElement.value.trim() : '';
+
+			if (!UAID || !secretKey)
+			{
+				return Homey.alert(Homey.__('settings.loginPanelMissingCredentials'));
+			}
+
+			waitCursor(true);
+			Homey.api('POST', '/loginYoLink/',
+				{
+					UAID,
+					secretKey,
+				}, function (err)
+			{
+				if (err)
+				{
+					waitCursor(false);
+					return Homey.alert(err);
+				}
+
+				setLoginPanelVisible(false);
+				waitCursor(false);
+				fetchDetectedDevices();
+			});
+		}
+
+		function ensureLoggedInAndFetchDevices()
+		{
+			Homey.api('GET', '/isYoLinkLoggedIn/', {}, function (err, result)
+			{
+				if (err)
+				{
+					return Homey.alert(err);
+				}
+
+				if (result && result.loggedIn)
+				{
+					fetchDetectedDevices();
+				}
+				else
+				{
+					setLoginPanelVisible(true);
+				}
+			});
+		}
+
 		// a method named 'onHomeyReady' must be present in your code
 		function onHomeyReady(Homey)
 		{
@@ -202,24 +344,36 @@
 				});
 			});
 
-			getDeviceLogElement.addEventListener('click', function (e)
+			getDeviceLogElement.addEventListener('click', function ()
 			{
-				waitCursor(true);
-				Homey.api('GET', '/getDeviceLog/',
-					{
-						hubDevices: true
-					}, function (err, result)
+				ensureLoggedInAndFetchDevices();
+			});
+
+			submitLoginPanelElement.addEventListener('click', function ()
+			{
+				loginAndFetchDevices();
+			});
+
+			cancelLoginPanelElement.addEventListener('click', function ()
+			{
+				setLoginPanelVisible(false);
+			});
+
+			loginPanelOverlayElement.addEventListener('click', function (event)
+			{
+				if (event.target === loginPanelOverlayElement)
 				{
-					if (err)
-					{
-						Homey.alert(err);
-					}
-					else
-					{
-						detectedDevicesElement.value = result;
-					}
-					waitCursor(false);
-				});
+					setLoginPanelVisible(false);
+				}
+			});
+
+			loginSecretElement.addEventListener('keydown', function (event)
+			{
+				if (event.key === 'Enter')
+				{
+					event.preventDefault();
+					loginAndFetchDevices();
+				}
 			});
 
 			clearDeviceLogElement.addEventListener('click', function (e)

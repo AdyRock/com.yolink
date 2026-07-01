@@ -241,4 +241,37 @@ module.exports = class YoLink extends Homey.App
 		return this.varToString(deviceList);
 	}
 
+	async isYoLinkLoggedIn()
+	{
+		const uaidList = await this.yoLinkAPI.getUAIDList();
+		return Array.isArray(uaidList) && uaidList.length > 0;
+	}
+
+	async loginYoLink({ UAID = '', secretKey = '', serviceZone = null } = {})
+	{
+		const normalizedUAID = typeof UAID === 'string' ? UAID.trim() : '';
+		const normalizedSecretKey = typeof secretKey === 'string' ? secretKey.trim() : '';
+		const normalizedServiceZone = typeof serviceZone === 'string' && serviceZone.trim() ? serviceZone.trim() : null;
+
+		if (!normalizedUAID || !normalizedSecretKey)
+		{
+			throw new Error('UAID and Secret Key are required');
+		}
+
+		const accessToken = await this.yoLinkAPI.getAccessTokenForUAID(
+			normalizedUAID,
+			normalizedSecretKey,
+			normalizedServiceZone || undefined,
+		);
+		if (!accessToken)
+		{
+			throw new Error('Login failed. Please check your UAID and Secret Key.');
+		}
+
+		this.homey.settings.set('UAID', normalizedUAID);
+		this.homey.settings.set('secretKey', normalizedSecretKey);
+
+		return { loggedIn: true };
+	}
+
 };

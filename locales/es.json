@@ -30,6 +30,16 @@
 		"description": "Descripción",
 		"descriptionExplanation": "Por favor introduce una breve descripción del problema si vas a enviar el registro.",
 		"email": "Dirección de Email o ID del Foro",
-		"sendLogConfirm": "¿Enviar el contenido del registro al desarrollador?"
+		"sendLogConfirm": "¿Enviar el contenido del registro al desarrollador?",
+		"loginPanelTitle": "Iniciar sesión en YoLink",
+		"loginPanelHelp": "Introduzca su UAID y su clave secreta desde la app de YoLink para obtener dispositivos.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Clave secreta",
+		"loginPanelServiceZone": "Zona de servicio",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Cancelar",
+		"loginPanelSubmit": "Iniciar sesión",
+		"loginPanelMissingCredentials": "Por favor, introduzca tanto la UAID como la clave secreta."
 	}
 }

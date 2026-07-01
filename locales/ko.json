@@ -30,6 +30,16 @@
 		"description": "설명",
 		"descriptionExplanation": "로그를 전송할 예정이라면 문제에 대한 간단한 설명을 입력해주세요.",
 		"email": "이메일 주소 또는 포럼 ID",
-		"sendLogConfirm": "로그 내용을 개발자에게 전송하시겠습니까?"
+		"sendLogConfirm": "로그 내용을 개발자에게 전송하시겠습니까?",
+		"loginPanelTitle": "YoLink에 로그인",
+		"loginPanelHelp": "기기를 가져오려면 YoLink 앱의 UAID와 비밀 키를 입력하세요.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "비밀 키",
+		"loginPanelServiceZone": "서비스 지역",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "취소",
+		"loginPanelSubmit": "로그인",
+		"loginPanelMissingCredentials": "UAID와 비밀 키를 모두 입력해 주세요."
 	}
 }

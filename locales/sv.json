@@ -30,6 +30,16 @@
 		"description": "Beskrivning",
 		"descriptionExplanation": "Vänligen ange en kort beskrivning av problemet om du ska skicka loggen.",
 		"email": "E-postadress eller Forum-id",
-		"sendLogConfirm": "Skicka logginnehållet till utvecklaren?"
+		"sendLogConfirm": "Skicka logginnehållet till utvecklaren?",
+		"loginPanelTitle": "Logga in på YoLink",
+		"loginPanelHelp": "Ange vänligen din UAID och hemliga nyckel från YoLink-appen för att hämta enheter.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Hemlig nyckel",
+		"loginPanelServiceZone": "Tjänstezon",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Avbryt",
+		"loginPanelSubmit": "Logga in",
+		"loginPanelMissingCredentials": "Ange vänligen både UAID och hemlig nyckel."
 	}
 }

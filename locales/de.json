@@ -30,6 +30,16 @@
 		"description": "Beschreibung",
 		"descriptionExplanation": "Bitte geben Sie eine kurze Beschreibung des Problems ein, wenn Sie das Protokoll senden werden.",
 		"email": "E-Mail-Adresse oder Forum-ID",
-		"sendLogConfirm": "Protokollinhalt an den Entwickler senden?"
+		"sendLogConfirm": "Protokollinhalt an den Entwickler senden?",
+		"loginPanelTitle": "Bei YoLink anmelden",
+		"loginPanelHelp": "Geben Sie Ihre UAID und den geheimen Schlüssel aus der YoLink-App ein, um Geräte abzurufen.",
+		"loginPanelUAID": "UAID",
+		"loginPanelSecretKey": "Geheimer Schlüssel",
+		"loginPanelServiceZone": "Servicezone",
+		"loginPanelServiceZoneUS": "US",
+		"loginPanelServiceZoneEUUK": "EU/UK",
+		"loginPanelCancel": "Abbrechen",
+		"loginPanelSubmit": "Anmelden",
+		"loginPanelMissingCredentials": "Bitte geben Sie sowohl UAID als auch den geheimen Schlüssel ein."
 	}
 }
