@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable no-console */
 
 'use strict';
@@ -11,9 +12,9 @@ Module._load = function patchedModuleLoad(request, parent, isMain)
 	{
 		return {
 			Device: class DeviceStub
-			{},
+			{ },
 			SimpleClass: class SimpleClassStub
-			{},
+			{ },
 		};
 	}
 
@@ -21,7 +22,11 @@ Module._load = function patchedModuleLoad(request, parent, isMain)
 };
 
 const YoLinkAPI = require('../yoLinkAPI');
+const mqtt = require('../mqtt');
 const GarageDoorDevice = require('../drivers/garage_door/device');
+
+const TEST_UAID_A = 'ua_11111111111111111111111111111111';
+const TEST_UAID_B = 'ua_22222222222222222222222222222222';
 
 Module._load = originalModuleLoad;
 
@@ -34,7 +39,7 @@ function createMockApp(initialUAIDList)
 	return {
 		homeyID: 'harness-homey',
 		updateLog: () =>
-		{},
+		{ },
 		varToString: (value) =>
 		{
 			try
@@ -110,7 +115,7 @@ async function testSameUaidRefreshIsDeduped()
 	const now = Date.now();
 	const api = new YoLinkAPI(createMockApp([
 		{
-			UAID: 'UAID_A',
+			UAID: TEST_UAID_A,
 			access_token: 'expired',
 			refresh_token: 'refresh_a',
 			expires_at: now - 1000,
@@ -130,8 +135,8 @@ async function testSameUaidRefreshIsDeduped()
 	};
 
 	const results = await Promise.all([
-		api.getAccessTokenForUAID('UAID_A', null, 'us'),
-		api.getAccessTokenForUAID('UAID_A', null, 'us'),
+		api.getAccessTokenForUAID(TEST_UAID_A, null, 'us'),
+		api.getAccessTokenForUAID(TEST_UAID_A, null, 'us'),
 	]);
 
 	assert(refreshCalls === 1, `Expected one refresh call, got ${refreshCalls}`);
@@ -143,13 +148,13 @@ async function testDifferentUaidRefreshCanRunConcurrently()
 	const now = Date.now();
 	const api = new YoLinkAPI(createMockApp([
 		{
-			UAID: 'UAID_A',
+			UAID: TEST_UAID_A,
 			access_token: 'expired_a',
 			refresh_token: 'refresh_a',
 			expires_at: now - 1000,
 		},
 		{
-			UAID: 'UAID_B',
+			UAID: TEST_UAID_B,
 			access_token: 'expired_b',
 			refresh_token: 'refresh_b',
 			expires_at: now - 1000,
@@ -170,12 +175,12 @@ async function testDifferentUaidRefreshCanRunConcurrently()
 
 	const startedAt = Date.now();
 	await Promise.all([
-		api.getAccessTokenForUAID('UAID_A', null, 'us'),
-		api.getAccessTokenForUAID('UAID_B', null, 'eu'),
+		api.getAccessTokenForUAID(TEST_UAID_A, null, 'us'),
+		api.getAccessTokenForUAID(TEST_UAID_B, null, 'eu'),
 	]);
 	const elapsed = Date.now() - startedAt;
 
-	assert(calls.UAID_A === 1 && calls.UAID_B === 1, 'Expected one refresh per UAID');
+	assert(calls[TEST_UAID_A] === 1 && calls[TEST_UAID_B] === 1, 'Expected one refresh per UAID');
 	assert(elapsed < 110, `Expected concurrent refresh duration under 110ms, got ${elapsed}ms`);
 }
 
@@ -250,7 +255,7 @@ async function testTokenRefreshRestartsMqttClient()
 	const now = Date.now();
 	const api = new YoLinkAPI(createMockApp([
 		{
-			UAID: 'UAID_A',
+			UAID: TEST_UAID_A,
 			access_token: 'expired_token',
 			refresh_token: 'refresh_a',
 			expires_at: now - 1000,
@@ -261,12 +266,12 @@ async function testTokenRefreshRestartsMqttClient()
 	let setupArgs = null;
 	const replacementClient = {
 		publish: () =>
-		{},
+		{ },
 	};
 
 	api.MQTTList = [
 		{
-			UAID: 'UAID_A',
+			UAID: TEST_UAID_A,
 			serviceZoneID: 'us',
 			homeID: 'HOME_US',
 			mqttReady: Promise.resolve(),
@@ -297,13 +302,100 @@ async function testTokenRefreshRestartsMqttClient()
 		};
 	};
 
-	const token = await api.getAccessTokenForUAID('UAID_A', null, 'us');
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, null, 'us');
 	await sleep(10);
 
 	assert(token === 'new_token_a', `Expected refreshed token, got ${token}`);
 	assert(oldClientEnded, 'Expected the stale MQTT client to be ended');
 	assert(setupArgs && setupArgs.username === 'new_token_a', 'Expected MQTT reconnect to use refreshed token');
 	assert(api.MQTTList.some((item) => item.MQTTClient === replacementClient), 'Expected MQTT list to contain the refreshed client');
+}
+
+async function testMqttAuthFailureInvalidatesTokenAndSchedulesRefresh()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: 'ua_1234567890ABCDEF1234567890ABCDEF',
+			access_token: 'still_cached_token',
+			refresh_token: 'refresh_a',
+			expires_at: now + 3600000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	const recordedRetries = [];
+	api.scheduleMQTTRetry = (brokerConfig, retryCount, maxRetries, delayOverrideMs) =>
+	{
+		recordedRetries.push({ brokerConfig, retryCount, maxRetries, delayOverrideMs });
+	};
+
+	let connectHandler = null;
+	let errorHandler = null;
+	let closeHandler = null;
+	let messageHandler = null;
+	let endedForcefully = false;
+
+	const mqttStub = {
+		connect: () => ({
+			on: (event, handler) =>
+			{
+				if (event === 'connect') connectHandler = handler;
+				if (event === 'error') errorHandler = handler;
+				if (event === 'close') closeHandler = handler;
+				if (event === 'message') messageHandler = handler;
+			},
+			subscribe: (topic, options, callback) =>
+			{
+				if (callback) callback(null);
+			},
+			end: (force) =>
+			{
+				endedForcefully = force === true;
+				if (closeHandler)
+				{
+					closeHandler();
+				}
+			},
+		}),
+	};
+
+	const originalConnect = mqtt.connect;
+	mqtt.connect = mqttStub.connect;
+
+	api.getHomeInfo = async () => ({ desc: 'Success', data: { id: 'HOME_US' } });
+
+	try
+	{
+		const setupPromise = api.setupMQTTClient({
+			UAID: 'ua_1234567890ABCDEF1234567890ABCDEF',
+			url: 'mqtt://api.yosmart.com',
+			port: 8003,
+			username: 'still_cached_token',
+			password: '',
+			serviceZoneID: 'us',
+		});
+
+		await Promise.resolve();
+
+		assert(typeof connectHandler === 'function', 'Expected MQTT connect handler to be registered');
+		assert(typeof errorHandler === 'function', 'Expected MQTT error handler to be registered');
+		assert(typeof messageHandler === 'function', 'Expected MQTT message handler to be registered');
+
+		errorHandler(new Error('Connection refused: Not authorized'));
+		const result = await setupPromise;
+		const entry = api.UAIDList.find((item) => item.UAID === 'ua_1234567890ABCDEF1234567890ABCDEF');
+
+		assert(result === null, 'Expected failed MQTT setup to resolve null');
+		assert(endedForcefully, 'Expected MQTT client to be forcefully closed on auth error');
+		assert(entry && entry.expires_at === 0, `Expected cached token to be invalidated, got ${entry ? entry.expires_at : 'missing entry'}`);
+		assert(recordedRetries.length === 1, `Expected one immediate MQTT retry, got ${recordedRetries.length}`);
+		assert(recordedRetries[0].delayOverrideMs === 1000, `Expected immediate retry delay override, got ${recordedRetries[0].delayOverrideMs}`);
+	}
+	finally
+	{
+		mqtt.connect = originalConnect;
+	}
 }
 
 async function testGarageDoorControlUsesAccountUaid()
@@ -334,7 +426,8 @@ async function testGarageDoorControlUsesAccountUaid()
 					return { desc: 'Success' };
 				},
 			},
-			updateLog: () => {},
+			updateLog: () =>
+			{ },
 		},
 	};
 
@@ -357,6 +450,7 @@ async function main()
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
 	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
+	results.push(await runTest('mqtt auth failure invalidates token and schedules refresh', testMqttAuthFailureInvalidatesTokenAndSchedulesRefresh));
 	results.push(await runTest('garage door control uses account UAID', testGarageDoorControlUsesAccountUaid));
 
 	const failed = results.filter((result) => !result.ok);

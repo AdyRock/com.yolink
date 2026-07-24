@@ -541,6 +541,24 @@ module.exports = class YoLinkAPI extends SimpleClass
 		}
 	}
 
+	invalidateAccessTokenForUAID(UAID, serviceZoneID)
+	{
+		const normalizedUAID = this.normalizeUAID(UAID);
+		const normalizedServiceZoneID = serviceZoneID === 'eu' ? 'eu' : 'us';
+		const entry = this.UAIDList.find((item) => item.UAID === normalizedUAID);
+
+		if (!entry)
+		{
+			return false;
+		}
+
+		entry.expires_at = 0;
+		entry.serviceZoneID = normalizedServiceZoneID;
+		this.app.homey.settings.set('UAIDList', this.UAIDList);
+		this.app.updateLog(`Invalidated cached access token for UAID ${normalizedUAID} in ${normalizedServiceZoneID.toUpperCase()} zone after MQTT authentication failure`, 0);
+		return true;
+	}
+
 	getTokenURL(serviceZoneID)
 	{
 		if (serviceZoneID === 'eu')
@@ -1051,12 +1069,13 @@ module.exports = class YoLinkAPI extends SimpleClass
 					err.message.includes('Authentication failed'))
 				{
 					this.app.updateLog('Authentication error detected, stopping MQTT client auto-reconnect attempts', 0);
+					this.invalidateAccessTokenForUAID(brokerConfig.UAID, brokerConfig.serviceZoneID);
 
-					// If this client previously worked, force a fresh-token reconnect quickly.
-					if (hasConnected && !authRetryScheduled)
+					// Force a fresh-token reconnect quickly, even if the first connect was rejected.
+					if (!authRetryScheduled)
 					{
 						authRetryScheduled = true;
-						this.app.updateLog(`Scheduling immediate fresh-token MQTT recovery for UAID ${brokerConfig.UAID}`, 1);
+						this.app.updateLog(`Scheduling immediate fresh-token MQTT recovery for UAID ${brokerConfig.UAID}${hasConnected ? '' : ' after initial authentication refusal'}`, 1);
 						this.scheduleMQTTRetry(brokerConfig, 1, 1, 1000);
 					}
 
@@ -1177,7 +1196,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 			if (connectionFailed)
 			{
 				// Schedule retry on any other error if we haven't exceeded max retries
-				if (retryCount < maxRetries)
+				if (!authRetryScheduled && retryCount < maxRetries)
 				{
 					this.app.updateLog('Scheduling MQTT reconnection attempt due to error...', 1);
 					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
