@@ -10,7 +10,7 @@ module.exports = class WaterDepthSensorDevice extends Homey.Device
 	 */
 	async onInit()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.log('WaterDepthSensorDevice has been initialized');
 	}
 

@@ -10,7 +10,7 @@ module.exports = class LeakSensorDevice extends Homey.Device
 	 */
 	async onInit()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.log('LeakSensorDevice has been initialized');
 	}
 

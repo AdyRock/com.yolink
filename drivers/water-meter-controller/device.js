@@ -18,7 +18,7 @@ module.exports = class WaterMeterControllerDevice extends Homey.Device
 			this.addCapability('meter_water.daily').catch(this.error);
 		}
 
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.log('WaterMeterControllerDevice has been initialized');
 	}
 

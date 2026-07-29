@@ -38,6 +38,43 @@ module.exports = class YoLinkAPI extends SimpleClass
 		this.MQTTList = []; // List of {UAID, serviceZoneID, MQTTClient}
 		this.tokenRefreshPromises = {}; // Keyed by UAID
 		this.mqttSetupPromises = {}; // Keyed by UAID_serviceZoneID
+		this.mqttAuthFailureState = {}; // Keyed by UAID_serviceZoneID for log de-duplication
+	}
+
+	isMqttAuthenticationError(err)
+	{
+		if (!err)
+		{
+			return false;
+		}
+
+		const message = typeof err.message === 'string' ? err.message.toLowerCase() : '';
+		const code = typeof err.code === 'string' ? err.code.toUpperCase() : '';
+		return code === 'ECONNREFUSED'
+			|| message.includes('connection refused')
+			|| message.includes('not authorized')
+			|| message.includes('authentication failed');
+	}
+
+	shouldLogMqttAuthFailure(UAID, serviceZoneID, tokenPreview)
+	{
+		const zone = serviceZoneID === 'eu' ? 'eu' : 'us';
+		const key = `${UAID}_${zone}`;
+		const now = Date.now();
+		const current = this.mqttAuthFailureState[key];
+
+		// Suppress duplicate failures for the same token+zone within 10 seconds.
+		if (current && current.tokenPreview === tokenPreview && (now - current.timestampMs) < 10000)
+		{
+			return false;
+		}
+
+		this.mqttAuthFailureState[key] = {
+			timestampMs: now,
+			tokenPreview,
+		};
+
+		return true;
 	}
 
 	normalizeUAID(value)
@@ -90,7 +127,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			return 'invalid_grant';
 		}
-		if (msg.includes('timeout') || msg.includes('network') || msg.includes('fetch'))
+		if (msg.includes('html') || msg.includes('doctype') || msg.includes('temporary') || msg.includes('service unavailable') || msg.includes('timeout') || msg.includes('network') || msg.includes('fetch'))
 		{
 			return 'transport_error';
 		}
@@ -116,7 +153,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		case 'invalid_grant':
 			return 'Refresh token grant was rejected.';
 		case 'transport_error':
-			return 'Network/transport issue while contacting YoLink token service.';
+			return 'YoLink token service is temporarily unavailable or returned an unexpected response. Please retry shortly.';
 		default:
 			return 'Token request failed for an unknown reason.';
 		}
@@ -127,25 +164,25 @@ module.exports = class YoLinkAPI extends SimpleClass
 		switch (reason)
 		{
 		case 'invalid_client_id':
-			return `Please verify the UAID in the YoLink app and try again in ${zone.toUpperCase()} zone.`;
+			return `Verify the UAID in the YoLink app and try again in ${zone.toUpperCase()} zone.`;
 		case 'unsupported_client_id_format':
-			return 'Please paste the full UAID exactly as shown in YoLink (format: ua_ + 32 characters).';
+			return 'Paste the full UAID exactly as shown in YoLink (format: ua_ + 32 characters).';
 		case 'auth_failed':
 			if (grantType === 'refresh_token')
 			{
-				return 'Please reconnect the account (re-enter UAID + Secret Key) to get a fresh token.';
+				return 'Reconnect the account (re-enter UAID + Secret Key) to get a fresh token.';
 			}
-			return `Please check the Secret Key and try the other region if needed (US/EU). Current region: ${zone.toUpperCase()}.`;
+			return `Check the Secret Key and try the other region if needed (US/EU). Current region: ${zone.toUpperCase()}.`;
 		case 'invalid_client':
-			return 'Please confirm UAID and Secret Key belong to the same YoLink account.';
+			return 'Confirm UAID and Secret Key belong to the same YoLink account.';
 		case 'invalid_grant':
-			return 'Please re-enter UAID and Secret Key to refresh authentication.';
+			return 'Re-enter UAID and Secret Key to refresh authentication.';
 		case 'transport_error':
-			return 'Please check internet connectivity and retry in a moment.';
+			return 'Check internet connectivity and retry in a moment.';
 		case 'unexpected_response_format':
-			return 'YoLink returned an unexpected response. Please retry; if it continues, send diagnostics.';
+			return 'Retry shortly; if it continues, send diagnostics.';
 		default:
-			return 'Please retry and, if it fails again, send diagnostics to support.';
+			return 'Retry and, if it fails again, send diagnostics to support.';
 		}
 	}
 
@@ -212,6 +249,11 @@ module.exports = class YoLinkAPI extends SimpleClass
 		if (/^please\b/i.test(actionText))
 		{
 			return actionText;
+		}
+
+		if (/^verify\b|^paste\b|^check\b|^confirm\b|^re-enter\b|^reconnect\b|^retry\b|^connect\b|^try\b/i.test(actionText))
+		{
+			return `Please ${actionText}`;
 		}
 
 		return `Please ${actionText.charAt(0).toLowerCase()}${actionText.slice(1)}`;
@@ -301,6 +343,19 @@ module.exports = class YoLinkAPI extends SimpleClass
 		return serviceZone.substring(0, 2).toLowerCase();
 	}
 
+	getZoneAttemptOrder(primaryZoneID, fallbackZoneID)
+	{
+		const primary = primaryZoneID === 'eu' ? 'eu' : 'us';
+		const fallback = fallbackZoneID === 'eu' ? 'eu' : 'us';
+
+		if (primary === fallback)
+		{
+			return [primary];
+		}
+
+		return [primary, fallback];
+	}
+
 	getSafeExpiresAt(expiresInSeconds, UAID)
 	{
 		const fallbackSeconds = 300;
@@ -369,22 +424,36 @@ module.exports = class YoLinkAPI extends SimpleClass
 					throw new Error(`No token entry found for UAID ${normalizedUAID} during refresh`);
 				}
 
-				let refreshZone = currentEntry.serviceZoneID === 'eu' ? 'eu' : effectiveServiceZoneID;
+				const preferredRefreshZone = currentEntry.serviceZoneID === 'eu' ? 'eu' : 'us';
+				const requestedRefreshZone = effectiveServiceZoneID === 'eu' ? 'eu' : 'us';
+				const refreshZoneOrder = this.getZoneAttemptOrder(preferredRefreshZone, requestedRefreshZone);
 
-				// Token has expired so get a new one using the refresh token
-				let newTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, refreshZone);
-
-				if (newTokenData && newTokenData.state === 'error' && !serviceZone)
+				let refreshZone = refreshZoneOrder[0];
+				let newTokenData = null;
+				for (let index = 0; index < refreshZoneOrder.length; index += 1)
 				{
-					const alternateZone = refreshZone === 'eu' ? 'us' : 'eu';
-					this.logTokenFailure(`Refresh token failed for UAID ${normalizedUAID}`, newTokenData);
-					this.app.updateLog(`Retrying refresh token for UAID ${normalizedUAID} in alternate zone ${alternateZone}`);
-					const retryTokenData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, alternateZone);
-					if (retryTokenData && retryTokenData.state !== 'error' && retryTokenData.access_token)
+					const attemptZone = refreshZoneOrder[index];
+					if (index > 0)
 					{
-						newTokenData = retryTokenData;
-						refreshZone = alternateZone;
-						this.app.updateLog(`Refresh token succeeded for UAID ${normalizedUAID} after zone switch to ${alternateZone}`);
+						this.app.updateLog(`Retrying refresh token for UAID ${normalizedUAID} in alternate zone ${attemptZone}`);
+					}
+
+					const attemptData = await this.obtainAccessTokenWithRefreshToken(currentEntry.UAID, currentEntry.refresh_token, attemptZone);
+					if (attemptData && attemptData.state !== 'error' && attemptData.access_token)
+					{
+						newTokenData = attemptData;
+						refreshZone = attemptZone;
+						if (index > 0)
+						{
+							this.app.updateLog(`Refresh token succeeded for UAID ${normalizedUAID} after zone switch to ${attemptZone}`, 0);
+						}
+						break;
+					}
+
+					newTokenData = attemptData;
+					if (index < refreshZoneOrder.length - 1)
+					{
+						this.logTokenFailure(`Refresh token failed for UAID ${normalizedUAID}`, attemptData);
 					}
 				}
 
@@ -401,7 +470,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				currentEntry.refresh_token = newTokenData.refresh_token;
 				currentEntry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, normalizedUAID);
 				currentEntry.serviceZoneID = refreshZone;
-				this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}, ${currentEntry.access_token}`);
+				this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(currentEntry.expires_at)}`, 0);
 				this.app.homey.settings.set('UAIDList', this.UAIDList);
 				this.refreshMQTTClientsForUAID(normalizedUAID);
 			})();
@@ -453,7 +522,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				throw new Error(`Failed to obtain access token for UAID ${normalizedUAID}: ${newTokenData.msg}`);
 			}
 			this.app.updateLog(`New token data for UAID ${normalizedUAID}: ${this.app.varToString(newTokenData)}`);
-			this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(Date.now() + (newTokenData.expires_in * 1000))}`);
+			this.app.updateLog(`Obtained new access token for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(Date.now() + (newTokenData.expires_in * 1000))}`, 0);
 
 			// Add the new entry to the UAIDList
 			entry = {
@@ -1021,6 +1090,9 @@ module.exports = class YoLinkAPI extends SimpleClass
 			let connectionFailed = false;
 			let hasConnected = false;
 			let authRetryScheduled = false;
+			const maskedToken = typeof brokerConfig.username === 'string' && brokerConfig.username.length > 16
+				? `${brokerConfig.username.substring(0, 8)}...${brokerConfig.username.substring(brokerConfig.username.length - 8)}`
+				: '[missing-token]';
 
 			MQTTClient.on('connect', () =>
 			{
@@ -1060,13 +1132,25 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 			MQTTClient.on('error', (err) =>
 			{
-				this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, HomeyYoLinkApp-${this.app.homeyID}-${rndID}, ${brokerConfig.username}, ${brokerConfig.password}`, 0);
+				const authError = this.isMqttAuthenticationError(err);
+				if (authError)
+				{
+					if (this.shouldLogMqttAuthFailure(brokerConfig.UAID, brokerConfig.serviceZoneID, maskedToken))
+					{
+						this.app.updateLog(
+							// eslint-disable-next-line max-len
+							`setupMQTTClient.onError: MQTT auth refused for UAID ${brokerConfig.UAID} in ${brokerConfig.serviceZoneID.toUpperCase()} zone (${brokerConfig.url}:${brokerConfig.port}) clientId=HomeyYoLinkApp-${this.app.homeyID}-${rndID} token=${maskedToken}. Triggering token invalidation and fast reconnect.`,
+							1,
+						);
+					}
+				}
+				else
+				{
+					this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, HomeyYoLinkApp-${this.app.homeyID}-${rndID}`, 0);
+				}
 
 				// Stop reconnection attempts for authentication errors
-				if (err.code === 'ECONNREFUSED' ||
-					err.message.includes('Connection refused') ||
-					err.message.includes('Not authorized') ||
-					err.message.includes('Authentication failed'))
+				if (authError)
 				{
 					this.app.updateLog('Authentication error detected, stopping MQTT client auto-reconnect attempts', 0);
 					this.invalidateAccessTokenForUAID(brokerConfig.UAID, brokerConfig.serviceZoneID);

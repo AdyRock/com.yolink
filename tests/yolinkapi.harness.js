@@ -40,6 +40,8 @@ function createMockApp(initialUAIDList)
 		homeyID: 'harness-homey',
 		updateLog: () =>
 		{ },
+		announceRecovery: () =>
+		{ },
 		varToString: (value) =>
 		{
 			try
@@ -141,6 +143,54 @@ async function testSameUaidRefreshIsDeduped()
 
 	assert(refreshCalls === 1, `Expected one refresh call, got ${refreshCalls}`);
 	assert(results[0] === 'new_token_a' && results[1] === 'new_token_a', 'Expected both calls to return refreshed token');
+}
+
+async function testUnexpectedHtmlTokenResponseIsHandledCleanly()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	const normalized = api.normalizeTokenResponse('<!DOCTYPE html><html>temporary issue</html>', TEST_UAID_A, 'eu', 'refresh_token');
+	assert(normalized.reason === 'transport_error', `Expected transport_error reason, got ${normalized.reason}`);
+	assert(normalized.hint.includes('temporary'), `Expected transport hint, got ${normalized.hint}`);
+	assert(api.normalizeUserAction('YoLink returned an unexpected response. Please retry; if it continues, send diagnostics.').startsWith('Please retry'), 'Expected action to be normalized without duplicate Please');
+}
+
+async function testRefreshPrefersStoredZoneBeforeAlternate()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_a',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	const zoneAttempts = [];
+	api.obtainAccessTokenWithRefreshToken = async (UAID, refreshToken, serviceZoneID) =>
+	{
+		zoneAttempts.push(serviceZoneID);
+		if (serviceZoneID === 'us')
+		{
+			return {
+				access_token: 'new_token_a',
+				refresh_token: 'new_refresh_a',
+				expires_in: 3600,
+			};
+		}
+
+		return {
+			state: 'error',
+			msg: 'should not use alternate zone when preferred succeeds',
+		};
+	};
+
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, null, 'eu');
+
+	assert(token === 'new_token_a', `Expected refreshed token, got ${token}`);
+	assert(zoneAttempts.length === 1, `Expected one zone attempt, got ${zoneAttempts.length}`);
+	assert(zoneAttempts[0] === 'us', `Expected stored zone to be attempted first, got ${zoneAttempts[0]}`);
 }
 
 async function testDifferentUaidRefreshCanRunConcurrently()
@@ -446,6 +496,7 @@ async function main()
 	results.push(await runTest('service zone normalization', testServiceZoneNormalization));
 	results.push(await runTest('token URL by zone', testTokenURLByZone));
 	results.push(await runTest('same UAID refresh is deduped', testSameUaidRefreshIsDeduped));
+	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));

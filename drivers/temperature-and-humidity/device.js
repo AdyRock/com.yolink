@@ -10,7 +10,7 @@ module.exports = class THDevice extends Homey.Device
 	 */
 	async onInit()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.homey.app.updateLog('THDevice has been initialized');
 	}
 

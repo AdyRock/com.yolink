@@ -10,7 +10,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
    */
 	async onInit()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.homey.app.updateLog('SmartRemoteDevice has been initialized');
 	}
 
@@ -19,7 +19,7 @@ module.exports = class SmartRemoteDevice extends Homey.Device
    */
 	async onAdded()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.homey.app.updateLog('SmartRemoteDevice has been added');
 	}
 

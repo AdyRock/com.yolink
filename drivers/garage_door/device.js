@@ -13,7 +13,7 @@ module.exports = class GarageDoorDevice extends Homey.Device
 		// Add the capability listener for the OnOff capability
 		this.registerCapabilityListener('onoff', this.onOffCapabilityListener.bind(this));
 
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.homey.app.updateLog('GarageDoorDevice has been initialized');
 	}
 
@@ -22,7 +22,7 @@ module.exports = class GarageDoorDevice extends Homey.Device
    */
 	async onAdded()
 	{
-		this.updateState();
+		this.updateState().catch((err) => this.error(err));
 		this.homey.app.updateLog('GarageDoorDevice has been added');
 	}
 
