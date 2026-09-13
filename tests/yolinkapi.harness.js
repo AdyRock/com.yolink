@@ -112,6 +112,25 @@ async function testTokenURLByZone()
 	assert(api.getTokenURL('us').indexOf('api.yosmart.com') >= 0, 'Expected US token URL for us zone');
 }
 
+async function testEmailLikeUAIDIsRejected()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	assert(api.normalizeUAID('maurice.trudeau@cgocable.ca') === '', 'Expected email-like input to be rejected as invalid UAID');
+
+	let threw = false;
+	try
+	{
+		await api.getAccessTokenForUAID('maurice.trudeau@cgocable.ca', 'secret', 'us');
+	}
+	catch (error)
+	{
+		threw = true;
+		assert(error.message.includes('Invalid UAID'), `Expected invalid UAID error, got ${error.message}`);
+	}
+
+	assert(threw, 'Expected invalid email-like UAID to reject before token request');
+}
+
 async function testSameUaidRefreshIsDeduped()
 {
 	const now = Date.now();
@@ -495,6 +514,7 @@ async function main()
 	const results = [];
 	results.push(await runTest('service zone normalization', testServiceZoneNormalization));
 	results.push(await runTest('token URL by zone', testTokenURLByZone));
+	results.push(await runTest('email-like UAID is rejected', testEmailLikeUAIDIsRejected));
 	results.push(await runTest('same UAID refresh is deduped', testSameUaidRefreshIsDeduped));
 	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));

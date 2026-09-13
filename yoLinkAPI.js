@@ -90,6 +90,22 @@ module.exports = class YoLinkAPI extends SimpleClass
 			return '';
 		}
 
+		if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(trimmed))
+		{
+			return '';
+		}
+
+		const lowerTrimmed = trimmed.toLowerCase();
+		if (lowerTrimmed.startsWith('ua_'))
+		{
+			const noPrefix = trimmed.slice(3);
+			if (/^[A-Fa-f0-9]{32}$/.test(noPrefix))
+			{
+				return `ua_${noPrefix.toUpperCase()}`;
+			}
+			return trimmed;
+		}
+
 		const noPrefix = trimmed.replace(/^ua_/i, '');
 		if (/^[A-Fa-f0-9]{32}$/.test(noPrefix))
 		{
@@ -388,9 +404,17 @@ module.exports = class YoLinkAPI extends SimpleClass
 	async getAccessTokenForUAID(UAID, SecretKey, serviceZone)
 	{
 		const normalizedUAID = this.normalizeUAID(UAID);
+		const looksLikeEmail = typeof UAID === 'string' && /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(UAID.trim());
 		if (!normalizedUAID)
 		{
-			this.app.updateLog('Token request rejected: UAID is empty. What you can do: Please enter the full UAID from YoLink and try again. | diag: reason=missing_uaid', 0);
+			if (looksLikeEmail)
+			{
+				this.app.updateLog(`Token request rejected for UAID ${UAID}. What you can do: Please use the full UAID from YoLink (ua_ + 32 characters). | diag: reason=invalid_uaid_format expected=ua_<32 hex>`, 0);
+			}
+			else
+			{
+				this.app.updateLog('Token request rejected: UAID is empty. What you can do: Please enter the full UAID from YoLink and try again. | diag: reason=missing_uaid', 0);
+			}
 			throw new Error('Invalid UAID');
 		}
 

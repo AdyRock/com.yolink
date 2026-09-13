@@ -91,5 +91,8 @@
 	},
 	"1.0.26": {
 		"en": "Improved token refresh."
+	},
+	"1.0.27": {
+		"en": "Reject email-like UAID inputs and provide clearer error messages for invalid UAID formats."
 	}
 }
