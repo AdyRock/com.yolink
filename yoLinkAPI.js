@@ -444,7 +444,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				// This is the critical fallback when the refresh_token has also expired; without
 				// it the repair flow would try the broken refresh_token and ignore the user's key.
 				this.app.updateLog(`Access token for UAID ${normalizedUAID} has expired; SecretKey provided, obtaining fresh token`);
-				const newTokenData = await this.obtainAccessTokenWithSecret(normalizedUAID, SecretKey, effectiveServiceZoneID);
+				const { tokenData: newTokenData, serviceZoneID: resolvedServiceZoneID } = await this.obtainAccessTokenWithSecretAndFallback(normalizedUAID, SecretKey, effectiveServiceZoneID, !serviceZone);
 				if (!newTokenData || newTokenData.state === 'error' || !newTokenData.access_token)
 				{
 					throw new Error(`Failed to obtain access token for UAID ${normalizedUAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
@@ -453,7 +453,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 				entry.access_token = newTokenData.access_token;
 				entry.refresh_token = newTokenData.refresh_token;
 				entry.expires_at = this.getSafeExpiresAt(newTokenData.expires_in, normalizedUAID);
-				entry.serviceZoneID = effectiveServiceZoneID;
+				entry.serviceZoneID = resolvedServiceZoneID;
 				this.app.updateLog(`Obtained new access token via SecretKey for UAID ${normalizedUAID}, expires at ${this.formatDateForLog(entry.expires_at)}`);
 				this.app.homey.settings.set('UAIDList', this.UAIDList);
 				this.refreshMQTTClientsForUAID(normalizedUAID);
@@ -545,22 +545,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			// No entry found for this UAID, so obtain a new access token using the secret key
 			this.app.updateLog(`No token cache entry found for UAID ${normalizedUAID}, requesting a new token`);
-			let resolvedServiceZoneID = effectiveServiceZoneID;
-			let newTokenData = await this.obtainAccessTokenWithSecret(normalizedUAID, SecretKey, resolvedServiceZoneID);
-
-			if (newTokenData && newTokenData.state === 'error' && !serviceZone)
-			{
-				const alternateZone = effectiveServiceZoneID === 'eu' ? 'us' : 'eu';
-				this.logTokenFailure(`Initial token request failed for UAID ${normalizedUAID}`, newTokenData);
-				this.app.updateLog(`Retrying initial token request for UAID ${normalizedUAID} in alternate zone ${alternateZone}`);
-				const retryTokenData = await this.obtainAccessTokenWithSecret(normalizedUAID, SecretKey, alternateZone);
-				if (retryTokenData && retryTokenData.state !== 'error' && retryTokenData.access_token)
-				{
-					newTokenData = retryTokenData;
-					resolvedServiceZoneID = alternateZone;
-					this.app.updateLog(`Initial token request succeeded for UAID ${normalizedUAID} after zone switch to ${alternateZone}`);
-				}
-			}
+			const { tokenData: newTokenData, serviceZoneID: resolvedServiceZoneID } = await this.obtainAccessTokenWithSecretAndFallback(normalizedUAID, SecretKey, effectiveServiceZoneID, !serviceZone);
 
 			if (newTokenData.state === 'error')
 			{
@@ -712,6 +697,33 @@ module.exports = class YoLinkAPI extends SimpleClass
 			);
 			return { state: 'error', msg: error.message };
 		}
+	}
+
+	/**
+	 * Request a token with the SecretKey in the given zone and, when allowed, retry once in the
+	 * alternate zone. Returns the token data together with the zone that actually issued it so the
+	 * caller records the correct serviceZoneID.
+	 */
+	async obtainAccessTokenWithSecretAndFallback(UAID, secretKey, serviceZoneID, allowAlternateZone)
+	{
+		let resolvedServiceZoneID = serviceZoneID;
+		let tokenData = await this.obtainAccessTokenWithSecret(UAID, secretKey, resolvedServiceZoneID);
+
+		if (tokenData && tokenData.state === 'error' && allowAlternateZone)
+		{
+			const alternateZone = serviceZoneID === 'eu' ? 'us' : 'eu';
+			this.logTokenFailure(`Initial token request failed for UAID ${UAID}`, tokenData);
+			this.app.updateLog(`Retrying initial token request for UAID ${UAID} in alternate zone ${alternateZone}`);
+			const retryTokenData = await this.obtainAccessTokenWithSecret(UAID, secretKey, alternateZone);
+			if (retryTokenData && retryTokenData.state !== 'error' && retryTokenData.access_token)
+			{
+				tokenData = retryTokenData;
+				resolvedServiceZoneID = alternateZone;
+				this.app.updateLog(`Initial token request succeeded for UAID ${UAID} after zone switch to ${alternateZone}`);
+			}
+		}
+
+		return { tokenData, serviceZoneID: resolvedServiceZoneID };
 	}
 
 	// Obtain access token using UAID and secretKey

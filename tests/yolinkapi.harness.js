@@ -212,6 +212,85 @@ async function testRefreshPrefersStoredZoneBeforeAlternate()
 	assert(zoneAttempts[0] === 'us', `Expected stored zone to be attempted first, got ${zoneAttempts[0]}`);
 }
 
+async function testExpiredEntryWithSecretKeySkipsRefreshToken()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	let refreshCalls = 0;
+	api.obtainAccessTokenWithRefreshToken = async () =>
+	{
+		refreshCalls += 1;
+		return { state: 'error', msg: 'refresh token expired' };
+	};
+
+	const secretCalls = [];
+	api.obtainAccessTokenWithSecret = async (UAID, secretKey, serviceZoneID) =>
+	{
+		secretCalls.push({ secretKey, serviceZoneID });
+		return {
+			access_token: 'secret_token_a',
+			refresh_token: 'secret_refresh_a',
+			expires_in: 3600,
+		};
+	};
+
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, 'my-secret', 'us');
+
+	assert(token === 'secret_token_a', `Expected token from SecretKey, got ${token}`);
+	assert(refreshCalls === 0, `Expected refresh token to be skipped, but it was tried ${refreshCalls} time(s)`);
+	assert(secretCalls.length === 1, `Expected one SecretKey request, got ${secretCalls.length}`);
+	assert(secretCalls[0].secretKey === 'my-secret', 'Expected the supplied SecretKey to be used');
+	const entry = api.UAIDList.find((item) => item.UAID === TEST_UAID_A);
+	assert(entry.refresh_token === 'secret_refresh_a', 'Expected cached refresh token to be replaced');
+}
+
+async function testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	const zoneAttempts = [];
+	api.obtainAccessTokenWithSecret = async (UAID, secretKey, serviceZoneID) =>
+	{
+		zoneAttempts.push(serviceZoneID);
+		if (serviceZoneID === 'eu')
+		{
+			return {
+				access_token: 'eu_token_a',
+				refresh_token: 'eu_refresh_a',
+				expires_in: 3600,
+			};
+		}
+
+		return { state: 'error', msg: 'wrong zone' };
+	};
+
+	// No serviceZone supplied, so the stored zone is tried first and the alternate is allowed
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, 'my-secret');
+
+	assert(token === 'eu_token_a', `Expected token from alternate zone, got ${token}`);
+	assert(zoneAttempts.join(',') === 'us,eu', `Expected us then eu, got ${zoneAttempts.join(',')}`);
+	const entry = api.UAIDList.find((item) => item.UAID === TEST_UAID_A);
+	assert(entry.serviceZoneID === 'eu', `Expected entry zone to record the issuing zone eu, got ${entry.serviceZoneID}`);
+}
+
 async function testDifferentUaidRefreshCanRunConcurrently()
 {
 	const now = Date.now();
@@ -517,6 +596,8 @@ async function main()
 	results.push(await runTest('email-like UAID is rejected', testEmailLikeUAIDIsRejected));
 	results.push(await runTest('same UAID refresh is deduped', testSameUaidRefreshIsDeduped));
 	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
+	results.push(await runTest('expired entry with SecretKey skips refresh token', testExpiredEntryWithSecretKeySkipsRefreshToken));
+	results.push(await runTest('expired entry with SecretKey records issuing zone', testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken));
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
