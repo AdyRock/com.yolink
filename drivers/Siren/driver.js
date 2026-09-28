@@ -17,14 +17,14 @@ module.exports = class SirenDriver extends yoLinkDriver
 		this.homey.flow.getActionCard('siren_on')
 			.registerRunListener(async (args, state) =>
 			{
-				args.device.triggerCapabilityListener('alarm_sirenOnOff', true, null);
+				await args.device.triggerCapabilityListener('alarm_sirenOnOff', true, null);
 				return true;
 			});
 
 		this.homey.flow.getActionCard('siren_off')
 			.registerRunListener(async (args, state) =>
 			{
-				args.device.triggerCapabilityListener('alarm_sirenOnOff', false, null);
+				await args.device.triggerCapabilityListener('alarm_sirenOnOff', false, null);
 				return true;
 			});
 
