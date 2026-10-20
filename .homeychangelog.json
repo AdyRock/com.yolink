@@ -97,5 +97,8 @@
 	},
 	"1.0.28": {
 		"en": "Fixed issue with Siren On/Off Flow action card not awaiting capability listener."
+	},
+	"1.0.29": {
+		"en": "Added multi-outlet (YS6802-UC) device driver."
 	}
 }

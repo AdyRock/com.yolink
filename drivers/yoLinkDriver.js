@@ -111,7 +111,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			}
 
 			// Filter the list to just include devices of this type
-			const filteredList = deviceList.filter((device) => device.type === this.deviceType);
+			const filteredList = deviceList.filter((device) => this.isSupportedDevice(device));
 
 			// If a subType is specified, filter the list to just include devices that also have a device that matches the parentDeviceId that matches the subType
 			if (this.subType)
@@ -140,23 +140,33 @@ module.exports = class yoLinkDriver extends Homey.Driver
 				}));
 			}
 
-			return filteredList.map((device) => ({
-				name: device.name,
-				data:
-				{
-					id: device.deviceId,
-					deviceUDID: device.deviceUDID,
-					deviceToken: device.token,
-					parentDeviceId: device.parentDeviceId,
-					UAID,
-					type: device.type,
-				},
-				icon: this.getIcon ? this.getIcon(device.modelName) : null,
-				settings: {
-					serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
-				},
-			}));
+			return filteredList.reduce((devices, device) => devices.concat(this.getPairingDevicesForDevice(device, UAID)), []);
 		});
+	}
+
+	isSupportedDevice(device)
+	{
+		return device.type === this.deviceType;
+	}
+
+	getPairingDevicesForDevice(device, UAID)
+	{
+		return [{
+			name: device.name,
+			data:
+			{
+				id: device.deviceId,
+				deviceUDID: device.deviceUDID,
+				deviceToken: device.token,
+				parentDeviceId: device.parentDeviceId,
+				UAID,
+				type: device.type,
+			},
+			icon: this.getIcon ? this.getIcon(device.modelName) : null,
+			settings: {
+				serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
+			},
+		}];
 	}
 
 	async onRepair(session, device)
@@ -179,7 +189,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 	async getState(data, settings)
 	{
-		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, settings.serviceZone);
+		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.deviceId || data.id, data.deviceToken, settings.serviceZone);
 	}
 
 	updateMQTTState(data)
@@ -187,7 +197,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 		const command = {
 			method: `${data.type}.getState`,
 			time: Math.floor(Date.now() / 1000),
-			targetDevice: data.id,
+			targetDevice: data.deviceId || data.id,
 			token: data.deviceToken,
 			params: {},
 		};

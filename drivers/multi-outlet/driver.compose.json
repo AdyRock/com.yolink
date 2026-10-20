@@ -1,0 +1,12 @@
+{
+	"name": {
+		"en": "Dual Outdoor Plug"
+	},
+	"class": "socket",
+	"capabilities": [
+		"onoff"
+	],
+	"$extends": [
+		"cloudDriver"
+	]
+}
