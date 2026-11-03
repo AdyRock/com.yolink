@@ -47,7 +47,16 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			UAID = typeof UAID === 'string' ? UAID.trim() : '';
 			if (UAID)
 			{
-				accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, null);
+				try
+				{
+					accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, null);
+				}
+				catch (err)
+				{
+					// Token refresh may fail (e.g. expired refresh_token or network not ready).
+					// Fall through to enter_secret so the user can re-enter their SecretKey.
+					accessToken = null;
+				}
 			}
 
 			// return true to continue so the secret can be entered if the access token could not be obtained
@@ -111,7 +120,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 			}
 
 			// Filter the list to just include devices of this type
-			const filteredList = deviceList.filter((device) => device.type === this.deviceType);
+			const filteredList = deviceList.filter((device) => this.isSupportedDevice(device));
 
 			// If a subType is specified, filter the list to just include devices that also have a device that matches the parentDeviceId that matches the subType
 			if (this.subType)
@@ -140,35 +149,43 @@ module.exports = class yoLinkDriver extends Homey.Driver
 				}));
 			}
 
-			return filteredList.map((device) => ({
-				name: device.name,
-				data:
-				{
-					id: device.deviceId,
-					deviceUDID: device.deviceUDID,
-					deviceToken: device.token,
-					parentDeviceId: device.parentDeviceId,
-					UAID,
-					type: device.type,
-				},
-				icon: this.getIcon ? this.getIcon(device.modelName) : null,
-				settings: {
-					serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
-				},
-			}));
+			return filteredList.reduce((devices, device) => devices.concat(this.getPairingDevicesForDevice(device, UAID)), []);
 		});
+	}
+
+	isSupportedDevice(device)
+	{
+		return device.type === this.deviceType;
+	}
+
+	getPairingDevicesForDevice(device, UAID)
+	{
+		return [{
+			name: device.name,
+			data:
+			{
+				id: device.deviceId,
+				deviceUDID: device.deviceUDID,
+				deviceToken: device.token,
+				parentDeviceId: device.parentDeviceId,
+				UAID,
+				type: device.type,
+			},
+			icon: this.getIcon ? this.getIcon(device.modelName) : null,
+			settings: {
+				serviceZone: device.serviceZone ? device.serviceZone : (device.modelName?.endsWith('-EC') ? 'eu_uk' : 'us'),
+			},
+		}];
 	}
 
 	async onRepair(session, device)
 	{
-		let UAID = this.homey.settings.get('UAID');
-		let secretKey = this.homey.settings.get('secretKey');
-
 		session.setHandler('login', async (data) =>
 		{
-			UAID = typeof data.username === 'string' ? data.username.trim() : '';
-			secretKey = typeof data.password === 'string' ? data.password.trim() : '';
-			const accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey);
+			const UAID = typeof data.username === 'string' ? data.username.trim() : '';
+			const secretKey = typeof data.password === 'string' ? data.password.trim() : '';
+			const serviceZone = device.getSetting('serviceZone');
+			const accessToken = await this.homey.app.yoLinkAPI.getAccessTokenForUAID(UAID, secretKey, serviceZone);
 			const credentialsAreValid = (accessToken !== null);
 			// return true to continue adding the device if the login succeeded
 			// return false to indicate to the user the login attempt failed
@@ -179,7 +196,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 
 	async getState(data, settings)
 	{
-		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.id, data.deviceToken, settings.serviceZone);
+		return this.homey.app.yoLinkAPI.getDeviceStatus(data.UAID, data.type, data.deviceId || data.id, data.deviceToken, settings.serviceZone);
 	}
 
 	updateMQTTState(data)
@@ -187,7 +204,7 @@ module.exports = class yoLinkDriver extends Homey.Driver
 		const command = {
 			method: `${data.type}.getState`,
 			time: Math.floor(Date.now() / 1000),
-			targetDevice: data.id,
+			targetDevice: data.deviceId || data.id,
 			token: data.deviceToken,
 			params: {},
 		};
