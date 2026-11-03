@@ -1296,13 +1296,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 								if (await device.processMQTTMessage(mqttMessage).catch(device.error))
 								{
 									deviceFound = true;
-									break;
 								}
 							}
-						}
-						if (deviceFound)
-						{
-							break;
 						}
 					}
 
