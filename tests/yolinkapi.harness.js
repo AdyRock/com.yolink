@@ -621,6 +621,11 @@ function createDoorSensorDevice()
 	device.unsetWarning = async () => {};
 	device.setCapabilityValue = async () => {};
 	device.driver = {
+		getBatteryPercentage: (battery) =>
+		{
+			const level = parseInt(battery, 10);
+			return Number.isNaN(level) ? null : Math.min(Math.max(level, 0), 4) * 25;
+		},
 		getState: async () =>
 		{
 			calls.getState += 1;
