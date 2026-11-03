@@ -157,9 +157,13 @@ async function testMqttStateUpdatesMatchingOutlet()
 	for (let outletIndex = 0; outletIndex < 2; outletIndex++)
 	{
 		let state;
+		let markedOnline = false;
 		const device = {
 			getData: async () => ({ deviceId: 'device-123', outletIndex }),
-			setAvailable: () => Promise.resolve(),
+			markOnline: () =>
+			{
+				markedOnline = true;
+			},
 			setCapabilityValue: (capability, value) =>
 			{
 				assert(capability === 'onoff', 'Expected onoff capability update');
@@ -175,8 +179,77 @@ async function testMqttStateUpdatesMatchingOutlet()
 		});
 
 		assert(handled, 'Expected message to be handled');
+		assert(markedOnline, 'Expected valid MQTT message to mark the device online');
 		assert(state === (outletIndex === 0), `Expected outlet ${outletIndex + 1} to receive its own state`);
 	}
+}
+
+async function testStateRefreshReturnsRetryOutcome()
+{
+	const device = Object.create(MultiOutletDevice.prototype);
+	device.getData = async () => ({ deviceId: 'device-123', outletIndex: 0 });
+	device.getSettings = async () => ({ serviceZone: 'us' });
+	device.setAvailable = () => Promise.resolve();
+	device.unsetWarning = () => Promise.resolve();
+	device.setUnavailable = () => Promise.resolve();
+	device.setWarning = () => Promise.resolve();
+	device.setCapabilityValue = () => Promise.resolve();
+	device.error = () =>
+	{ };
+	device.herror = () =>
+	{ };
+	device.homey = {
+		app: {
+			updateLog: () =>
+			{ },
+		},
+	};
+	device.driver = {
+		getState: async () => ({ data: { state: ['open', 'close'] } }),
+		updateMQTTState: () =>
+		{ },
+	};
+
+	const successfulRefresh = await device.updateState();
+	assert(successfulRefresh === true, 'Expected a valid outlet state to report refresh success');
+
+	device.driver.getState = async () => ({ state: 'error', msg: 'temporary failure' });
+	const failedRefresh = await device.updateState();
+	assert(failedRefresh === false, 'Expected an API failure to report refresh failure');
+
+	device.driver.getState = async () => ({ data: { state: [] } });
+	const invalidRefresh = await device.updateState();
+	assert(invalidRefresh === false, 'Expected an invalid outlet state to report refresh failure');
+}
+
+async function testDeviceStartupUsesRetryingRefresh()
+{
+	const device = Object.create(MultiOutletDevice.prototype);
+	let refreshCalls = 0;
+	device.registerCapabilityListener = () =>
+	{ };
+	device.onOffCapabilityListener = () =>
+	{ };
+	device.refreshState = async () =>
+	{
+		refreshCalls += 1;
+		return false;
+	};
+	device.updateState = async () =>
+	{
+		throw new Error('onInit must call refreshState instead of updateState directly');
+	};
+	device.homey = {
+		app: {
+			updateLog: () =>
+			{ },
+		},
+	};
+	device.error = () =>
+	{ };
+
+	await device.onInit();
+	assert(refreshCalls === 1, `Expected startup to initiate retrying refresh, got ${refreshCalls}`);
 }
 
 async function main()
@@ -187,6 +260,8 @@ async function main()
 	results.push(await runTest('outlet control uses channel bitmask', testOutletControlUsesChannelBitmask));
 	results.push(await runTest('state requests use original YoLink device ID', testStateRequestsUseOriginalYoLinkDeviceId));
 	results.push(await runTest('MQTT state updates the matching outlet', testMqttStateUpdatesMatchingOutlet));
+	results.push(await runTest('state refresh returns retry outcome', testStateRefreshReturnsRetryOutcome));
+	results.push(await runTest('device startup uses retrying refresh', testDeviceStartupUsesRetryingRefresh));
 
 	const failed = results.filter((result) => !result.ok);
 	if (failed.length > 0)

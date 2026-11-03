@@ -1,19 +1,19 @@
 'use strict';
 
-const Homey = require('homey');
+const YoLinkDevice = require('../yoLinkDevice');
 
-module.exports = class MultiOutletDevice extends Homey.Device
+module.exports = class MultiOutletDevice extends YoLinkDevice
 {
 	async onInit()
 	{
 		this.registerCapabilityListener('onoff', this.onOffCapabilityListener.bind(this));
-		this.updateState().catch((err) => this.error(err));
+		this.refreshState().catch(this.error);
 		this.homey.app.updateLog('MultiOutletDevice has been initialized');
 	}
 
 	async onAdded()
 	{
-		this.updateState().catch((err) => this.error(err));
+		this.refreshState().catch(this.error);
 		this.homey.app.updateLog('MultiOutletDevice has been added');
 	}
 
@@ -56,10 +56,10 @@ module.exports = class MultiOutletDevice extends Homey.Device
 			{
 				this.homey.app.updateLog(`Error updating state for device ${data.deviceId}: ${state.msg}`, 0);
 				this.setWarning(`Error: ${state.msg}`).catch(this.error);
-				return;
+				return false;
 			}
 			this.setUnavailable('Offline').catch(this.error);
-			return;
+			return false;
 		}
 
 		const outletState = Array.isArray(state.data.state) ? state.data.state[data.outletIndex] : null;
@@ -67,12 +67,13 @@ module.exports = class MultiOutletDevice extends Homey.Device
 		{
 			this.homey.app.updateLog(`Invalid outlet state for device ${data.deviceId}, outlet ${data.outletIndex + 1}`, 0);
 			this.setWarning('Error: Invalid outlet state').catch(this.error);
-			return;
+			return false;
 		}
 
 		this.setAvailable().catch(this.error);
 		this.setCapabilityValue('onoff', outletState === 'open').catch(this.error);
 		this.driver.updateMQTTState(data);
+		return true;
 	}
 
 	async processMQTTMessage(mqttMessage)
@@ -89,7 +90,7 @@ module.exports = class MultiOutletDevice extends Homey.Device
 			return false;
 		}
 
-		this.setAvailable().catch(this.error);
+		this.markOnline();
 		this.setCapabilityValue('onoff', states[data.outletIndex] === 'open').catch(this.error);
 		return true;
 	}

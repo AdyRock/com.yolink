@@ -3,6 +3,7 @@
 
 'use strict';
 
+const { EventEmitter } = require('events');
 const Module = require('module');
 
 const originalModuleLoad = Module._load;
@@ -24,11 +25,16 @@ Module._load = function patchedModuleLoad(request, parent, isMain)
 const YoLinkAPI = require('../yoLinkAPI');
 const mqtt = require('../mqtt');
 const GarageDoorDevice = require('../drivers/garage_door/device');
+const DoorSensorDevice = require('../drivers/door-sensor/device');
 
 const TEST_UAID_A = 'ua_11111111111111111111111111111111';
 const TEST_UAID_B = 'ua_22222222222222222222222222222222';
 
 Module._load = originalModuleLoad;
+
+// Valid-looking UAIDs: getAccessTokenForUAID() rejects anything that is not ua_ + 32 hex characters
+const UAID_A = 'ua_0123456789ABCDEF0123456789ABCDEF';
+const UAID_B = 'ua_FEDCBA9876543210FEDCBA9876543210';
 
 function createMockApp(initialUAIDList)
 {
@@ -212,6 +218,85 @@ async function testRefreshPrefersStoredZoneBeforeAlternate()
 	assert(zoneAttempts[0] === 'us', `Expected stored zone to be attempted first, got ${zoneAttempts[0]}`);
 }
 
+async function testExpiredEntryWithSecretKeySkipsRefreshToken()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	let refreshCalls = 0;
+	api.obtainAccessTokenWithRefreshToken = async () =>
+	{
+		refreshCalls += 1;
+		return { state: 'error', msg: 'refresh token expired' };
+	};
+
+	const secretCalls = [];
+	api.obtainAccessTokenWithSecret = async (UAID, secretKey, serviceZoneID) =>
+	{
+		secretCalls.push({ secretKey, serviceZoneID });
+		return {
+			access_token: 'secret_token_a',
+			refresh_token: 'secret_refresh_a',
+			expires_in: 3600,
+		};
+	};
+
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, 'my-secret', 'us');
+
+	assert(token === 'secret_token_a', `Expected token from SecretKey, got ${token}`);
+	assert(refreshCalls === 0, `Expected refresh token to be skipped, but it was tried ${refreshCalls} time(s)`);
+	assert(secretCalls.length === 1, `Expected one SecretKey request, got ${secretCalls.length}`);
+	assert(secretCalls[0].secretKey === 'my-secret', 'Expected the supplied SecretKey to be used');
+	const entry = api.UAIDList.find((item) => item.UAID === TEST_UAID_A);
+	assert(entry.refresh_token === 'secret_refresh_a', 'Expected cached refresh token to be replaced');
+}
+
+async function testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken()
+{
+	const now = Date.now();
+	const api = new YoLinkAPI(createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]));
+
+	const zoneAttempts = [];
+	api.obtainAccessTokenWithSecret = async (UAID, secretKey, serviceZoneID) =>
+	{
+		zoneAttempts.push(serviceZoneID);
+		if (serviceZoneID === 'eu')
+		{
+			return {
+				access_token: 'eu_token_a',
+				refresh_token: 'eu_refresh_a',
+				expires_in: 3600,
+			};
+		}
+
+		return { state: 'error', msg: 'wrong zone' };
+	};
+
+	// No serviceZone supplied, so the stored zone is tried first and the alternate is allowed
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, 'my-secret');
+
+	assert(token === 'eu_token_a', `Expected token from alternate zone, got ${token}`);
+	assert(zoneAttempts.join(',') === 'us,eu', `Expected us then eu, got ${zoneAttempts.join(',')}`);
+	const entry = api.UAIDList.find((item) => item.UAID === TEST_UAID_A);
+	assert(entry.serviceZoneID === 'eu', `Expected entry zone to record the issuing zone eu, got ${entry.serviceZoneID}`);
+}
+
 async function testDifferentUaidRefreshCanRunConcurrently()
 {
 	const now = Date.now();
@@ -271,7 +356,7 @@ async function testGetHomeInfoUsesZoneEndpoint()
 		return { desc: 'Success' };
 	};
 
-	await api.getHomeInfo('UAID_A', 'eu');
+	await api.getHomeInfo(UAID_A, 'eu');
 	assert(tokenZone === 'eu', 'Expected getHomeInfo to request token in eu zone');
 	assert(requestURL.indexOf('api-eu.yosmart.com') >= 0, 'Expected getHomeInfo to call EU API endpoint');
 }
@@ -283,7 +368,7 @@ async function testPostMqttMessagePrefersZoneSpecificClient()
 
 	api.MQTTList = [
 		{
-			UAID: 'UAID_A',
+			UAID: UAID_A,
 			serviceZoneID: 'us',
 			homeID: 'HOME_US',
 			mqttReady: Promise.resolve(),
@@ -296,7 +381,7 @@ async function testPostMqttMessagePrefersZoneSpecificClient()
 			},
 		},
 		{
-			UAID: 'UAID_A',
+			UAID: UAID_A,
 			serviceZoneID: 'eu',
 			homeID: 'HOME_EU',
 			mqttReady: Promise.resolve(),
@@ -311,7 +396,7 @@ async function testPostMqttMessagePrefersZoneSpecificClient()
 	];
 
 	await api.postMQTTMessage({
-		UAID: 'UAID_A',
+		UAID: UAID_A,
 		serviceZoneID: 'eu',
 		command: { method: 'test.command' },
 	});
@@ -509,6 +594,205 @@ async function testGarageDoorControlUsesAccountUaid()
 	assert(capturedArgs.command === 'GarageDoor.toggle', 'Expected garage door toggle command');
 }
 
+function createDoorSensorDevice()
+{
+	const device = Object.create(DoorSensorDevice.prototype);
+	const timers = [];
+	const calls = { getState: 0 };
+	const availability = [];
+
+	device.getData = () => ({
+		id: 'DOOR_1',
+		UAID: UAID_A,
+		type: 'DoorSensor',
+		deviceToken: 'DOOR_TOKEN',
+	});
+	device.getSettings = async () => ({ serviceZone: 'us' });
+	device.error = () => {};
+	device.setAvailable = async () =>
+	{
+		availability.push(true);
+	};
+	device.setUnavailable = async () =>
+	{
+		availability.push(false);
+	};
+	device.setWarning = async () => {};
+	device.unsetWarning = async () => {};
+	device.setCapabilityValue = async () => {};
+	device.driver = {
+		getState: async () =>
+		{
+			calls.getState += 1;
+			return device.nextState(calls.getState);
+		},
+		updateMQTTState: () => {},
+	};
+	device.homey = {
+		app: {
+			updateLog: () => {},
+		},
+		setTimeout: (fn, delay) =>
+		{
+			timers.push({ fn, delay });
+			return timers.length;
+		},
+		clearTimeout: () => {},
+	};
+
+	return {
+		device, timers, calls, availability,
+	};
+}
+
+async function testStateRefreshRetriesUntilDeviceIsReached()
+{
+	const {
+		device, timers, calls, availability,
+	} = createDoorSensorDevice();
+	device.nextState = (attempt) =>
+	{
+		if (attempt === 1)
+		{
+			// No access token / no response from the cloud
+			return null;
+		}
+		if (attempt === 2)
+		{
+			return { code: '010301', desc: 'Access denied due to limits reached' };
+		}
+		return {
+			desc: 'Success',
+			data: {
+				online: true,
+				state: {
+					state: 'closed', battery: '4', stateChangedAt: 0, openRemindDelay: 0,
+				},
+			},
+		};
+	};
+
+	const firstResult = await device.refreshState();
+	assert(firstResult === false, 'Expected first refresh to report failure');
+	assert(availability[availability.length - 1] === false, 'Expected device to be marked unavailable after failed refresh');
+	assert(timers.length === 1, `Expected one retry to be scheduled, got ${timers.length}`);
+	assert(timers[0].delay >= 48000 && timers[0].delay <= 72000, `Expected first retry around 60s, got ${timers[0].delay}`);
+
+	timers[0].fn();
+	await sleep(10);
+	assert(calls.getState === 2, `Expected second getState call, got ${calls.getState}`);
+	assert(timers.length === 2, `Expected a second retry to be scheduled, got ${timers.length}`);
+	assert(timers[1].delay >= 96000 && timers[1].delay <= 144000, `Expected second retry around 120s, got ${timers[1].delay}`);
+
+	timers[1].fn();
+	await sleep(10);
+	assert(calls.getState === 3, `Expected third getState call, got ${calls.getState}`);
+	assert(availability[availability.length - 1] === true, 'Expected device to be marked available once reached');
+	assert(timers.length === 2, `Expected no further retry after success, got ${timers.length}`);
+	assert(device.stateRetryTimer === null, 'Expected retry timer to be cleared after success');
+}
+
+async function testStateRefreshRetriesWhenUpdateStateThrows()
+{
+	const { device, timers, availability } = createDoorSensorDevice();
+	device.nextState = () =>
+	{
+		throw new Error('boom');
+	};
+
+	const result = await device.refreshState();
+	assert(result === false, 'Expected refresh to report failure when updateState throws');
+	assert(timers.length === 1, 'Expected a retry to be scheduled when updateState throws');
+	assert(availability.length === 0, 'Expected availability to be left untouched when updateState throws');
+}
+
+async function testMqttMessageMarksDeviceOnline()
+{
+	const { device, availability } = createDoorSensorDevice();
+
+	const handled = await device.processMQTTMessage({
+		event: 'DoorSensor.Alert',
+		deviceId: 'DOOR_1',
+		data: { state: 'open', battery: '3' },
+	});
+	assert(handled === true, 'Expected MQTT message for this device to be handled');
+	assert(availability[availability.length - 1] === true, 'Expected device to be marked available after MQTT message');
+
+	const ignored = await device.processMQTTMessage({
+		event: 'DoorSensor.Alert',
+		deviceId: 'OTHER',
+		data: { state: 'open' },
+	});
+	assert(ignored === false, 'Expected MQTT message for another device to be ignored');
+	assert(availability.length === 1, 'Expected availability not to change for another device');
+}
+
+function createFakeMqttClient()
+{
+	const client = new EventEmitter();
+	client.disconnecting = false;
+	client.subscribe = (topic, options, callback) =>
+	{
+		if (callback) callback(null);
+	};
+	client.publish = () => {};
+	client.end = () =>
+	{
+		client.disconnecting = true;
+	};
+	return client;
+}
+
+async function testMqttCloseKeepsEntryUntilDeliberateEnd()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	api.getHomeInfo = async () => ({ desc: 'Success', data: { id: 'HOME_US' } });
+
+	const fakeClient = createFakeMqttClient();
+	const originalConnect = mqtt.connect;
+	mqtt.connect = () => fakeClient;
+
+	try
+	{
+		// setupMQTTClient waits for the connect/subscribe handshake, so emit connect once the handlers are registered
+		setTimeout(() => fakeClient.emit('connect'), 0);
+		const connection = await api.setupMQTTClient({
+			UAID: UAID_A,
+			url: 'mqtt://example.invalid',
+			port: 8003,
+			username: 'token',
+			password: '',
+			serviceZoneID: 'us',
+		});
+		assert(connection && connection.MQTTClient === fakeClient, 'Expected setupMQTTClient to return a connection for the fake client');
+		api.MQTTList.push(connection);
+
+		// A transient drop: the library reconnects on its own, so the entry must survive
+		fakeClient.emit('close');
+		assert(api.MQTTList.includes(connection), 'Expected MQTT entry to survive a close without end()');
+
+		// A newer client for the same UAID/zone must not be evicted by the old client's late close
+		const replacement = {
+			UAID: UAID_A,
+			serviceZoneID: 'us',
+			homeID: 'HOME_US',
+			mqttReady: Promise.resolve(),
+			MQTTClient: createFakeMqttClient(),
+		};
+		api.MQTTList.push(replacement);
+
+		// A deliberate end(): the entry for this client is removed, the replacement stays
+		fakeClient.end(true);
+		fakeClient.emit('close');
+		assert(!api.MQTTList.includes(connection), 'Expected MQTT entry to be removed after a deliberate end()');
+		assert(api.MQTTList.includes(replacement), 'Expected the replacement MQTT entry to remain');
+	}
+	finally
+	{
+		mqtt.connect = originalConnect;
+	}
+}
+
 async function main()
 {
 	const results = [];
@@ -517,12 +801,18 @@ async function main()
 	results.push(await runTest('email-like UAID is rejected', testEmailLikeUAIDIsRejected));
 	results.push(await runTest('same UAID refresh is deduped', testSameUaidRefreshIsDeduped));
 	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
+	results.push(await runTest('expired entry with SecretKey skips refresh token', testExpiredEntryWithSecretKeySkipsRefreshToken));
+	results.push(await runTest('expired entry with SecretKey records issuing zone', testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken));
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
 	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
 	results.push(await runTest('mqtt auth failure invalidates token and schedules refresh', testMqttAuthFailureInvalidatesTokenAndSchedulesRefresh));
 	results.push(await runTest('garage door control uses account UAID', testGarageDoorControlUsesAccountUaid));
+	results.push(await runTest('state refresh retries until device is reached', testStateRefreshRetriesUntilDeviceIsReached));
+	results.push(await runTest('state refresh retries when updateState throws', testStateRefreshRetriesWhenUpdateStateThrows));
+	results.push(await runTest('mqtt message marks device online', testMqttMessageMarksDeviceOnline));
+	results.push(await runTest('mqtt close keeps entry until deliberate end', testMqttCloseKeepsEntryUntilDeliberateEnd));
 
 	const failed = results.filter((result) => !result.ok);
 	if (failed.length > 0)
