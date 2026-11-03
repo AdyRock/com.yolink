@@ -1,6 +1,6 @@
 {
 	"id": "com.yolink",
-	"version": "1.0.29",
+	"version": "1.0.30",
 	"compatibility": ">=12.5.0",
 	"sdk": 3,
 	"platforms": [
@@ -48,6 +48,14 @@
 	"homepage": "https://shop.yosmart.com/",
 	"support": "https://github.com/AdyRock/com.yolink/issues",
 	"homeyCommunityTopicId": 143373,
+	"contributors": {
+		"developers": [
+			{
+				"name": "Ceasar van Dijk",
+				"email": ""
+			}
+		]
+	},
 	"api": {
 		"getDeviceLog": {
 			"method": "get",

@@ -100,5 +100,8 @@
 	},
 	"1.0.29": {
 		"en": "Added multi-outlet (YS6802-UC) device driver."
+	},
+	"1.0.30": {
+		"en": "Improved authentication recovery, device availability and MQTT reconnect handling. Report empty batteries, hide unsupported humidity readings, and tidy Water Depth Sensor settings."
 	}
 }
