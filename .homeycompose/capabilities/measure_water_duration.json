@@ -1,0 +1,11 @@
+{
+	"type": "number",
+	"title": { "en": "Recent flow duration", "nl": "Duur laatste waterstroom", "de": "Letzte Fließdauer", "fr": "Durée du dernier écoulement", "it": "Durata dell'ultimo flusso", "es": "Duración del último flujo", "sv": "Senaste flödestid", "da": "Seneste løbetid", "no": "Siste strømningstid", "pl": "Czas ostatniego przepływu", "ko": "최근 물 흐름 시간", "ru": "Длительность последнего потока" },
+	"units": { "en": "min", "nl": "min", "de": "min", "fr": "min", "it": "min", "es": "min", "sv": "min", "da": "min", "no": "min", "pl": "min", "ko": "분", "ru": "мин" },
+	"getable": true,
+	"setable": false,
+	"uiComponent": "sensor",
+	"insights": true,
+	"min": 0,
+	"icon": "/assets/water-duration.svg"
+}

@@ -2,6 +2,24 @@
 
 const YoLinkDevice = require('../yoLinkDevice');
 
+const ALARM_CAPABILITIES = {
+	leak: 'alarm_water',
+	valveError: 'alarm_problem',
+	durationOverrun: 'alarm_generic.duration_overrun',
+	amountOverrun: 'alarm_generic.amount_overrun',
+	overrunTimes24H: 'alarm_generic.times_overrun',
+	openReminder: 'alarm_generic.open_reminder',
+	reminder: 'alarm_generic.reminder',
+	freezeError: 'alarm_cold.freeze',
+	lowTemp: 'alarm_cold.low_temperature',
+	highTemp: 'alarm_heat.high_temperature',
+};
+
+const ALARM_ALIASES = {
+	durationOverrun: ['overrunDurationOnce'],
+	amountOverrun: ['overrunAmount24H'],
+};
+
 module.exports = class WaterMeterControllerDevice extends YoLinkDevice
 {
 
@@ -13,9 +31,20 @@ module.exports = class WaterMeterControllerDevice extends YoLinkDevice
 		// Add the capability listener for the OnOff capability
 		this.registerCapabilityListener('onoff', this.onOffCapabilityListener.bind(this));
 
-		if (!this.hasCapability('meter_water.daily'))
+		const amountAlarmOptions = this.hasCapability('alarm_generic.amount_overrun')
+			? this.getCapabilityOptions('alarm_generic.amount_overrun') : null;
+		const amountAlarmTitle = this.driver.manifest.capabilitiesOptions['alarm_generic.amount_overrun'].title;
+		const existingTitle = amountAlarmOptions && amountAlarmOptions.title;
+		const existingEnglish = typeof existingTitle === 'string' ? existingTitle : existingTitle && existingTitle.en;
+		const oldTitle = existingEnglish === 'Water amount alarm' || existingEnglish === 'Amount alarm (incl. 24h)';
+		const missingTranslations = existingEnglish === amountAlarmTitle.en
+			&& Object.keys(amountAlarmTitle).some((language) => !existingTitle[language]);
+		if (oldTitle || missingTranslations)
 		{
-			this.addCapability('meter_water.daily').catch(this.error);
+			await this.setCapabilityOptions('alarm_generic.amount_overrun', {
+				...amountAlarmOptions,
+				title: oldTitle || typeof existingTitle === 'string' ? amountAlarmTitle : { ...amountAlarmTitle, ...existingTitle },
+			}).catch((error) => this.error('Failed to update water amount alarm title', error));
 		}
 
 		this.refreshState().catch(this.error);
@@ -97,49 +126,7 @@ module.exports = class WaterMeterControllerDevice extends YoLinkDevice
 		}
 		this.setAvailable().catch(this.error);
 
-		const { attributes } = state.data.state;
-		if (!attributes)
-		{
-			this.homey.app.updateLog(`Missing attributes in state for device ${data.id}`, 0);
-			return true;
-		}
-
-		let meterConversion = (1 / attributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
-		if (attributes.meterUnit === 0)
-		{
-			// Meter unit is in Gallons, so convert to liters
-			meterConversion = 3.78541;
-		}
-		else if (attributes.meterUnit === 1)
-		{
-			// Meter unit is in CCF (hundred cubic feet), so convert to liters
-			meterConversion = 2831.68;
-		}
-		else if (attributes.meterUnit === 2)
-		{
-			// Meter unit is in M3, so convert to liters
-			meterConversion = 1000;
-		}
-		else if (attributes.meterUnit === 3)
-		{
-			// Meter unit is already in liters
-			meterConversion = 1;
-		}
-
-		this.setCapabilityValue('meter_water.recent_usage', state.data.state.recentUsage.amount / meterConversion).catch(this.error);
-		this.setCapabilityValue('alarm_water', state.data.state.alarm.leak).catch(this.error);
-		this.setCapabilityValue('alarm_problem', state.data.state.alarm.valveError).catch(this.error);
-		this.setCapabilityValue('measure_flushes', state.data.state.dailyUsage.times).catch(this.error);
-		this.setCapabilityValue('meter_water.daily', state.data.state.dailyUsage.amount / meterConversion).catch(this.error);
-		this.setCapabilityValue('meter_water', state.data.state.state.meter / meterConversion).catch(this.error);
-		this.setCapabilityValue('onoff', state.data.state.state.valve === 'open').catch(this.error);
-
-		// The returned battery is a level between 0 and 4 (0 = empty), so convert to 0 to 100
-		const batteryLevel = this.driver.getBatteryPercentage(state.data.state.battery);
-		if (batteryLevel !== null)
-		{
-			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
-		}
+		await this.applyState(this.getReportedState(state.data));
 
 		this.driver.updateMQTTState(data);
 
@@ -158,7 +145,7 @@ module.exports = class WaterMeterControllerDevice extends YoLinkDevice
 		}
 		else
 		{
-			mqttData = mqttMessage.data.state;
+			mqttData = this.getReportedState(mqttMessage.data);
 			deviceId = mqttMessage.targetDevice;
 		}
 
@@ -177,64 +164,167 @@ module.exports = class WaterMeterControllerDevice extends YoLinkDevice
 		// Log the device status
 		this.homey.app.updateLog(`WaterMeterControllerDevice MQTT message received: ${JSON.stringify(mqttData)}`);
 
-		const mqttAttributes = mqttData.attributes;
-		if (!mqttAttributes)
+		await this.applyState(mqttData);
+		return true;
+	}
+
+	getReportedState(data)
+	{
+		if (data && data.state && (data.state.attributes || data.state.alarm || typeof data.state.state === 'object'))
 		{
-			this.homey.app.updateLog(`Missing attributes in MQTT message for device ${this.getData().id}`, 0);
-			return true;
+			return data.state;
+		}
+		return data;
+	}
+
+	async applyState(data)
+	{
+		if (!data || typeof data !== 'object')
+		{
+			throw new Error('Missing water meter state');
 		}
 
-		let meterConversion = (1 / mqttAttributes.meterStepFactor) * 100000; // The meter value is returned in centiliters, so convert to liters
-		if (mqttAttributes.meterUnit === 0)
+		if (data.attributes)
 		{
-			// Meter unit is in Gallons, so convert to liters
-			meterConversion = 3.78541;
-		}
-		else if (mqttAttributes.meterUnit === 1)
-		{
-			// Meter unit is in CCF (hundred cubic feet), so convert to liters
-			meterConversion = 2831.68;
-		}
-		else if (mqttAttributes.meterUnit === 2)
-		{
-			// Meter unit is in M3, so convert to liters
-			meterConversion = 1000;
-		}
-		else if (mqttAttributes.meterUnit === 3)
-		{
-			// Meter unit is already in liters
-			meterConversion = 1;
+			const { meterUnit, meterStepFactor } = data.attributes;
+			const conversions = [3.78541, 2831.68, 1000, 1];
+			if (Number.isInteger(meterUnit) && meterUnit >= 0 && meterUnit < conversions.length)
+			{
+				this.meterConversion = conversions[meterUnit];
+			}
+			else if (typeof meterStepFactor === 'number' && meterStepFactor > 0)
+			{
+				this.meterConversion = 100000 / meterStepFactor;
+			}
 		}
 
-		if (mqttData.alarm)
+		if (data.alarm && typeof data.alarm === 'object')
 		{
-			this.setCapabilityValue('alarm_water', mqttData.alarm.leak).catch(this.error);
-			this.setCapabilityValue('alarm_problem', mqttData.alarm.valveError).catch(this.error);
+			this.reportedAlarms = this.reportedAlarms || {};
+			for (const [name, capability] of Object.entries(ALARM_CAPABILITIES))
+			{
+				const fields = [name, ...(ALARM_ALIASES[name] || [])];
+				const reported = fields.filter((field) => typeof data.alarm[field] === 'boolean');
+				if (reported.length > 0)
+				{
+					for (const field of reported)
+					{
+						this.reportedAlarms[field] = data.alarm[field];
+					}
+					const active = fields.some((field) => this.reportedAlarms[field] === true);
+					const previous = await this.setReportedCapability(capability, active);
+					if (name !== 'leak' && name !== 'valveError' && active && previous !== true)
+					{
+						await this.driver.waterMeterAlarm.trigger(this, {}, { alarm: name }).catch(this.error);
+					}
+					else if (name !== 'leak' && name !== 'valveError' && !active && previous === true)
+					{
+						await this.driver.waterMeterAlarmCleared.trigger(this, {}, { alarm: name }).catch(this.error);
+					}
+				}
+			}
 		}
 
-		if (mqttData.dailyUsage)
+		const deviceState = data.state;
+		if (deviceState && typeof deviceState === 'object')
 		{
-			this.setCapabilityValue('measure_flushes', mqttData.dailyUsage.times).catch(this.error);
-			this.setCapabilityValue('meter_water.daily', mqttData.dailyUsage.amount / meterConversion).catch(this.error);
+			if (deviceState.valve === 'open' || deviceState.valve === 'close')
+			{
+				await this.setCapabilityValue('onoff', deviceState.valve === 'open');
+			}
+			if (typeof deviceState.waterFlowing === 'boolean')
+			{
+				const previous = await this.setReportedCapability('water_flowing', deviceState.waterFlowing);
+				if (deviceState.waterFlowing && previous !== true)
+				{
+					await this.driver.waterMeterFlowStarted.trigger(this).catch(this.error);
+				}
+				else if (!deviceState.waterFlowing && previous === true)
+				{
+					await this.driver.waterMeterFlowStopped.trigger(this).catch(this.error);
+				}
+			}
 		}
 
-		if (mqttData.state)
+		if (typeof data.temperature === 'number' && Number.isFinite(data.temperature) && data.temperature >= -273.15)
 		{
-			this.setCapabilityValue('meter_water', mqttData.state.meter / meterConversion).catch(this.error);
+			await this.setReportedCapability('measure_temperature', data.temperature);
+		}
+		if (data.recentUsage && typeof data.recentUsage.duration === 'number' && Number.isFinite(data.recentUsage.duration) && data.recentUsage.duration >= 0)
+		{
+			const { duration } = data.recentUsage;
+			await this.setChangedCapability('measure_water_duration', duration, this.driver.waterMeterDurationChanged, { duration });
+		}
+		if (data.dailyUsage && typeof data.dailyUsage.times === 'number')
+		{
+			await this.setCapabilityValue('measure_flushes', data.dailyUsage.times);
+		}
+		if (data.powerSupply === 'battery' || data.powerSupply === 'PowerLine')
+		{
+			const source = data.powerSupply === 'battery' ? 'battery' : 'line';
+			await this.setChangedCapability('water_meter_power_source', source, this.driver.waterMeterPowerChanged, { source });
+		}
+		if (data.valveDelay && typeof data.valveDelay === 'object')
+		{
+			for (const [field, delay] of [['on', 'open'], ['off', 'close']])
+			{
+				if (typeof data.valveDelay[field] === 'number' && Number.isFinite(data.valveDelay[field]) && data.valveDelay[field] >= 0)
+				{
+					const minutes = data.valveDelay[field];
+					await this.setChangedCapability(`measure_valve_delay.${delay}`, minutes, this.driver.waterMeterValveDelayChanged, { minutes }, { delay });
+				}
+			}
 		}
 
-		if (mqttData.state && mqttData.state.valve)
+		const meterValues = [
+			['meter_water', deviceState && deviceState.meter],
+			['meter_water.recent_usage', data.recentUsage && data.recentUsage.amount],
+			['meter_water.daily', typeof data.dailyUsage === 'number' ? data.dailyUsage : data.dailyUsage && data.dailyUsage.amount],
+		];
+		for (const [capability, value] of meterValues)
 		{
-			this.setCapabilityValue('onoff', mqttData.state.valve === 'open').catch(this.error);
+			if (typeof value === 'number' && Number.isFinite(value))
+			{
+				if (this.meterConversion)
+				{
+					await this.setReportedCapability(capability, value / this.meterConversion);
+				}
+				else
+				{
+					this.homey.app.updateLog(`Missing meter attributes for device ${this.getData().id}; cannot update ${capability}`, 0);
+				}
+			}
 		}
 
-		// Process the MQTT message
-		const batteryLevel = this.driver.getBatteryPercentage(mqttData?.battery);
+		const batteryLevel = this.driver.getBatteryPercentage(data.battery);
 		if (batteryLevel !== null)
 		{
-			this.setCapabilityValue('measure_battery', batteryLevel).catch(this.error);
+			await this.setCapabilityValue('measure_battery', batteryLevel);
 		}
+	}
 
-		return true;
+	async setReportedCapability(capability, value)
+	{
+		if (!this.hasCapability(capability))
+		{
+			await this.addCapability(capability);
+			const options = this.driver.manifest.capabilitiesOptions[capability];
+			if (options)
+			{
+				await this.setCapabilityOptions(capability, options);
+			}
+		}
+		const previous = this.getCapabilityValue(capability);
+		await this.setCapabilityValue(capability, value);
+		return previous;
+	}
+
+	async setChangedCapability(capability, value, trigger, tokens, state = {})
+	{
+		const previous = await this.setReportedCapability(capability, value);
+		if (previous !== value)
+		{
+			await trigger.trigger(this, tokens, state).catch(this.error);
+		}
 	}
 };

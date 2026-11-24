@@ -1,0 +1,86 @@
+{
+	"triggers": [
+		{
+			"id": "water_meter_alarm",
+			"title": { "en": "A water meter alarm turns on" },
+			"titleFormatted": { "en": "The water meter [[alarm]] alarm turns on" },
+			"args": [
+				{
+					"name": "alarm",
+					"type": "dropdown",
+					"values": [
+						{ "id": "durationOverrun", "label": { "en": "flow duration" } },
+						{ "id": "amountOverrun", "label": { "en": "water amount (incl. 24h)" } },
+						{ "id": "overrunTimes24H", "label": { "en": "daily usage count" } },
+						{ "id": "openReminder", "label": { "en": "valve open reminder" } },
+						{ "id": "reminder", "label": { "en": "reminder" } },
+						{ "id": "freezeError", "label": { "en": "freeze" } },
+						{ "id": "lowTemp", "label": { "en": "low temperature" } },
+						{ "id": "highTemp", "label": { "en": "high temperature" } }
+					]
+				}
+			]
+		},
+		{
+			"id": "water_meter_alarm_cleared",
+			"title": { "en": "A water meter alarm turns off" },
+			"titleFormatted": { "en": "The water meter [[alarm]] alarm turns off" },
+			"args": [
+				{
+					"name": "alarm",
+					"type": "dropdown",
+					"values": [
+						{ "id": "durationOverrun", "label": { "en": "flow duration" } },
+						{ "id": "amountOverrun", "label": { "en": "water amount (incl. 24h)" } },
+						{ "id": "overrunTimes24H", "label": { "en": "daily usage count" } },
+						{ "id": "openReminder", "label": { "en": "valve open reminder" } },
+						{ "id": "reminder", "label": { "en": "reminder" } },
+						{ "id": "freezeError", "label": { "en": "freeze" } },
+						{ "id": "lowTemp", "label": { "en": "low temperature" } },
+						{ "id": "highTemp", "label": { "en": "high temperature" } }
+					]
+				}
+			]
+		},
+		{
+			"id": "water_meter_flow_started",
+			"title": { "en": "Water starts flowing" }
+		},
+		{
+			"id": "water_meter_flow_stopped",
+			"title": { "en": "Water stops flowing" }
+		},
+		{
+			"id": "water_meter_duration_changed",
+			"title": { "en": "The recent flow duration changed" },
+			"tokens": [
+				{ "name": "duration", "title": { "en": "Duration (minutes)" }, "type": "number", "example": 10 }
+			]
+		},
+		{
+			"id": "water_meter_power_changed",
+			"title": { "en": "The water meter power source changed" },
+			"tokens": [
+				{ "name": "source", "title": { "en": "Power source" }, "type": "string", "example": "battery" }
+			]
+		},
+		{
+			"id": "water_meter_valve_delay_changed",
+			"title": { "en": "The remaining valve delay changed" },
+			"titleFormatted": { "en": "The remaining valve [[delay]] delay changed" },
+			"args": [
+				{
+					"name": "delay",
+					"type": "dropdown",
+					"values": [
+						{ "id": "open", "label": { "en": "open" } },
+						{ "id": "close", "label": { "en": "close" } }
+					]
+				}
+			],
+			"tokens": [
+				{ "name": "minutes", "title": { "en": "Remaining delay (minutes)" }, "type": "number", "example": 5 }
+			]
+		}
+	]
+}

@@ -321,6 +321,262 @@
             "filter": "driver_id=Siren"
           }
         ]
+      },
+      {
+        "id": "water_meter_alarm",
+        "title": {
+          "en": "A water meter alarm turns on"
+        },
+        "titleFormatted": {
+          "en": "The water meter [[alarm]] alarm turns on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          },
+          {
+            "name": "alarm",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "durationOverrun",
+                "label": {
+                  "en": "flow duration"
+                }
+              },
+              {
+                "id": "amountOverrun",
+                "label": {
+                  "en": "water amount (incl. 24h)"
+                }
+              },
+              {
+                "id": "overrunTimes24H",
+                "label": {
+                  "en": "daily usage count"
+                }
+              },
+              {
+                "id": "openReminder",
+                "label": {
+                  "en": "valve open reminder"
+                }
+              },
+              {
+                "id": "reminder",
+                "label": {
+                  "en": "reminder"
+                }
+              },
+              {
+                "id": "freezeError",
+                "label": {
+                  "en": "freeze"
+                }
+              },
+              {
+                "id": "lowTemp",
+                "label": {
+                  "en": "low temperature"
+                }
+              },
+              {
+                "id": "highTemp",
+                "label": {
+                  "en": "high temperature"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "water_meter_alarm_cleared",
+        "title": {
+          "en": "A water meter alarm turns off"
+        },
+        "titleFormatted": {
+          "en": "The water meter [[alarm]] alarm turns off"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          },
+          {
+            "name": "alarm",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "durationOverrun",
+                "label": {
+                  "en": "flow duration"
+                }
+              },
+              {
+                "id": "amountOverrun",
+                "label": {
+                  "en": "water amount (incl. 24h)"
+                }
+              },
+              {
+                "id": "overrunTimes24H",
+                "label": {
+                  "en": "daily usage count"
+                }
+              },
+              {
+                "id": "openReminder",
+                "label": {
+                  "en": "valve open reminder"
+                }
+              },
+              {
+                "id": "reminder",
+                "label": {
+                  "en": "reminder"
+                }
+              },
+              {
+                "id": "freezeError",
+                "label": {
+                  "en": "freeze"
+                }
+              },
+              {
+                "id": "lowTemp",
+                "label": {
+                  "en": "low temperature"
+                }
+              },
+              {
+                "id": "highTemp",
+                "label": {
+                  "en": "high temperature"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "water_meter_flow_started",
+        "title": {
+          "en": "Water starts flowing"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          }
+        ]
+      },
+      {
+        "id": "water_meter_flow_stopped",
+        "title": {
+          "en": "Water stops flowing"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          }
+        ]
+      },
+      {
+        "id": "water_meter_duration_changed",
+        "title": {
+          "en": "The recent flow duration changed"
+        },
+        "tokens": [
+          {
+            "name": "duration",
+            "title": {
+              "en": "Duration (minutes)"
+            },
+            "type": "number",
+            "example": 10
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          }
+        ]
+      },
+      {
+        "id": "water_meter_power_changed",
+        "title": {
+          "en": "The water meter power source changed"
+        },
+        "tokens": [
+          {
+            "name": "source",
+            "title": {
+              "en": "Power source"
+            },
+            "type": "string",
+            "example": "battery"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          }
+        ]
+      },
+      {
+        "id": "water_meter_valve_delay_changed",
+        "title": {
+          "en": "The remaining valve delay changed"
+        },
+        "titleFormatted": {
+          "en": "The remaining valve [[delay]] delay changed"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=water-meter-controller"
+          },
+          {
+            "name": "delay",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "open",
+                "label": {
+                  "en": "open"
+                }
+              },
+              {
+                "id": "close",
+                "label": {
+                  "en": "close"
+                }
+              }
+            ]
+          }
+        ],
+        "tokens": [
+          {
+            "name": "minutes",
+            "title": {
+              "en": "Remaining delay (minutes)"
+            },
+            "type": "number",
+            "example": 5
+          }
+        ]
       }
     ],
     "actions": [
@@ -4067,8 +4323,6 @@
       "class": "watervalve",
       "capabilities": [
         "onoff",
-        "meter_water.recent_usage",
-        "meter_water.daily",
         "measure_flushes",
         "meter_water",
         "measure_battery",
@@ -4076,43 +4330,215 @@
         "alarm_problem"
       ],
       "capabilitiesOptions": {
+        "measure_valve_delay.open": {
+          "title": {
+            "en": "Open Delay Remaining",
+            "nl": "Resterende openingsvertraging",
+            "de": "Verbleibende Öffnungsverzögerung",
+            "fr": "Délai d'ouverture restant",
+            "it": "Ritardo di apertura rimanente",
+            "es": "Retardo de apertura restante",
+            "sv": "Återstående öppningsfördröjning",
+            "da": "Resterende åbningsforsinkelse",
+            "no": "Gjenstående åpningsforsinkelse",
+            "pl": "Pozostałe opóźnienie otwarcia",
+            "ko": "남은 열기 지연 시간",
+            "ru": "Оставшаяся задержка открытия"
+          }
+        },
+        "measure_valve_delay.close": {
+          "title": {
+            "en": "Close Delay Remaining",
+            "nl": "Resterende sluitvertraging",
+            "de": "Verbleibende Schließverzögerung",
+            "fr": "Délai de fermeture restant",
+            "it": "Ritardo di chiusura rimanente",
+            "es": "Retardo de cierre restante",
+            "sv": "Återstående stängningsfördröjning",
+            "da": "Resterende lukkeforsinkelse",
+            "no": "Gjenstående lukkeforsinkelse",
+            "pl": "Pozostałe opóźnienie zamknięcia",
+            "ko": "남은 닫기 지연 시간",
+            "ru": "Оставшаяся задержка закрытия"
+          }
+        },
+        "alarm_generic.duration_overrun": {
+          "title": {
+            "en": "Overrun Duration Alarm",
+            "nl": "Alarm overschrijding stroomduur",
+            "de": "Alarm bei überschrittener Fließdauer",
+            "fr": "Alarme de dépassement de durée",
+            "it": "Allarme superamento durata",
+            "es": "Alarma de duración excedida",
+            "sv": "Larm för överskriden flödestid",
+            "da": "Alarm for overskredet løbetid",
+            "no": "Alarm for overskredet strømningstid",
+            "pl": "Alarm przekroczenia czasu przepływu",
+            "ko": "흐름 시간 초과 알람",
+            "ru": "Тревога превышения длительности потока"
+          }
+        },
+        "alarm_generic.amount_overrun": {
+          "title": {
+            "en": "Overrun Amount Alarm",
+            "nl": "Alarm overschrijding waterverbruik",
+            "de": "Alarm bei überschrittener Wassermenge",
+            "fr": "Alarme de dépassement de volume",
+            "it": "Allarme superamento volume",
+            "es": "Alarma de volumen excedido",
+            "sv": "Larm för överskriden vattenmängd",
+            "da": "Alarm for overskredet vandmængde",
+            "no": "Alarm for overskredet vannmengde",
+            "pl": "Alarm przekroczenia ilości wody",
+            "ko": "물 사용량 초과 알람",
+            "ru": "Тревога превышения объёма воды"
+          }
+        },
+        "alarm_generic.times_overrun": {
+          "title": {
+            "en": "Daily Usage Count Alarm",
+            "nl": "Alarm dagelijks gebruiksaantal",
+            "de": "Alarm für tägliche Nutzungsanzahl",
+            "fr": "Alarme du nombre d'utilisations quotidiennes",
+            "it": "Allarme numero di utilizzi giornalieri",
+            "es": "Alarma de número de usos diarios",
+            "sv": "Larm för antal dagliga användningar",
+            "da": "Alarm for dagligt antal anvendelser",
+            "no": "Alarm for daglig antall bruk",
+            "pl": "Alarm dziennej liczby użyć",
+            "ko": "일일 사용 횟수 알람",
+            "ru": "Тревога числа использований за день"
+          }
+        },
+        "alarm_generic.open_reminder": {
+          "title": {
+            "en": "Valve Open Reminder",
+            "nl": "Herinnering open ventiel",
+            "de": "Erinnerung an offenes Ventil",
+            "fr": "Rappel de vanne ouverte",
+            "it": "Promemoria valvola aperta",
+            "es": "Recordatorio de válvula abierta",
+            "sv": "Påminnelse om öppen ventil",
+            "da": "Påmindelse om åben ventil",
+            "no": "Påminnelse om åpen ventil",
+            "pl": "Przypomnienie o otwartym zaworze",
+            "ko": "밸브 열림 알림",
+            "ru": "Напоминание об открытом клапане"
+          }
+        },
+        "alarm_generic.reminder": {
+          "title": {
+            "en": "Alarm Reminder",
+            "nl": "Alarmherinnering",
+            "de": "Alarmerinnerung",
+            "fr": "Rappel d'alarme",
+            "it": "Promemoria allarme",
+            "es": "Recordatorio de alarma",
+            "sv": "Larmpåminnelse",
+            "da": "Alarmpåmindelse",
+            "no": "Alarmpåminnelse",
+            "pl": "Przypomnienie o alarmie",
+            "ko": "알람 알림",
+            "ru": "Напоминание о тревоге"
+          }
+        },
+        "alarm_cold.freeze": {
+          "title": {
+            "en": "Freeze Alarm",
+            "nl": "Vorstalarm",
+            "de": "Frostalarm",
+            "fr": "Alarme de gel",
+            "it": "Allarme gelo",
+            "es": "Alarma de helada",
+            "sv": "Frostlarm",
+            "da": "Frostalarm",
+            "no": "Frostalarm",
+            "pl": "Alarm zamarzania",
+            "ko": "동결 알람",
+            "ru": "Тревога замерзания"
+          }
+        },
+        "alarm_cold.low_temperature": {
+          "title": {
+            "en": "Low Temperature Alarm",
+            "nl": "Alarm lage temperatuur",
+            "de": "Alarm bei niedriger Temperatur",
+            "fr": "Alarme de température basse",
+            "it": "Allarme temperatura bassa",
+            "es": "Alarma de temperatura baja",
+            "sv": "Larm för låg temperatur",
+            "da": "Alarm for lav temperatur",
+            "no": "Alarm for lav temperatur",
+            "pl": "Alarm niskiej temperatury",
+            "ko": "저온 알람",
+            "ru": "Тревога низкой температуры"
+          }
+        },
+        "alarm_heat.high_temperature": {
+          "title": {
+            "en": "High Temperature Alarm",
+            "nl": "Alarm hoge temperatuur",
+            "de": "Alarm bei hoher Temperatur",
+            "fr": "Alarme de température haute",
+            "it": "Allarme temperatura alta",
+            "es": "Alarma de temperatura alta",
+            "sv": "Larm för hög temperatur",
+            "da": "Alarm for høj temperatur",
+            "no": "Alarm for høy temperatur",
+            "pl": "Alarm wysokiej temperatury",
+            "ko": "고온 알람",
+            "ru": "Тревога высокой температуры"
+          }
+        },
         "meter_water.recent_usage": {
-          "title": "Recent Usage",
-          "nl": "Recente verbruik",
-          "de": "Kürzliche Nutzung",
-          "fr": "Utilisation récente",
-          "it": "Utilizzo recente",
-          "es": "Uso reciente",
-          "sv": "Senaste användning",
-          "da": "Seneste forbrug",
-          "pl": "Ostatnie zużycie",
-          "ko": "최근 사용량",
+          "title": {
+            "en": "Recent Usage",
+            "nl": "Recent verbruik",
+            "de": "Letzter Verbrauch",
+            "fr": "Consommation récente",
+            "it": "Consumo recente",
+            "es": "Consumo reciente",
+            "sv": "Senaste förbrukning",
+            "da": "Seneste forbrug",
+            "no": "Siste forbruk",
+            "pl": "Ostatnie zużycie",
+            "ko": "최근 사용량",
+            "ru": "Последний расход"
+          },
           "units": "L"
         },
         "meter_water.daily": {
-          "title": "Daily Usage",
-          "nl": "Dagelijks verbruik",
-          "de": "Täglicher Verbrauch",
-          "fr": "Consommation quotidienne",
-          "it": "Consumo giornaliero",
-          "es": "Consumo diario",
-          "sv": "Daglig användning",
-          "da": "Dagligt forbrug",
-          "pl": "Dzienne zużycie",
-          "ko": "일일 사용량",
+          "title": {
+            "en": "Daily Usage",
+            "nl": "Dagelijks verbruik",
+            "de": "Täglicher Verbrauch",
+            "fr": "Consommation quotidienne",
+            "it": "Consumo giornaliero",
+            "es": "Consumo diario",
+            "sv": "Daglig förbrukning",
+            "da": "Dagligt forbrug",
+            "no": "Daglig forbruk",
+            "pl": "Dzienne zużycie",
+            "ko": "일일 사용량",
+            "ru": "Расход за день"
+          },
           "units": "L"
         },
         "meter_water": {
-          "title": "Total Usage",
-          "nl": "Totaal verbruik",
-          "de": "Gesamtverbrauch",
-          "fr": "Consommation totale",
-          "it": "Consumo totale",
-          "es": "Consumo total",
-          "sv": "Total användning",
-          "da": "Samlet forbrug",
-          "pl": "Całkowite zużycie",
-          "ko": "총 사용량",
+          "title": {
+            "en": "Total Usage",
+            "nl": "Totaal verbruik",
+            "de": "Gesamtverbrauch",
+            "fr": "Consommation totale",
+            "it": "Consumo totale",
+            "es": "Consumo total",
+            "sv": "Total förbrukning",
+            "da": "Samlet forbrug",
+            "no": "Totalt forbruk",
+            "pl": "Całkowite zużycie",
+            "ko": "총 사용량",
+            "ru": "Общий расход"
+          },
           "units": "L"
         }
       },
@@ -4277,6 +4703,42 @@
       "uiComponent": "sensor",
       "icon": "/assets/flush.svg"
     },
+    "measure_valve_delay": {
+      "type": "number",
+      "title": {
+        "en": "Valve delay remaining",
+        "nl": "Resterende ventielvertraging",
+        "de": "Verbleibende Ventilverzögerung",
+        "fr": "Délai de vanne restant",
+        "it": "Ritardo valvola rimanente",
+        "es": "Retardo de válvula restante",
+        "sv": "Återstående ventilfördröjning",
+        "da": "Resterende ventilforsinkelse",
+        "no": "Gjenstående ventilforsinkelse",
+        "pl": "Pozostałe opóźnienie zaworu",
+        "ko": "남은 밸브 지연 시간",
+        "ru": "Оставшаяся задержка клапана"
+      },
+      "units": {
+        "en": "min",
+        "nl": "min",
+        "de": "min",
+        "fr": "min",
+        "it": "min",
+        "es": "min",
+        "sv": "min",
+        "da": "min",
+        "no": "min",
+        "pl": "min",
+        "ko": "분",
+        "ru": "мин"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "min": 0,
+      "icon": "/assets/valve-delay.svg"
+    },
     "measure_water_depth": {
       "type": "number",
       "title": {
@@ -4300,6 +4762,150 @@
       "setable": false,
       "uiComponent": "sensor",
       "icon": "/assets/water-depth.svg"
+    },
+    "measure_water_duration": {
+      "type": "number",
+      "title": {
+        "en": "Recent flow duration",
+        "nl": "Duur laatste waterstroom",
+        "de": "Letzte Fließdauer",
+        "fr": "Durée du dernier écoulement",
+        "it": "Durata dell'ultimo flusso",
+        "es": "Duración del último flujo",
+        "sv": "Senaste flödestid",
+        "da": "Seneste løbetid",
+        "no": "Siste strømningstid",
+        "pl": "Czas ostatniego przepływu",
+        "ko": "최근 물 흐름 시간",
+        "ru": "Длительность последнего потока"
+      },
+      "units": {
+        "en": "min",
+        "nl": "min",
+        "de": "min",
+        "fr": "min",
+        "it": "min",
+        "es": "min",
+        "sv": "min",
+        "da": "min",
+        "no": "min",
+        "pl": "min",
+        "ko": "분",
+        "ru": "мин"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "min": 0,
+      "icon": "/assets/water-duration.svg"
+    },
+    "water_flowing": {
+      "type": "boolean",
+      "title": {
+        "en": "Water flowing",
+        "nl": "Water stroomt",
+        "de": "Wasser fließt",
+        "fr": "Écoulement d'eau",
+        "it": "Acqua in flusso",
+        "es": "Flujo de agua",
+        "sv": "Vattenflöde",
+        "da": "Vand løber",
+        "no": "Vann strømmer",
+        "pl": "Przepływ wody",
+        "ko": "물 흐름",
+        "ru": "Поток воды"
+      },
+      "titleTrue": {
+        "en": "Flowing",
+        "nl": "Stroomt",
+        "de": "Fließt",
+        "fr": "En cours",
+        "it": "In flusso",
+        "es": "Fluyendo",
+        "sv": "Flödar",
+        "da": "Løber",
+        "no": "Strømmer",
+        "pl": "Płynie",
+        "ko": "흐름",
+        "ru": "Течёт"
+      },
+      "titleFalse": {
+        "en": "Not flowing",
+        "nl": "Stroomt niet",
+        "de": "Fließt nicht",
+        "fr": "Arrêté",
+        "it": "Nessun flusso",
+        "es": "Sin flujo",
+        "sv": "Flödar inte",
+        "da": "Løber ikke",
+        "no": "Strømmer ikke",
+        "pl": "Nie płynie",
+        "ko": "흐름 없음",
+        "ru": "Не течёт"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/water-flowing.svg"
+    },
+    "water_meter_power_source": {
+      "type": "enum",
+      "title": {
+        "en": "Power source",
+        "nl": "Voedingsbron",
+        "de": "Stromquelle",
+        "fr": "Source d'alimentation",
+        "it": "Fonte di alimentazione",
+        "es": "Fuente de alimentación",
+        "sv": "Strömkälla",
+        "da": "Strømkilde",
+        "no": "Strømkilde",
+        "pl": "Źródło zasilania",
+        "ko": "전원",
+        "ru": "Источник питания"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/water-power-source.svg",
+      "values": [
+        {
+          "id": "battery",
+          "title": {
+            "en": "Battery",
+            "nl": "Batterij",
+            "de": "Batterie",
+            "fr": "Pile",
+            "it": "Batteria",
+            "es": "Pila",
+            "sv": "Batteri",
+            "da": "Batteri",
+            "no": "Batteri",
+            "pl": "Bateria",
+            "ko": "배터리",
+            "ru": "Батарея"
+          }
+        },
+        {
+          "id": "line",
+          "title": {
+            "en": "External power",
+            "nl": "Externe voeding",
+            "de": "Externe Stromversorgung",
+            "fr": "Alimentation externe",
+            "it": "Alimentazione esterna",
+            "es": "Alimentación externa",
+            "sv": "Extern strömförsörjning",
+            "da": "Ekstern strømforsyning",
+            "no": "Ekstern strømforsyning",
+            "pl": "Zasilanie zewnętrzne",
+            "ko": "외부 전원",
+            "ru": "Внешнее питание"
+          }
+        }
+      ]
     }
   }
 }

@@ -1,0 +1,12 @@
+{
+	"type": "enum",
+	"title": { "en": "Power source", "nl": "Voedingsbron", "de": "Stromquelle", "fr": "Source d'alimentation", "it": "Fonte di alimentazione", "es": "Fuente de alimentación", "sv": "Strömkälla", "da": "Strømkilde", "no": "Strømkilde", "pl": "Źródło zasilania", "ko": "전원", "ru": "Источник питания" },
+	"getable": true,
+	"setable": false,
+	"uiComponent": "sensor",
+	"icon": "/assets/water-power-source.svg",
+	"values": [
+		{ "id": "battery", "title": { "en": "Battery", "nl": "Batterij", "de": "Batterie", "fr": "Pile", "it": "Batteria", "es": "Pila", "sv": "Batteri", "da": "Batteri", "no": "Batteri", "pl": "Bateria", "ko": "배터리", "ru": "Батарея" } },
+		{ "id": "line", "title": { "en": "External power", "nl": "Externe voeding", "de": "Externe Stromversorgung", "fr": "Alimentation externe", "it": "Alimentazione esterna", "es": "Alimentación externa", "sv": "Extern strömförsörjning", "da": "Ekstern strømforsyning", "no": "Ekstern strømforsyning", "pl": "Zasilanie zewnętrzne", "ko": "외부 전원", "ru": "Внешнее питание" } }
+	]
+}

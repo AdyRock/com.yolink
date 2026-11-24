@@ -1,0 +1,11 @@
+{
+	"type": "boolean",
+	"title": { "en": "Water flowing", "nl": "Water stroomt", "de": "Wasser fließt", "fr": "Écoulement d'eau", "it": "Acqua in flusso", "es": "Flujo de agua", "sv": "Vattenflöde", "da": "Vand løber", "no": "Vann strømmer", "pl": "Przepływ wody", "ko": "물 흐름", "ru": "Поток воды" },
+	"titleTrue": { "en": "Flowing", "nl": "Stroomt", "de": "Fließt", "fr": "En cours", "it": "In flusso", "es": "Fluyendo", "sv": "Flödar", "da": "Løber", "no": "Strømmer", "pl": "Płynie", "ko": "흐름", "ru": "Течёт" },
+	"titleFalse": { "en": "Not flowing", "nl": "Stroomt niet", "de": "Fließt nicht", "fr": "Arrêté", "it": "Nessun flusso", "es": "Sin flujo", "sv": "Flödar inte", "da": "Løber ikke", "no": "Strømmer ikke", "pl": "Nie płynie", "ko": "흐름 없음", "ru": "Не течёт" },
+	"getable": true,
+	"setable": false,
+	"uiComponent": "sensor",
+	"insights": true,
+	"icon": "/assets/water-flowing.svg"
+}
