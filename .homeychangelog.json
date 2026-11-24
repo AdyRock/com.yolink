@@ -103,5 +103,8 @@
 	},
 	"1.0.30": {
 		"en": "Improved authentication recovery, device availability and MQTT reconnect handling. Report empty batteries, hide unsupported humidity readings, and tidy Water Depth Sensor settings."
+	},
+	"1.0.31": {
+		"en": "Added Water Meter Controller alarms, including duration, daily water amount and usage count overruns, with Flow triggers. Added flow status, recent flow duration, power source and valve delays, with icons and translations. Improved startup state loading and partial report handling. Newly paired controllers add optional capabilities only when valid values are reported."
 	}
 }
