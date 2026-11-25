@@ -1146,6 +1146,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 					'Check account credentials and region (US/EU), then retry.',
 					{ operation: 'mqtt_home_info', zone: brokerConfig.serviceZoneID, msg: homeID && homeID.desc ? homeID.desc : (homeID || 'No response') },
 				);
+				this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
 				return null;
 			}
 			const rndID = Math.floor(Math.random() * 100000);

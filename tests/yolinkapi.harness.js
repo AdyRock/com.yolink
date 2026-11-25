@@ -846,6 +846,25 @@ async function testFailedMqttRetryArmsNextAttemptWithCappedBackoff()
 	assert(maxDelay === 15 * 60 * 1000, `Expected the backoff to be held at 15 minutes, got ${maxDelay}`);
 }
 
+async function testMissingHomeInfoSchedulesMqttRetry()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	const brokerConfig = { UAID: UAID_A, url: 'mqtt://api.yosmart.com', port: 8003, username: 'token', password: '', serviceZoneID: 'us' };
+	const scheduledRetries = [];
+	api.getHomeInfo = async () => ({ state: 'error', msg: 'Temporary API failure' });
+	api.scheduleMQTTRetry = (...args) =>
+	{
+		scheduledRetries.push(args);
+	};
+
+	const result = await api.setupMQTTClient(brokerConfig, 4, 3);
+
+	assert(result === null, 'Expected MQTT setup to return null when home info is unavailable');
+	assert(scheduledRetries.length === 1, `Expected one retry to be scheduled, got ${scheduledRetries.length}`);
+	assert(scheduledRetries[0][0] === brokerConfig, 'Expected the retry to use the current broker config');
+	assert(scheduledRetries[0][1] === 5 && scheduledRetries[0][2] === 3, `Expected retry count to advance without being capped, got ${scheduledRetries[0].slice(1)}`);
+}
+
 async function main()
 {
 	const results = [];
@@ -862,6 +881,7 @@ async function main()
 	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
 	results.push(await runTest('mqtt auth failure invalidates token and schedules refresh', testMqttAuthFailureInvalidatesTokenAndSchedulesRefresh));
 	results.push(await runTest('failed mqtt retry arms the next attempt with capped backoff', testFailedMqttRetryArmsNextAttemptWithCappedBackoff));
+	results.push(await runTest('missing home info schedules mqtt retry', testMissingHomeInfoSchedulesMqttRetry));
 	results.push(await runTest('garage door control uses account UAID', testGarageDoorControlUsesAccountUaid));
 	results.push(await runTest('state refresh retries until device is reached', testStateRefreshRetriesUntilDeviceIsReached));
 	results.push(await runTest('state refresh retries when updateState throws', testStateRefreshRetriesWhenUpdateStateThrows));
