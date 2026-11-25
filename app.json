@@ -339,6 +339,9 @@
           {
             "name": "alarm",
             "type": "dropdown",
+            "title": {
+              "en": "Alarm"
+            },
             "values": [
               {
                 "id": "durationOverrun",
@@ -409,6 +412,9 @@
           {
             "name": "alarm",
             "type": "dropdown",
+            "title": {
+              "en": "Alarm"
+            },
             "values": [
               {
                 "id": "durationOverrun",
@@ -551,6 +557,9 @@
           {
             "name": "delay",
             "type": "dropdown",
+            "title": {
+              "en": "Valve delay"
+            },
             "values": [
               {
                 "id": "open",

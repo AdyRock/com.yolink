@@ -8,6 +8,7 @@
 				{
 					"name": "alarm",
 					"type": "dropdown",
+					"title": { "en": "Alarm" },
 					"values": [
 						{ "id": "durationOverrun", "label": { "en": "flow duration" } },
 						{ "id": "amountOverrun", "label": { "en": "water amount (incl. 24h)" } },
@@ -29,6 +30,7 @@
 				{
 					"name": "alarm",
 					"type": "dropdown",
+					"title": { "en": "Alarm" },
 					"values": [
 						{ "id": "durationOverrun", "label": { "en": "flow duration" } },
 						{ "id": "amountOverrun", "label": { "en": "water amount (incl. 24h)" } },
@@ -72,6 +74,7 @@
 				{
 					"name": "delay",
 					"type": "dropdown",
+					"title": { "en": "Valve delay" },
 					"values": [
 						{ "id": "open", "label": { "en": "open" } },
 						{ "id": "close", "label": { "en": "close" } }
