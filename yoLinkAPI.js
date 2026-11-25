@@ -14,6 +14,11 @@ const
 
 const mqtt = require('./mqtt');
 
+// MQTT recovery never gives up: the delay grows 60s, 120s, 240s ... and is then held at this cap.
+// A single bad answer from the token endpoint (an HTML error page, a timeout) used to end all
+// reconnection attempts for good, leaving every device silently frozen until the app was restarted.
+const MQTT_RETRY_MAX_DELAY_MS = 15 * 60 * 1000;
+
 // const fetch = require('node-fetch'); // Only needed for Node.js < 18
 
 const yoLinkApi = {
@@ -1141,6 +1146,7 @@ module.exports = class YoLinkAPI extends SimpleClass
 					'Check account credentials and region (US/EU), then retry.',
 					{ operation: 'mqtt_home_info', zone: brokerConfig.serviceZoneID, msg: homeID && homeID.desc ? homeID.desc : (homeID || 'No response') },
 				);
+				this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
 				return null;
 			}
 			const rndID = Math.floor(Math.random() * 100000);
@@ -1156,6 +1162,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			MQTTClient.on('connect', () =>
 			{
 				hasConnected = true;
+				// A live connection resets the backoff, so a failure hours from now recovers fast again
+				retryCount = 0;
 				this.app.updateLog(`setupMQTTClient.onConnect: connected to ${brokerConfig.url}:${brokerConfig.port} as ${brokerConfig.UAID}`);
 
 				// Subscribe to the yl-home/HomeID/+/report topic to receive device reports
@@ -1208,18 +1216,19 @@ module.exports = class YoLinkAPI extends SimpleClass
 					this.app.updateLog(`setupMQTTClient.onError: ${this.app.varToString(err)} when connecting to ${brokerConfig.url}:${brokerConfig.port}, HomeyYoLinkApp-${this.app.homeyID}-${rndID}`, 0);
 				}
 
-				// Stop reconnection attempts for authentication errors
+				// Authentication errors: drop this client and come back with a fresh token
 				if (authError)
 				{
-					this.app.updateLog('Authentication error detected, stopping MQTT client auto-reconnect attempts', 0);
+					this.app.updateLog('Authentication error detected, replacing the MQTT client with a fresh-token reconnect', 0);
 					this.invalidateAccessTokenForUAID(brokerConfig.UAID, brokerConfig.serviceZoneID);
 
-					// Force a fresh-token reconnect quickly, even if the first connect was rejected.
+					// The first refusal gets an immediate fresh-token reconnect; if that is refused too,
+					// the normal backoff takes over so the token endpoint is not hammered.
 					if (!authRetryScheduled)
 					{
 						authRetryScheduled = true;
-						this.app.updateLog(`Scheduling immediate fresh-token MQTT recovery for UAID ${brokerConfig.UAID}${hasConnected ? '' : ' after initial authentication refusal'}`, 1);
-						this.scheduleMQTTRetry(brokerConfig, 1, 1, 1000);
+						this.app.updateLog(`Scheduling ${retryCount === 0 ? 'immediate' : 'backed-off'} fresh-token MQTT recovery for UAID ${brokerConfig.UAID}${hasConnected ? '' : ' after initial authentication refusal'}`, 1);
+						this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries, retryCount === 0 ? 1000 : null);
 					}
 
 					connectionFailed = true;
@@ -1343,8 +1352,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			// Return null if connection failed
 			if (connectionFailed)
 			{
-				// Schedule retry on any other error if we haven't exceeded max retries
-				if (!authRetryScheduled && retryCount < maxRetries)
+				// Any other error: keep retrying with backoff, there is no attempt cap
+				if (!authRetryScheduled)
 				{
 					this.app.updateLog('Scheduling MQTT reconnection attempt due to error...', 1);
 					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
@@ -1362,6 +1371,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 				'Check account credentials, region selection, and network connectivity, then retry.',
 				{ operation: 'setupMQTTClient', zone: brokerConfig.serviceZoneID, msg: err.message },
 			);
+			// Failed before the client even existed (e.g. the home id lookup): still keep trying
+			this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
 			return null;
 		}
 	}
@@ -1381,26 +1392,29 @@ module.exports = class YoLinkAPI extends SimpleClass
 			this.mqttRetryTimers = {};
 		}
 
-		// Calculate retry delay (exponential backoff: 60s, 120s, 240s) unless overridden.
+		// Exponential backoff (60s, 120s, 240s ...) held at MQTT_RETRY_MAX_DELAY_MS, unless overridden.
 		const retryDelay = (Number.isFinite(delayOverrideMs) && delayOverrideMs >= 0)
 			? delayOverrideMs
-			: 60000 * (2 ** (retryCount - 1));
+			: Math.min(60000 * (2 ** (Math.max(retryCount, 1) - 1)), MQTT_RETRY_MAX_DELAY_MS);
 
-		this.mqttRetryTimers[retryKey] = setTimeout(async () =>
+		const retryTimer = setTimeout(async () =>
 		{
+			// Set when this attempt failed in a way that setupMQTTClient did not already reschedule
+			let rescheduleNeeded = false;
 			try
 			{
-				this.app.updateLog(`Attempting MQTT reconnection for UAID ${brokerConfig.UAID} (attempt ${retryCount}/${maxRetries})`);
+				this.app.updateLog(`Attempting MQTT reconnection for UAID ${brokerConfig.UAID} (attempt ${retryCount})`);
 
 				// Get a fresh access token
 				const newAccessToken = await this.getAccessTokenForUAID(brokerConfig.UAID, null, brokerConfig.serviceZoneID);
 				if (!newAccessToken)
 				{
 					this.logUserFixableFailure(
-						`MQTT reconnect aborted for UAID ${brokerConfig.UAID}`,
-						'Reconnect the account by re-entering UAID and Secret Key, then retry.',
+						`MQTT reconnect deferred for UAID ${brokerConfig.UAID}`,
+						'Reconnect the account by re-entering UAID and Secret Key if this keeps repeating.',
 						{ operation: 'mqtt_retry', reason: 'missing_access_token', zone: brokerConfig.serviceZoneID },
 					);
+					rescheduleNeeded = true;
 					return;
 				}
 
@@ -1433,17 +1447,26 @@ module.exports = class YoLinkAPI extends SimpleClass
 			{
 				this.logUserFixableFailure(
 					`MQTT retry attempt failed for UAID ${brokerConfig.UAID}`,
-					'Check network and account credentials, then retry.',
-					{ operation: 'mqtt_retry', zone: brokerConfig.serviceZoneID, msg: err.message, attempt: `${retryCount}/${maxRetries}` },
+					'Nothing to do yet: the next attempt is already scheduled. Check network and account credentials if this keeps repeating.',
+					{ operation: 'mqtt_retry', zone: brokerConfig.serviceZoneID, msg: err.message, attempt: `${retryCount}` },
 				);
+				rescheduleNeeded = true;
 			}
 			finally
 			{
-				// Clean up the timer reference
-				delete this.mqttRetryTimers[retryKey];
+				// Drop our own reference only: setupMQTTClient may already have armed the next timer under this key
+				if (this.mqttRetryTimers[retryKey] === retryTimer)
+				{
+					delete this.mqttRetryTimers[retryKey];
+				}
+				if (rescheduleNeeded)
+				{
+					this.scheduleMQTTRetry(brokerConfig, retryCount + 1, maxRetries);
+				}
 			}
 		}, retryDelay);
+		this.mqttRetryTimers[retryKey] = retryTimer;
 
-		this.app.updateLog(`MQTT retry scheduled for UAID ${brokerConfig.UAID} in ${retryDelay / 1000} seconds`, 1);
+		this.app.updateLog(`MQTT retry scheduled for UAID ${brokerConfig.UAID} in ${retryDelay / 1000} seconds (attempt ${retryCount})`, 1);
 	}
 };

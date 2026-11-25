@@ -798,6 +798,73 @@ async function testMqttCloseKeepsEntryUntilDeliberateEnd()
 	}
 }
 
+async function testFailedMqttRetryArmsNextAttemptWithCappedBackoff()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	const brokerConfig = { UAID: UAID_A, url: 'mqtt://api.yosmart.com', port: 8003, username: 'old_token', password: '', serviceZoneID: 'us' };
+
+	// The token endpoint answering with an HTML error page makes the token request throw
+	let tokenRequests = 0;
+	api.getAccessTokenForUAID = async () =>
+	{
+		tokenRequests++;
+		throw new Error('Unexpected token <');
+	};
+
+	// Run each retry timer straight away and record the delay it was armed with
+	const armedDelays = [];
+	const originalSetTimeout = global.setTimeout;
+	global.setTimeout = (fn, delay, ...rest) =>
+	{
+		armedDelays.push(delay);
+		if (armedDelays.length > 8)
+		{
+			// Enough attempts recorded: stop the chain so the harness can finish
+			return originalSetTimeout(() =>
+			{ }, 0);
+		}
+		return originalSetTimeout(fn, 0, ...rest);
+	};
+
+	try
+	{
+		api.scheduleMQTTRetry(brokerConfig, 1, 1, 1000);
+		for (let i = 0; i < 50 && armedDelays.length <= 8; i++)
+		{
+			await new Promise((resolve) => originalSetTimeout(resolve, 5));
+		}
+	}
+	finally
+	{
+		global.setTimeout = originalSetTimeout;
+	}
+
+	assert(tokenRequests >= 8, `Expected the retry to keep going after failed attempts, got ${tokenRequests} token requests`);
+	assert(armedDelays[0] === 1000, `Expected the first attempt to use the override delay, got ${armedDelays[0]}`);
+	assert(armedDelays[1] === 120000 && armedDelays[2] === 240000, `Expected exponential backoff after a failed attempt, got ${armedDelays.slice(1, 3)}`);
+	const maxDelay = Math.max(...armedDelays);
+	assert(maxDelay === 15 * 60 * 1000, `Expected the backoff to be held at 15 minutes, got ${maxDelay}`);
+}
+
+async function testMissingHomeInfoSchedulesMqttRetry()
+{
+	const api = new YoLinkAPI(createMockApp([]));
+	const brokerConfig = { UAID: UAID_A, url: 'mqtt://api.yosmart.com', port: 8003, username: 'token', password: '', serviceZoneID: 'us' };
+	const scheduledRetries = [];
+	api.getHomeInfo = async () => ({ state: 'error', msg: 'Temporary API failure' });
+	api.scheduleMQTTRetry = (...args) =>
+	{
+		scheduledRetries.push(args);
+	};
+
+	const result = await api.setupMQTTClient(brokerConfig, 4, 3);
+
+	assert(result === null, 'Expected MQTT setup to return null when home info is unavailable');
+	assert(scheduledRetries.length === 1, `Expected one retry to be scheduled, got ${scheduledRetries.length}`);
+	assert(scheduledRetries[0][0] === brokerConfig, 'Expected the retry to use the current broker config');
+	assert(scheduledRetries[0][1] === 5 && scheduledRetries[0][2] === 3, `Expected retry count to advance without being capped, got ${scheduledRetries[0].slice(1)}`);
+}
+
 async function main()
 {
 	const results = [];
@@ -813,6 +880,8 @@ async function main()
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));
 	results.push(await runTest('token refresh restarts mqtt client', testTokenRefreshRestartsMqttClient));
 	results.push(await runTest('mqtt auth failure invalidates token and schedules refresh', testMqttAuthFailureInvalidatesTokenAndSchedulesRefresh));
+	results.push(await runTest('failed mqtt retry arms the next attempt with capped backoff', testFailedMqttRetryArmsNextAttemptWithCappedBackoff));
+	results.push(await runTest('missing home info schedules mqtt retry', testMissingHomeInfoSchedulesMqttRetry));
 	results.push(await runTest('garage door control uses account UAID', testGarageDoorControlUsesAccountUaid));
 	results.push(await runTest('state refresh retries until device is reached', testStateRefreshRetriesUntilDeviceIsReached));
 	results.push(await runTest('state refresh retries when updateState throws', testStateRefreshRetriesWhenUpdateStateThrows));
