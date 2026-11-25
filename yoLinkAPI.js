@@ -132,6 +132,10 @@ module.exports = class YoLinkAPI extends SimpleClass
 		{
 			return 'invalid_client_id';
 		}
+		if (msg.includes('unsupported token'))
+		{
+			return 'unsupported_token';
+		}
 		if (msg.includes('not support'))
 		{
 			return 'unsupported_client_id_format';
@@ -163,6 +167,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			return 'YoLink did not recognize this UAID in the selected region.';
 		case 'unsupported_client_id_format':
 			return 'The UAID format is not supported by YoLink.';
+		case 'unsupported_token':
+			return grantType === 'refresh_token' ? 'YoLink rejected the refresh token.' : 'YoLink rejected the token.';
 		case 'auth_failed':
 			if (grantType === 'refresh_token')
 			{
@@ -188,6 +194,8 @@ module.exports = class YoLinkAPI extends SimpleClass
 			return `Verify the UAID in the YoLink app and try again in ${zone.toUpperCase()} zone.`;
 		case 'unsupported_client_id_format':
 			return 'Paste the full UAID exactly as shown in YoLink (format: ua_ + 32 characters).';
+		case 'unsupported_token':
+			return 'Reconnect the account using device Repair and re-enter the UAID and Secret Key to obtain fresh tokens.';
 		case 'auth_failed':
 			if (grantType === 'refresh_token')
 			{

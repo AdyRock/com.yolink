@@ -5,6 +5,7 @@
   "javascript.validate.enable": true,
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "cSpell.words": [
+	"reauthentication",
 	"UAID",
 	"yosmart"
 ]

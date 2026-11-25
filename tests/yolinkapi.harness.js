@@ -179,6 +179,30 @@ async function testUnexpectedHtmlTokenResponseIsHandledCleanly()
 	assert(api.normalizeUserAction('YoLink returned an unexpected response. Please retry; if it continues, send diagnostics.').startsWith('Please retry'), 'Expected action to be normalized without duplicate Please');
 }
 
+async function testUnsupportedTokenLogsReauthenticationGuidance()
+{
+	const app = createMockApp([]);
+	const messages = [];
+	app.updateLog = (message) => messages.push(message);
+	const api = new YoLinkAPI(app);
+
+	for (const msg of ['Unsupported Token', 'UNSUPPORTED TOKEN'])
+	{
+		const normalized = api.normalizeTokenResponse({ state: 'error', msg }, TEST_UAID_A, 'us', 'refresh_token');
+		assert(normalized.reason === 'unsupported_token', `Expected unsupported_token reason, got ${normalized.reason}`);
+		assert(normalized.hint.includes('rejected the refresh token'), `Expected refresh-token rejection hint, got ${normalized.hint}`);
+		api.logTokenFailure('Token endpoint rejected refresh_token', normalized);
+	}
+
+	assert(messages.length === 2, 'Expected a diagnostic for each rejected token response');
+	for (const message of messages)
+	{
+		assert(message.includes('device Repair') && message.includes('UAID and Secret Key'), `Expected reauthentication guidance, got ${message}`);
+		assert(message.includes('reason=unsupported_token'), `Expected explicit token rejection reason, got ${message}`);
+		assert(!message.includes('unknown reason') && !message.includes('if it fails again'), `Expected no generic retry advice, got ${message}`);
+	}
+}
+
 async function testRefreshPrefersStoredZoneBeforeAlternate()
 {
 	const now = Date.now();
@@ -871,6 +895,7 @@ async function main()
 	results.push(await runTest('service zone normalization', testServiceZoneNormalization));
 	results.push(await runTest('token URL by zone', testTokenURLByZone));
 	results.push(await runTest('email-like UAID is rejected', testEmailLikeUAIDIsRejected));
+	results.push(await runTest('unsupported token logs reauthentication guidance', testUnsupportedTokenLogsReauthenticationGuidance));
 	results.push(await runTest('same UAID refresh is deduped', testSameUaidRefreshIsDeduped));
 	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
 	results.push(await runTest('expired entry with SecretKey skips refresh token', testExpiredEntryWithSecretKeySkipsRefreshToken));

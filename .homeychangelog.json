@@ -108,6 +108,6 @@
 		"en": "Added Water Meter Controller alarms, including duration, daily water amount and usage count overruns, with Flow triggers. Added flow status, recent flow duration, power source and valve delays, with icons and translations. Improved startup state loading and partial report handling. Newly paired controllers add optional capabilities only when valid values are reported."
 	},
 	"1.0.32": {
-		"en": "Improved MQTT recovery so reconnect attempts continue after token, home-info, or connection failures, using capped exponential backoff."
+		"en": "Improved MQTT recovery so reconnect attempts continue after token, home-info, or connection failures, using capped exponential backoff. Added clear reauthentication guidance when YoLink rejects a token with 'Unsupported Token'."
 	}
 }
