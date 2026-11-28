@@ -321,6 +321,122 @@ async function testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken()
 	assert(entry.serviceZoneID === 'eu', `Expected entry zone to record the issuing zone eu, got ${entry.serviceZoneID}`);
 }
 
+async function testRejectedRefreshTokenRecoversWithStoredSecretKey()
+{
+	const now = Date.now();
+	const app = createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]);
+	app.homey.settings.set('UAID', TEST_UAID_A);
+	app.homey.settings.set('secretKey', ' stored-secret ');
+	const api = new YoLinkAPI(app);
+
+	api.obtainAccessTokenWithRefreshToken = async () => ({ state: 'error', msg: 'Unsupported Token' });
+
+	const secretCalls = [];
+	api.obtainAccessTokenWithSecret = async (UAID, secretKey, serviceZoneID) =>
+	{
+		secretCalls.push({ secretKey, serviceZoneID });
+		return {
+			access_token: 'recovered_token_a',
+			refresh_token: 'recovered_refresh_a',
+			expires_in: 3600,
+		};
+	};
+
+	const token = await api.getAccessTokenForUAID(TEST_UAID_A, null, 'us');
+
+	assert(token === 'recovered_token_a', `Expected token recovered via stored Secret Key, got ${token}`);
+	assert(secretCalls.length === 1, `Expected one Secret Key request, got ${secretCalls.length}`);
+	assert(secretCalls[0].secretKey === 'stored-secret', `Expected trimmed stored Secret Key to be used, got '${secretCalls[0].secretKey}'`);
+	const entry = api.UAIDList.find((item) => item.UAID === TEST_UAID_A);
+	assert(entry.refresh_token === 'recovered_refresh_a', 'Expected cached refresh token to be replaced after recovery');
+}
+
+async function testTransientRefreshFailureDoesNotUseStoredSecretKey()
+{
+	const now = Date.now();
+	const app = createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_a',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]);
+	app.homey.settings.set('UAID', TEST_UAID_A);
+	app.homey.settings.set('secretKey', 'stored-secret');
+	const api = new YoLinkAPI(app);
+
+	api.obtainAccessTokenWithRefreshToken = async () => ({ state: 'error', msg: 'network timeout' });
+
+	let secretCalls = 0;
+	api.obtainAccessTokenWithSecret = async () =>
+	{
+		secretCalls += 1;
+		return { access_token: 'should_not_be_used', refresh_token: 'x', expires_in: 3600 };
+	};
+
+	let threw = false;
+	try
+	{
+		await api.getAccessTokenForUAID(TEST_UAID_A, null, 'us');
+	}
+	catch (error)
+	{
+		threw = true;
+	}
+
+	assert(threw, 'Expected a transient refresh failure to still throw');
+	assert(secretCalls === 0, `Expected the stored Secret Key not to be used for a transient failure, got ${secretCalls} call(s)`);
+}
+
+async function testRejectedRefreshTokenWithoutMatchingStoredUaidStillFails()
+{
+	const now = Date.now();
+	const app = createMockApp([
+		{
+			UAID: TEST_UAID_A,
+			access_token: 'expired',
+			refresh_token: 'refresh_dead',
+			expires_at: now - 1000,
+			serviceZoneID: 'us',
+		},
+	]);
+	app.homey.settings.set('UAID', TEST_UAID_B);
+	app.homey.settings.set('secretKey', 'other-account-secret');
+	const api = new YoLinkAPI(app);
+
+	api.obtainAccessTokenWithRefreshToken = async () => ({ state: 'error', msg: 'Unsupported Token' });
+
+	let secretCalls = 0;
+	api.obtainAccessTokenWithSecret = async () =>
+	{
+		secretCalls += 1;
+		return { access_token: 'wrong_account_token', refresh_token: 'x', expires_in: 3600 };
+	};
+
+	let threw = false;
+	try
+	{
+		await api.getAccessTokenForUAID(TEST_UAID_A, null, 'us');
+	}
+	catch (error)
+	{
+		threw = true;
+	}
+
+	assert(threw, 'Expected refresh failure to throw when the stored UAID belongs to another account');
+	assert(secretCalls === 0, `Expected another account's Secret Key not to be used, got ${secretCalls} call(s)`);
+}
+
 async function testDifferentUaidRefreshCanRunConcurrently()
 {
 	const now = Date.now();
@@ -900,6 +1016,9 @@ async function main()
 	results.push(await runTest('refresh prefers stored zone before alternate', testRefreshPrefersStoredZoneBeforeAlternate));
 	results.push(await runTest('expired entry with SecretKey skips refresh token', testExpiredEntryWithSecretKeySkipsRefreshToken));
 	results.push(await runTest('expired entry with SecretKey records issuing zone', testExpiredEntryWithSecretKeyRecordsZoneThatIssuedToken));
+	results.push(await runTest('rejected refresh token recovers with stored Secret Key', testRejectedRefreshTokenRecoversWithStoredSecretKey));
+	results.push(await runTest('transient refresh failure does not use stored Secret Key', testTransientRefreshFailureDoesNotUseStoredSecretKey));
+	results.push(await runTest('rejected refresh token without matching stored UAID still fails', testRejectedRefreshTokenWithoutMatchingStoredUaidStillFails));
 	results.push(await runTest('different UAID refresh can run concurrently', testDifferentUaidRefreshCanRunConcurrently));
 	results.push(await runTest('getHomeInfo uses zone endpoint', testGetHomeInfoUsesZoneEndpoint));
 	results.push(await runTest('postMQTTMessage prefers zone-specific client', testPostMqttMessagePrefersZoneSpecificClient));

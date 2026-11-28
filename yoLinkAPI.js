@@ -518,8 +518,19 @@ module.exports = class YoLinkAPI extends SimpleClass
 
 					if (!newTokenData || newTokenData.state === 'error' || !newTokenData.access_token)
 					{
-						this.logTokenFailure(`Failed to refresh access token for UAID ${normalizedUAID}`, newTokenData);
-						throw new Error(`Failed to refresh access token for UAID ${normalizedUAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
+						// The refresh token may have been permanently rejected (e.g. 'Unsupported Token').
+						// Try the Secret Key saved by the app-settings login before demanding a manual Repair.
+						const recovery = await this.tryStoredSecretKeyRecovery(normalizedUAID, newTokenData, refreshZoneOrder[0]);
+						if (recovery)
+						{
+							newTokenData = recovery.tokenData;
+							refreshZone = recovery.serviceZoneID;
+						}
+						else
+						{
+							this.logTokenFailure(`Failed to refresh access token for UAID ${normalizedUAID}`, newTokenData);
+							throw new Error(`Failed to refresh access token for UAID ${normalizedUAID}: ${newTokenData && newTokenData.msg ? newTokenData.msg : 'Unknown error'}`);
+						}
 					}
 
 					this.app.updateLog(`New token data for UAID ${normalizedUAID}: ${this.app.varToString(newTokenData)}`);
@@ -710,6 +721,54 @@ module.exports = class YoLinkAPI extends SimpleClass
 			);
 			return { state: 'error', msg: error.message };
 		}
+	}
+
+	// A permanent rejection means this refresh token will never work again, so retrying it is pointless.
+	isPermanentTokenRejection(tokenData)
+	{
+		const details = tokenData && typeof tokenData === 'object' ? tokenData : {};
+		const reason = details.reason || this.getTokenFailureReason(details.msg);
+		return reason === 'unsupported_token' || reason === 'invalid_grant' || reason === 'auth_failed' || reason === 'invalid_client';
+	}
+
+	/**
+	 * When YoLink permanently rejects the refresh token (e.g. 'Unsupported Token'), fall back to the
+	 * Secret Key saved by the app-settings login so the account recovers without a manual Repair.
+	 * Returns { tokenData, serviceZoneID } on success, or null when the rejection is transient, no
+	 * matching stored credentials exist, or the fallback also fails.
+	 */
+	async tryStoredSecretKeyRecovery(normalizedUAID, failedTokenData, serviceZoneID)
+	{
+		if (!this.isPermanentTokenRejection(failedTokenData))
+		{
+			return null;
+		}
+
+		const storedUAID = this.normalizeUAID(this.app.homey.settings.get('UAID'));
+		const storedSecretKey = this.app.homey.settings.get('secretKey');
+		const trimmedSecretKey = typeof storedSecretKey === 'string' ? storedSecretKey.trim() : '';
+		if (storedUAID !== normalizedUAID || !trimmedSecretKey)
+		{
+			return null;
+		}
+
+		this.app.updateLog(`Refresh token rejected for UAID ${normalizedUAID}; retrying with the stored Secret Key`, 0);
+		try
+		{
+			const result = await this.obtainAccessTokenWithSecretAndFallback(normalizedUAID, trimmedSecretKey, serviceZoneID, true);
+			if (result && result.tokenData && result.tokenData.state !== 'error' && result.tokenData.access_token)
+			{
+				this.app.updateLog(`Recovered access token for UAID ${normalizedUAID} using the stored Secret Key`, 0);
+				return result;
+			}
+			this.logTokenFailure(`Stored Secret Key recovery failed for UAID ${normalizedUAID}`, result && result.tokenData);
+		}
+		catch (error)
+		{
+			this.app.updateLog(`Stored Secret Key recovery failed for UAID ${normalizedUAID}: ${error.message}`, 0);
+		}
+
+		return null;
 	}
 
 	/**

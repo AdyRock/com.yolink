@@ -109,5 +109,8 @@
 	},
 	"1.0.32": {
 		"en": "Improved MQTT recovery so reconnect attempts continue after token, home-info, or connection failures, using capped exponential backoff. Added clear reauthentication guidance when YoLink rejects a token with 'Unsupported Token'."
+	},
+	"1.0.33": {
+		"en": "Automatically recover the account using the saved Secret Key when YoLink rejects the refresh token ('Unsupported Token'), so devices reconnect without needing a manual Repair."
 	}
 }
